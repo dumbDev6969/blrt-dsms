@@ -1,3 +1,6 @@
+@auth
+    
+
 <flux:dropdown position="bottom" align="start">
     <flux:sidebar.profile
         {{ $attributes->only('name') }}
@@ -37,3 +40,4 @@
         </flux:menu.radio.group>
     </flux:menu>
 </flux:dropdown>
+@endauth

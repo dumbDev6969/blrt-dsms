@@ -6,6 +6,16 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
+Route::middleware(['guest'])->group(function () {
+    Route::get('/', function () {
+        return view('welcome');
+    })->name('home');
+
+    Route::get('/services', function () {
+        return view('services');
+    })->name('services');
+});
+
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');

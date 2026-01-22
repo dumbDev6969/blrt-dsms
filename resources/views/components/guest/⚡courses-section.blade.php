@@ -9,7 +9,7 @@ new class extends Component {
 
 <div>
     {{-- Live as if you were to die tomorrow. Learn as if you were to live forever. - Mahatma Gandhi --}}
-    <section class="relative bg-white dark:bg-zinc-950 py-24 lg:py-32">
+    <section class="relative  py-24 lg:py-32">
         <flux:container>
             {{-- Section Header: Matching Hero Alignment --}}
             <div class="max-w-3xl mb-16 lg:mb-20">

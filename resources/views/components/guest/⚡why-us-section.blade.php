@@ -9,7 +9,7 @@ new class extends Component {
 
 <div>
     {{-- Well begun is half done. - Aristotle --}}
-    <section class="relative bg-white dark:bg-zinc-950 py-24 lg:py-32">
+    <section class="relative  py-24 lg:py-32">
         <flux:container>
             {{-- Section Header --}}
             <div class="mb-20">

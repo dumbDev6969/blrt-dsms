@@ -66,7 +66,7 @@ new class extends Component {
 
                     <flux:button variant="primary" icon-trailing="chevron-right"
                         class="w-full shadow-lg shadow-blue-500/10">
-                        Enroll in TDC
+                        <a href="{{ route('login') }}">Enroll in TDC</a>
                     </flux:button>
                 </div>
 
@@ -104,6 +104,7 @@ new class extends Component {
 
                     <flux:button variant="primary" icon-trailing="chevron-right"
                         class="w-full shadow-lg shadow-blue-500/10">
+                        <a href="{{ route('login') }}"></a>
                         Enroll in PDC
                     </flux:button>
                 </div>

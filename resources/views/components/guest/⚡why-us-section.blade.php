@@ -92,7 +92,7 @@ new class extends Component {
 
             {{-- Bottom CTA Context --}}
             <div
-                class="mt-20 flex flex-col md:flex-row items-center justify-between gap-8 border-t border-zinc-100 dark:border-zinc-800 pt-12">
+                class="mt-20 bg-gradient-to-r from-accent to-transparent flex flex-col md:flex-row items-center justify-between gap-8 border-t border-zinc-100 dark:border-zinc-800 p-12 rounded-lg">
                 <div class="max-w-xl">
                     <flux:heading size="xl" class="mb-2">Ready to start your journey?</flux:heading>
                     <flux:text variant="subtle">Join over 15,000+ successful drivers who started their journey with BLRT
@@ -100,7 +100,9 @@ new class extends Component {
                 </div>
                 <div class="flex gap-4">
                     <flux:button variant="primary" icon-trailing="arrow-right">
-                        Get Started Today
+                        <a href="{{ route('login') }}">
+                            Get Started Today
+                        </a>
                     </flux:button>
                 </div>
             </div>

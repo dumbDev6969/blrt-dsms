@@ -37,7 +37,7 @@ new class extends Component {
                         <div class="flex gap-2">
                             {{-- Custom styled input to fit the solid background --}}
                             <flux:input wire:model="email" placeholder="email@example.com"
-                                class="flex-1 !bg-white/10 !border-white/20 !text-white placeholder:text-white/50" />
+                                class="flex-1 text-white" />
                             <flux:button type="submit" variant="filled"
                                 class="!bg-white !text-accent hover:!bg-zinc-100">
                                 Join

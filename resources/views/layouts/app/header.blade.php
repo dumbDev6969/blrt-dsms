@@ -50,8 +50,11 @@
                 </flux:button>
             @endguest
         </div>
-
-        <x-desktop-user-menu />
+        
+        @auth
+            <x-desktop-user-menu />
+        @endauth
+        
 
 
     </flux:header>

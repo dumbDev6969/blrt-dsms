@@ -52,6 +52,12 @@
                 viewable
             />
 
+            {{-- Role --}}
+            <flux:radio.group name="role" variant="segmented">
+                <flux:radio label="Instructor" value="Instructor"  icon="book-open"/>
+                <flux:radio label="Student"  value="Student" icon="user"/>
+            </flux:radio.group>
+
             <div class="flex items-center justify-end">
                 <flux:button type="submit" variant="primary" class="w-full" data-test="register-user-button">
                     {{ __('Create account') }}

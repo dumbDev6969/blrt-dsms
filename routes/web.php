@@ -18,11 +18,18 @@ Route::middleware(['guest'])->group(function () {
     Route::get('/about-us', function () {
         return view('about-us');
     })->name('guest.about');
+
+    
 });
+
+
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::view('dashboard', 'pages::dashboard')
     ->name('dashboard');
+
+    Route::livewire('/student/onboard', 'pages::student.onboard')
+    ->name('student.onboard');
 });
 
 require __DIR__.'/settings.php';

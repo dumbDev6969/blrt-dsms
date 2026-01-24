@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Laravel\Fortify\Fortify;
+use Illuminate\Support\Facades\Auth;
+use Laravel\Fortify\Contracts\RegisterResponse;
+
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -29,6 +32,23 @@ class FortifyServiceProvider extends ServiceProvider
         $this->configureActions();
         $this->configureViews();
         $this->configureRateLimiting();
+
+        $this->app->singleton(RegisterResponse::class, function () {
+            return new class implements RegisterResponse {
+                public function toResponse($request)
+                {
+                    $user = Auth::user();
+
+                    // Check role and redirect
+                    if ($user->hasRole('Student')) {
+                        return redirect()->route('student.onboard');
+                    }
+
+                    // Default location for everyone else
+                    return redirect('/dashboard');
+                }
+            };
+        });
     }
 
     /**

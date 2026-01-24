@@ -16,10 +16,10 @@ new class extends Component
         {{-- Section Header --}}
         {{-- Kept simpler than the Hero to let the content breathe, but still massive --}}
         <div class="max-w-3xl mb-16">
-            <h2 class="text-7xl md:text-8xl lg:text-9xl font-black tracking-tight leading-[1.1] text-zinc-900 dark:text-white">
+            <h1 class="text-7xl md:text-8xl lg:text-9xl font-black tracking-tight leading-[1.1] text-zinc-900 dark:text-white">
                 Core <span class="text-accent">Curriculum</span>
             </h2>
-            <flux:text variant="subtle" class="text-lg text-zinc-600 dark:text-zinc-400">
+            <flux:text variant="subtle" class="text-lg md:text-xl leading-relaxed text-zinc-600 dark:text-zinc-400">
                 The two essential steps to getting your license in the Philippines. Start with theory, finish with practice.
             </flux:text>
         </div>

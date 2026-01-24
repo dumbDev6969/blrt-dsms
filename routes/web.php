@@ -14,6 +14,10 @@ Route::middleware(['guest'])->group(function () {
     Route::get('/services', function () {
         return view('services');
     })->name('guest.services');
+
+    Route::get('/about-us', function () {
+        return view('about-us');
+    })->name('guest.about');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {

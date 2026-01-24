@@ -9,7 +9,7 @@ new class extends Component {
 
 <div>
     {{-- Live as if you were to die tomorrow. Learn as if you were to live forever. - Mahatma Gandhi --}}
-    <section class="relative bg-white dark:bg-zinc-950 py-24 lg:py-32">
+    <section class="relative  py-24 lg:py-32">
         <flux:container>
             {{-- Section Header: Matching Hero Alignment --}}
             <div class="max-w-3xl mb-16 lg:mb-20">
@@ -66,7 +66,7 @@ new class extends Component {
 
                     <flux:button variant="primary" icon-trailing="chevron-right"
                         class="w-full shadow-lg shadow-blue-500/10">
-                        Enroll in TDC
+                        <a href="{{ route('login') }}">Enroll in TDC</a>
                     </flux:button>
                 </div>
 
@@ -104,6 +104,7 @@ new class extends Component {
 
                     <flux:button variant="primary" icon-trailing="chevron-right"
                         class="w-full shadow-lg shadow-blue-500/10">
+                        <a href="{{ route('login') }}"></a>
                         Enroll in PDC
                     </flux:button>
                 </div>

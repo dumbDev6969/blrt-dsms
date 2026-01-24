@@ -42,11 +42,15 @@ new class extends Component
                 {{-- 4. CTAs --}}
                 <div class="flex flex-wrap gap-4 mb-20">
                     <flux:button variant="primary" class="min-w-[140px] shadow-lg shadow-blue-500/20">
-                        Enroll now
+                        <a href="{{ route('register') }}">
+                            Enroll now
+                        </a>
                     </flux:button>
 
                     <flux:button variant="ghost" icon-trailing="arrow-right" class="group">
-                        View curriculum
+                        <a href="{{ route('guest.services') }}">
+                            View curriculum
+                        </a>
                     </flux:button>
                 </div>
             </div>

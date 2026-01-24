@@ -6,5 +6,4 @@
     <livewire:guest.about-us-section />
 
     <livewire:guest.why-us-section />
-
 </x-layouts::guest>

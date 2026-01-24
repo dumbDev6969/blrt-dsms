@@ -21,7 +21,7 @@ Route::middleware(['guest'])->group(function () {
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::view('dashboard', 'dashboard')
+    Route::view('dashboard', 'pages::dashboard')
     ->name('dashboard');
 });
 

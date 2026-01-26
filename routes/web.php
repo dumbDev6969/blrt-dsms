@@ -22,14 +22,15 @@ Route::middleware(['guest'])->group(function () {
     
 });
 
+Route::livewire('/student/onboard', 'pages::student.onboard')
+    ->name('student_profile.create')
+    ->middleware('auth');
 
-
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'profile_completed'])->group(function () {
     Route::view('dashboard', 'pages::dashboard')
     ->name('dashboard');
 
-    Route::livewire('/student/onboard', 'pages::student.onboard')
-    ->name('student.onboard');
+    
 });
 
 require __DIR__.'/settings.php';

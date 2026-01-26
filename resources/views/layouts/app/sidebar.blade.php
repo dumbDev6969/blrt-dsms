@@ -29,9 +29,9 @@
                     {{ __('Documentation') }}
                 </flux:sidebar.item>
             </flux:sidebar.nav>
-            @auth
+            
                 <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
-            @endauth
+            
             
         </flux:sidebar>
 

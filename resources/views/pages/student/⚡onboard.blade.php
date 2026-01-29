@@ -128,7 +128,7 @@ new class extends Component {
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <flux:heading size="xl" >Application Form</flux:heading>
-                    <flux:text >Your must complete this form to continue.</flux:text>
+                    <flux:text >You must complete this form to continue.</flux:text>
                 </div>
                 <flux:button variant="ghost" size="sm" icon="question-mark-circle" class="text-slate-600 dark:text-slate-400">
                     Help

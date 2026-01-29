@@ -1,9 +1,25 @@
 <?php
 
 use Livewire\Component;
-
+use App\Models\Document;
+use Livewire\Attributes\Computed;
 new class extends Component {
-    //
+    // Check if the student uploaded at least one document
+    #[Computed]
+    public function hasDocument()
+    {
+        if (Document::where('user_id', Auth::user()->id)->exists()) {
+            return true;
+        }
+    }
+
+    #[Computed]
+    public function isComplete()
+    {
+        if (Document::where('user_id', Auth::user()->id)->where('status', 'approved')->exists()) {
+            return true;
+        }
+    }
 };
 ?>
 
@@ -12,12 +28,36 @@ new class extends Component {
 
     <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
         <flux:callout icon="exclamation-triangle" variant="warning" class="w-full">
-            <flux:callout.heading>You still not uploading your documents</flux:callout.heading>
-            <flux:callout.text>
-                Upload your documents to start your driving journey.
-            </flux:callout.text>
+            @if ($this->isComplete)
+                {{-- STATE 1: COMPLETE --}}
+                <flux:callout.heading class="text-green-600">
+                    Documents Complete
+                </flux:callout.heading>
+                <flux:callout.text>
+                    You have submitted all required documents. We are now verifying your application.
+                </flux:callout.text>
+            @elseif ($this->hasDocument())
+                {{-- STATE 2: INCOMPLETE (User has started, but not finished) --}}
+                <flux:callout.heading class="text-yellow-600">
+                    Your documents are incomplete
+                </flux:callout.heading>
+                <flux:callout.text>
+                    Please upload the remaining documents to proceed with your driving journey.
+                </flux:callout.text>
+            @else
+                {{-- STATE 3: EMPTY (User hasn't started) --}}
+                <flux:callout.heading>
+                    You haven't uploaded documents yet
+                </flux:callout.heading>
+                <flux:callout.text>
+                    Upload your documents to start your driving journey.
+                </flux:callout.text>
+            @endif
+
             <x-slot name="actions">
-                <flux:button size="sm">Upload Document</flux:button>
+                <flux:button size="sm">
+                    <a href="{{ route('document.upload') }}" wire:navigate>Upload Documents</a>
+                </flux:button>
             </x-slot>
         </flux:callout>
         {{-- Top Stats / Status Grid --}}

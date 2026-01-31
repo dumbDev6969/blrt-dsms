@@ -44,6 +44,10 @@ class FortifyServiceProvider extends ServiceProvider
                         return redirect()->route('student_profile.create');
                     }
 
+                    // Check for role Instructor
+                    if ($user->hasRole('Instructor')) {
+                        return redirect()->route('instructor_profile.create');
+                    }
                     // Default location for everyone else
                     return redirect('/dashboard');
                 }

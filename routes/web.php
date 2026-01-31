@@ -25,6 +25,8 @@ Route::middleware(['guest'])->group(function () {
 Route::livewire('/student/onboard', 'pages::student.onboard')
     ->name('student_profile.create')
     ->middleware('auth');
+Route::livewire('instructor/onboard', 'pages::instructor.onboard')
+    ->name('instructor_profile.create')->middleware('auth');
 
 // Pages allowed only when the students create their profile
 Route::middleware(['auth', 'verified', 'profile_completed'])->group(function () {
@@ -34,8 +36,7 @@ Route::middleware(['auth', 'verified', 'profile_completed'])->group(function () 
     Route::livewire('student/upload-document', 'pages::student.upload-document')
     ->name('document.upload');
 
-    Route::livewire('instructor/onboard', 'pages::instructor.onboard')
-    ->name('instructor_profile.create');
+    
 });
 
 require __DIR__.'/settings.php';

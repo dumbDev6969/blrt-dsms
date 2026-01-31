@@ -11,6 +11,7 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Spatie\Permission\Traits\HasRoles;
 use App\Models\StudentProfile;
 use App\Models\Document;
+use App\Models\InstructorProfile;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -72,5 +73,10 @@ class User extends Authenticatable
     public function documents()
     {
         return $this->hasMany(Document::class);
+    }
+
+    public function instructorProfile()
+    {
+        return $this->hasOne(InstructorProfile::class);
     }
 }

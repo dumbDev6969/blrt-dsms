@@ -119,7 +119,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $admin = \App\Models\User::factory()->create([
             'name' => 'System Admin',
             'email' => 'admin@blrt.com',
-            'password' => 'password', // Assuming admin might technically be senior staff
+            'password' => 'password', 
         ]);
         $admin->assignRole('Admin');
 

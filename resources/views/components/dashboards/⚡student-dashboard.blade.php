@@ -23,7 +23,7 @@ new class extends Component {
 };
 ?>
 
-<div>
+
     {{-- People find pleasure in different ways. I find it in keeping my mind clear. - Marcus Aurelius --}}
 
     <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
@@ -56,7 +56,7 @@ new class extends Component {
 
             <x-slot name="actions">
                 <flux:button size="sm">
-                    <a href="{{ route('document.upload') }}" wire:navigate>Upload Documents</a>
+                    <a href="" wire:navigate>Upload Documents</a>
                 </flux:button>
             </x-slot>
         </flux:callout>
@@ -286,4 +286,4 @@ new class extends Component {
     </div>
 
 
-</div>
+

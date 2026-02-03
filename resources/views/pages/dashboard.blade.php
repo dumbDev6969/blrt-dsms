@@ -6,4 +6,8 @@
     @role('Instructor')
         <livewire:dashboards.instructor-dashboard />
     @endrole
+
+    @role('Admin')
+        <livewire:dashboards.admin-dashboard />
+    @endrole
 </x-layouts::app>

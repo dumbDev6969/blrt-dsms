@@ -15,6 +15,12 @@
                     <flux:sidebar.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </flux:sidebar.item>
+
+                    @can('user.view')
+                        <flux:sidebar.item icon="home" :href="route('admin.pending-registrations')" :current="request()->routeIs('admin.pending-registrations')" wire:navigate>
+                        {{ __('Pending registrations') }}
+                    </flux:sidebar.item>
+                    @endcan
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 

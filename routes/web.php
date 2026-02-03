@@ -33,10 +33,12 @@ Route::middleware(['auth', 'verified', 'profile_completed'])->group(function () 
     Route::view('dashboard', 'pages::dashboard')
     ->name('dashboard');
 
+    // Student documents
     Route::livewire('student/upload-document', 'pages::student.upload-document')
     ->name('document.upload');
 
-    
+    Route::livewire('pending-registrations', 'pages::admin.pending-registrations')
+    ->name('admin.pending-registrations');
 });
 
 require __DIR__.'/settings.php';

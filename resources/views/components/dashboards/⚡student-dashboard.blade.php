@@ -56,7 +56,7 @@ new class extends Component {
 
             <x-slot name="actions">
                 <flux:button size="sm">
-                    <a href="" wire:navigate>Upload Documents</a>
+                    <a href="{{ route('document.upload') }}" wire:navigate>Upload Documents</a>
                 </flux:button>
             </x-slot>
         </flux:callout>

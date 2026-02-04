@@ -199,10 +199,12 @@ new class extends Component {
                         <flux:button variant="primary" type="submit" class="w-full md:w-auto" disabled>
                             Save Profile
                         </flux:button>
-                    @endif
-                    <flux:button variant="primary" type="submit" class="w-full md:w-auto">
+                    @else
+                        <flux:button variant="primary" type="submit" class="w-full md:w-auto">
                             Save Profile
-                    </flux:button>
+                        </flux:button>
+                    @endif
+                    
                     
                 </div>
 

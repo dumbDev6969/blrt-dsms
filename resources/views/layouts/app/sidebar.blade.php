@@ -17,9 +17,13 @@
                     </flux:sidebar.item>
 
                     @can('user.view')
-                        <flux:sidebar.item icon="home" :href="route('admin.pending-registrations')" :current="request()->routeIs('admin.pending-registrations')" wire:navigate>
-                        {{ __('Pending registrations') }}
-                    </flux:sidebar.item>
+                        <flux:sidebar.item icon="user-plus" :href="route('admin.pending-registrations')" :current="request()->routeIs('admin.pending-registrations')" wire:navigate>
+                            {{ __('Pending registrations') }}
+                        </flux:sidebar.item>
+
+                        <flux:sidebar.item icon="academic-cap" :href="route('admin.manage-courses')" :current="request()->routeIs('admin.manage-courses')" wire:navigate>
+                            {{ __('Manage courses') }}
+                        </flux:sidebar.item>
                     @endcan
                 </flux:sidebar.group>
             </flux:sidebar.nav>

@@ -201,6 +201,25 @@ new class extends Component {
                     </div>
                 </div>
 
+                <div
+                    class="group relative rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300">
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                                <flux:icon icon="truck" class="size-6 text-slate-600 dark:text-slate-400" />
+                            </div>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Practical Driving Course</h3>
+                        <p class="text-sm text-slate-500 mt-2 line-clamp-2">8-hour hands-on driving instruction.
+                            Prerequisite for Non-Professional Driver's License.</p>
+
+                        <div class="mt-6 flex items-center justify-between">
+                            <span class="text-lg font-bold text-slate-900 dark:text-slate-100">₱4,500</span>
+                            <flux:button variant="ghost" size="sm" icon="arrow-right">Details</flux:button>
+                        </div>
+                    </div>
+                </div>
+
             </div>
             <div class="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800">
                 <div class="mb-6">

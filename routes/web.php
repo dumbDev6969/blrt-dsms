@@ -28,7 +28,7 @@ Route::livewire('/student/onboard', 'pages::student.onboard')
 Route::livewire('instructor/onboard', 'pages::instructor.onboard')
     ->name('instructor_profile.create')->middleware('auth');
 
-// Pages allowed only when the students create their profile
+// Pages allowed only when the users already created their profiles
 Route::middleware(['auth', 'verified', 'profile_completed'])->group(function () {
     Route::view('dashboard', 'pages::dashboard')
     ->name('dashboard');
@@ -37,8 +37,16 @@ Route::middleware(['auth', 'verified', 'profile_completed'])->group(function () 
     Route::livewire('student/upload-document', 'pages::student.upload-document')
     ->name('document.upload');
 
+    
+});
+
+// Admin routes
+Route::middleware(['auth', 'can:user.view'])->group(function () {
     Route::livewire('pending-registrations', 'pages::admin.pending-registrations')
     ->name('admin.pending-registrations');
+
+    Route::livewire('manage-courses', 'pages::admin.manage-course')
+    ->name('admin.manage-courses');
 });
 
 require __DIR__.'/settings.php';

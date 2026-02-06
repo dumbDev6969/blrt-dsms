@@ -5,7 +5,7 @@ use App\Models\Course;
 use Livewire\Attributes\Validate;
 use Livewire\Attributes\Computed;
 new class extends Component {
-    // UPDATED: Title validation
+    public Course $course;
     #[Validate('required|string|min:3|max:100')]
     public $title = '';
 
@@ -49,6 +49,15 @@ new class extends Component {
     {
         return Course::query()->select('id', 'title', 'code', 'description', 'price', 'duration_hours')->orderBy('title')->get();
     }
+
+    public function delete(Course $course)
+    {
+        $delete = $course->delete();
+
+        if ($delete) {
+            session()->flash('status', 'Course deleted successfully');
+        }
+    }
 };
 ?>
 
@@ -57,11 +66,17 @@ new class extends Component {
 
         {{-- Callout Alert --}}
         @if (session('status'))
-            <flux:callout icon="check-circle" variant="success" class="shadow-sm">
+            <flux:callout icon="check-circle" variant="success" class="shadow-sm fixed top-5 w-5xl z-10"
+                x-data="{ visible: true }" x-show="visible">
                 <flux:callout.heading>{{ session('status') }}</flux:callout.heading>
+                <x-slot name="controls">
+                    <flux:button icon="x-mark" variant="ghost" x-on:click="visible = false" />
+                </x-slot>
             </flux:callout>
         @endif
-        <div class="lg:col-span-1 space-y-2">
+
+
+        <div class="lg:col-span-1 space-y-2" id="create-course-form">
             <flux:heading size="xl" level="1">Create Course</flux:heading>
             <flux:subheading>
                 Define the curriculum details, pricing, and requirements for a new driving module.
@@ -109,14 +124,13 @@ new class extends Component {
                             <flux:input type="number" label="Duration (Hours)" wire:model.blur="duration_hours"
                                 placeholder="15" icon="clock" />
 
-                            <flux:select label="Prerequisites" wire:model.blur="prerequisites"
+                            <flux:select label="Prerequisites" wire:model.blur="prerequisites" multiple
                                 placeholder="Select courses...">
 
-                                
                                 @foreach ($this->courses as $course)
                                     <flux:select.option value="{{ $course->id }}">
-                                        {{ $course->title }} <span
-                                            class="text-zinc-400 text-xs">({{ $course->code }})</span>
+                                        {{ $course->title }}
+                                        <span class="text-zinc-400 text-xs">({{ $course->code }})</span>
                                     </flux:select.option>
                                 @endforeach
 
@@ -157,7 +171,8 @@ new class extends Component {
                 class="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-900">
                 <div class="overflow-x-auto">
                     <table class="min-w-full text-left text-sm whitespace-nowrap">
-                        <thead class="bg-zinc-50/50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
+                        <thead
+                            class="bg-zinc-50/50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-100">
                             <tr>
                                 <th class="px-6 py-4 font-semibold text-zinc-900 dark:text-white">Code</th>
                                 <th class="px-6 py-4 font-semibold text-zinc-900 dark:text-white">Course Details</th>
@@ -167,7 +182,7 @@ new class extends Component {
                                 <th class="px-6 py-4 font-semibold text-zinc-900 dark:text-white"></th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800">
+                        <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800" wire:transition>
 
                             @forelse ($this->courses as $course)
                                 <tr class="group hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
@@ -179,7 +194,8 @@ new class extends Component {
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex flex-col">
-                                            <span class="font-medium text-zinc-900 dark:text-white">{{ $course->title }}</span>
+                                            <span
+                                                class="font-medium text-zinc-900 dark:text-white">{{ $course->title }}</span>
                                             <span
                                                 class="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5 max-w-[200px] truncate">
                                                 {{ $course->description }}
@@ -203,12 +219,35 @@ new class extends Component {
                                             <flux:menu>
                                                 <flux:menu.item icon="pencil-square">Edit Details</flux:menu.item>
                                                 <flux:menu.separator />
-                                                <flux:menu.item icon="trash" variant="danger">Delete</flux:menu.item>
+                                                <flux:menu.item icon="trash" variant="danger"
+                                                    wire:click="delete({{ $course->id }})">Delete</flux:menu.item>
                                             </flux:menu>
                                         </flux:dropdown>
                                     </td>
                                 </tr>
                             @empty
+                                <tr>
+                                    <td colspan="5"
+                                        class="py-12 text-center animate-in fade-in zoom-in-95 duration-300">
+                                        <div class="flex flex-col items-center justify-center max-w-sm mx-auto">
+                                            <div
+                                                class="flex items-center justify-center size-10 rounded-full bg-zinc-100/50 dark:bg-zinc-800/50 border border-zinc-200/50 dark:border-zinc-700/50 mb-3 shadow-sm">
+                                                <flux:icon name="magnifying-glass"
+                                                    class="size-5 text-zinc-400 dark:text-zinc-500" />
+                                            </div>
+
+                                            <flux:heading>
+                                                No courses found
+                                            </flux:heading>
+
+                                            <div class="mt-4">
+                                                <flux:button size="sm" icon="plus">
+                                                    <a href="#create-course-form">Create Course</a>
+                                                </flux:button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
                             @endforelse
 
 

@@ -25,6 +25,7 @@ class StudentProfile extends Model
         'ltms_client_id',
         'student_permit_or_license_no',
         'meta_details',
+        'is_active',
     ];
 
     /**
@@ -34,6 +35,7 @@ class StudentProfile extends Model
         'birth_date' => 'date',           // Automatically converts to Carbon instance
         'is_minor' => 'boolean',          // Converts 0/1 to true/false
         'meta_details' => 'array',        // KEY: Automatically decodes JSON to PHP array
+        'is_active' => 'boolean',
     ];
     public function user()
     {

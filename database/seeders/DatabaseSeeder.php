@@ -3,7 +3,8 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\StudentProfile;
+use App\Models\InstructorProfile;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -13,10 +14,32 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // 1. Run the Permissions Seeder FIRST
+        // This sets up the Roles and your 3 Demo accounts
+        $this->call(RolesAndPermissionsSeeder::class);
 
-        $this->call([
-            RolesAndPermissionsSeeder::class,
-        ]);
+        // 2. Bulk Create 10 Random Students
+        User::factory()
+            ->count(10)
+            ->has(StudentProfile::factory())
+            ->create()
+            ->each(function ($user) {
+                $user->assignRole('Student');
+            });
+
+        // 3. Bulk Create 10 Random Instructors
+        User::factory()
+            ->count(10)
+            ->has(InstructorProfile::factory())
+            ->create()
+            ->each(function ($user) {
+                $user->assignRole('Instructor');
+            });
+            
+        // 4. (Optional) Output specific info to console
+        $this->command->info('Seeding Complete!');
+        $this->command->info('Admin: admin@blrt.com | password');
+        $this->command->info('Instructor: instructor@blrt.com | password');
+        $this->command->info('Student: student@blrt.com | password');
     }
 }

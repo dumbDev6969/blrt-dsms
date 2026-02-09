@@ -2,7 +2,9 @@
 
 use Livewire\Component;
 use App\Models\Document;
+use App\Models\Course;
 use Livewire\Attributes\Computed;
+
 new class extends Component {
     // Check if the student uploaded at least one document
     #[Computed]
@@ -20,6 +22,13 @@ new class extends Component {
             return true;
         }
     }
+
+     #[Computed]
+    public function courses()
+    {
+        return Course::query()->select('id', 'title', 'description', 'price', 'type')->get();
+    }
+   
 };
 ?>
 
@@ -89,9 +98,16 @@ new class extends Component {
                     <div class="flex items-center justify-between text-sm">
                         <span class="text-slate-600 dark:text-slate-400">Documents</span>
                         {{-- Static "Pending" state for demo --}}
-                        <span
-                            class="text-amber-600 font-medium text-xs bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded-full">Under
-                            Review</span>
+                        @if ($this->isComplete) 
+                            <span
+                            class="text-zinc-600 font-medium text-xs bg-zinc-50 dark:bg-amber-900/20 px-2 py-1 rounded-full">Under review</span>
+                        @elseif ($this->hasDocument)
+                            <span
+                            class="text-amber-600 font-medium text-xs bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded-full">Documents need to be completed</span>
+                        @else
+                            <span
+                            class="text-red-600 font-medium text-xs bg-red-50 dark:bg-amber-900/20 px-2 py-1 rounded-full">No documents yet</span>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -148,79 +164,9 @@ new class extends Component {
         {{-- Bottom Section: COURSE CATALOG --}}
         <div
             class="relative h-full flex-1 overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-8 shadow-sm">
-            <div class="mb-6">
-                <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100">Available Courses</h2>
-                <p class="text-sm text-slate-500">Select a program to start your driving journey.</p>
-            </div>
-
-            {{-- Course Grid --}}
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-                {{-- COURSE 1: TDC (Highlighted) --}}
-                <div
-                    class="group relative rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20 hover:border-[var(--color-accent)] dark:hover:border-[var(--color-accent)] transition-all duration-300">
-                    <div class="p-6">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="p-2 bg-white dark:bg-slate-800 rounded-lg shadow-sm">
-                                <flux:icon icon="book-open" class="size-6 text-[var(--color-accent)]" />
-                            </div>
-                            <span
-                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                                Recommended
-                            </span>
-                        </div>
-                        <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Theoretical Driving Course
-                        </h3>
-                        <p class="text-sm text-slate-500 mt-2 line-clamp-2">Required 15-hour seminar for Student Permit
-                            applicants. Covers traffic laws and road safety.</p>
-
-                        <div class="mt-6 flex items-center justify-between">
-                            <span class="text-lg font-bold text-slate-900 dark:text-slate-100">₱1,500</span>
-                            <flux:button variant="primary" size="sm" icon="arrow-right">Enroll</flux:button>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- COURSE 2: PDC --}}
-                <div
-                    class="group relative rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300">
-                    <div class="p-6">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                                <flux:icon icon="truck" class="size-6 text-slate-600 dark:text-slate-400" />
-                            </div>
-                        </div>
-                        <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Practical Driving Course</h3>
-                        <p class="text-sm text-slate-500 mt-2 line-clamp-2">8-hour hands-on driving instruction.
-                            Prerequisite for Non-Professional Driver's License.</p>
-
-                        <div class="mt-6 flex items-center justify-between">
-                            <span class="text-lg font-bold text-slate-900 dark:text-slate-100">₱4,500</span>
-                            <flux:button variant="ghost" size="sm" icon="arrow-right">Details</flux:button>
-                        </div>
-                    </div>
-                </div>
-
-                <div
-                    class="group relative rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-300">
-                    <div class="p-6">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                                <flux:icon icon="truck" class="size-6 text-slate-600 dark:text-slate-400" />
-                            </div>
-                        </div>
-                        <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Practical Driving Course</h3>
-                        <p class="text-sm text-slate-500 mt-2 line-clamp-2">8-hour hands-on driving instruction.
-                            Prerequisite for Non-Professional Driver's License.</p>
-
-                        <div class="mt-6 flex items-center justify-between">
-                            <span class="text-lg font-bold text-slate-900 dark:text-slate-100">₱4,500</span>
-                            <flux:button variant="ghost" size="sm" icon="arrow-right">Details</flux:button>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
+            
+            <x-courses />
+            
             <div class="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800">
                 <div class="mb-6">
                     <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">Your Roadmap to a Driver's License

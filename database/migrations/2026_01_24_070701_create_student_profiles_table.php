@@ -31,7 +31,7 @@ return new class extends Migration
             // LICENSING IDS (Make these nullable for new students)
             $table->string('ltms_client_id')->nullable(); 
             $table->string('student_permit_or_license_no')->nullable();
-            
+            $table->boolean('is_active')->default(false);
             // JSON META DATA
             // Stores guardian info, passport details, etc.
             $table->json('meta_details')->nullable();

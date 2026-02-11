@@ -12,27 +12,20 @@ new class extends Component {
     #[Computed]
     public function statusCount()
     {
-        // 1. Get Student Stats
-        $students = StudentProfile::query()
-        ->selectRaw('SUM(case when is_active = 1 then 1 else 0 end) as active')
-        ->selectRaw('SUM(case when is_active = 0 then 1 else 0 end) as inactive')
-        ->first();
+        $pending = InstructorProfile::where('is_active', 0)->count();
 
-        // 2. Get Instructor Stats
-        $instructors = InstructorProfile::query()
-        ->selectRaw('SUM(case when is_active = 1 then 1 else 0 end) as active')
-        ->selectRaw('SUM(case when is_active = 0 then 1 else 0 end) as inactive')
-        ->first();
-
-        // 3. Sum them together
-        $totalActive = ($students->active ?? 0) + ($instructors->active ?? 0);
-        $totalInactive = ($students->inactive ?? 0) + ($instructors->inactive ?? 0);
+        $verified = InstructorProfile::where('is_active', 1)->count();
 
         return [
-            'active' => $totalActive,
-            'inactive' => $totalInactive,
-            'total' => $totalActive + $totalInactive,
+            'pending' => $pending,
+            'verified' => $verified,
         ];
+    }
+
+    #[Computed]
+    public function pendingRegistrations()
+    {
+        return InstructorProfile::with('user:id,name')->select('id', 'user_id', 'license_number', 'created_at')->where('is_active', 0)->paginate(5);
     }
 };
 ?>
@@ -69,7 +62,7 @@ new class extends Component {
                 </div>
             </div>
             <div class="flex items-baseline gap-2">
-                <span class="text-2xl font-bold">{{ $this->statusCount['inactive'] }}</span>
+                <span class="text-2xl font-bold">{{ $this->statusCount['pending'] }}</span>
                 <span class="text-xs text-slate-400">applicants</span>
             </div>
         </div>
@@ -83,7 +76,7 @@ new class extends Component {
                 </div>
             </div>
             <div class="flex items-baseline gap-2">
-                <span class="text-2xl font-bold">{{ $this->statusCount['active'] }}</span>
+                <span class="text-2xl font-bold">{{ $this->statusCount['verified'] }}</span>
                 <span class="text-xs text-emerald-600 font-medium">+3 today</span>
             </div>
         </div>
@@ -105,10 +98,8 @@ new class extends Component {
     </div>
 
     {{-- MAIN CONTENT AREA --}}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+    <div class="flex flex-col gap-5">
 
-        {{-- LEFT: APPLICANTS LIST (2/3 width) --}}
-        <div class="lg:col-span-2 space-y-4">
 
             {{-- Filter Tabs --}}
             <div class="flex gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg w-fit">
@@ -129,105 +120,141 @@ new class extends Component {
             {{-- Applicants List Container --}}
             <div
                 class="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm overflow-hidden">
-                <div class="p-5 border-b border-slate-200 dark:border-slate-800">
-                    <h3 class="font-bold text-lg">Applicants Queue</h3>
-                    <p class="text-xs text-slate-500 mt-1">Select an applicant to view full details and approve/reject.
-                    </p>
-                </div>
-
-                <div class="divide-y divide-slate-100 dark:divide-slate-800">
-
-                    {{-- 
-                        ITEM 1: MARIA SANTOS
-                        CHANGE: Added <a> tag with href and wire:navigate for SPA feel
-                    --}}
-                    <a href="/admin/registrations/1" wire:navigate
-                        class="group block p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors bg-blue-50/50 dark:bg-blue-900/10 border-l-4 border-l-blue-600">
-                        <div class="flex items-center gap-4">
-                            {{-- Avatar --}}
-                            <div
-                                class="size-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-lg flex-shrink-0 group-hover:scale-105 transition-transform">
-                                MS
-                            </div>
-
-                            {{-- User Info --}}
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-center gap-2 mb-1">
-                                    <h4
-                                        class="font-semibold text-slate-900 dark:text-slate-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                                        ddddd<h4>
-                                            <span
-                                                class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 flex-shrink-0">New</span>
-                                </div>
-                                <p class="text-sm text-slate-500 truncate"></p>
-                                <div class="flex items-center gap-3 mt-2">
-                                    <span class="text-xs text-slate-400">
-                                        <flux:icon icon="calendar" class="size-3 inline" /> 2h ago
-                                    </span>
-                                    <span class="text-xs text-amber-600 font-medium">
-                                        <flux:icon icon="document-text" class="size-3 inline" /> 4 docs
-                                    </span>
-                                </div>
-                            </div>
-
-                            {{-- Chevron / Action --}}
-                            <div class="flex flex-col items-end gap-2 flex-shrink-0">
-                                <span
-                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400">
-                                    Pending Review
-                                </span>
-                                <flux:button size="sm" variant="ghost" icon="arrow-right"
-                                    class="group-hover:translate-x-1 transition-transform">View</flux:button>
-                            </div>
-                        </div>
-                    </a>
-
-                </div>
-                {{-- Pagination --}}
-                <div class="p-5 border-t border-slate-200 dark:border-slate-800">
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-slate-500">Showing 1-5 of 12 applicants</span>
-                        <div class="flex gap-2">
-                            <flux:button size="sm" variant="ghost" icon="chevron-left" disabled>Previous
-                            </flux:button>
-                            <flux:button size="sm" variant="ghost">Next</flux:button>
-                        </div>
+                {{-- Card Header --}}
+                <div
+                    class="p-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900">
+                    <div>
+                        <flux:heading size="xl" level="2">Applicants Queue</flux:heading>
+                        <flux:text size="sm" class="mt-1">Manage new instructor registrations and verification
+                            requests.</flux:text>
                     </div>
+                    <flux:badge color="blue" variant="subtle" size="sm">
+                        {{ $this->pendingRegistrations->total() }} Total</flux:badge>
                 </div>
 
+                <div class="relative overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50/50 dark:bg-slate-800/30">
+                                <th class="px-6 py-3 border-b border-slate-100 dark:border-slate-800">
+                                    <flux:heading size="sm"
+                                        class="text-slate-400 font-semibold tracking-wider">Instructor
+                                    </flux:heading>
+                                </th>
+                                <th class="px-6 py-3 border-b border-slate-100 dark:border-slate-800">
+                                    <flux:heading size="sm"
+                                        class="text-slate-400 font-semibold tracking-wider">License Number
+                                    </flux:heading>
+                                </th>
+                                <th class="px-6 py-3 border-b border-slate-100 dark:border-slate-800">
+                                    <flux:heading size="sm"
+                                        class="text-slate-400 font-semibold tracking-wider">Registration Date
+                                    </flux:heading>
+                                </th>
+                                <th class="px-6 py-3 border-b border-slate-100 dark:border-slate-800">
+                                    <flux:heading size="sm"
+                                        class="text-slate-400 font-semibold tracking-wider">Status
+                                    </flux:heading>
+                                </th>
+                                <th class="px-6 py-3 border-b border-slate-100 dark:border-slate-800">
+                                    <flux:heading size="sm"
+                                        class="text-slate-400 font-semibold tracking-wider">Action
+                                    </flux:heading>
+                                </th>
+                                <th class="px-6 py-3 border-b border-slate-100 dark:border-slate-800"></th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                            @forelse($this->pendingRegistrations as $pending)
+                                <tr
+                                    class="group hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-all duration-200">
+                                    {{-- Instructor Info --}}
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center gap-4">
+                                            <div
+                                                class="size-10 rounded-full bg-gradient-to-tr from-blue-600 to-blue-400 flex items-center justify-center text-white shadow-sm group-hover:scale-110 transition-transform">
+                                                <span class="text-xs font-bold">{{ $pending->user?->initials() }}</span>
+                                            </div>
+                                                <flux:heading size="md"
+                                                    class="group-hover:text-blue-600 transition-colors cursor-default">
+                                                    {{ $pending->user->name }}
+                                                </flux:heading>                                     
+                                        </div>
+                                    </td>
 
+                                    {{-- License --}}
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-2">
+                                            <flux:icon name="identification" variant="mini" class="text-slate-300" />
+                                            <flux:text
+                                                class="font-mono text-sm tracking-tight text-slate-700 dark:text-slate-300">
+                                                {{ $pending->license_number }}
+                                            </flux:text>
+                                        </div>
+                                    </td>
 
+                                    {{-- Date --}}
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex flex-col">
+                                            <flux:text size="sm" class="font-medium">
+                                                {{ $pending->created_at->format('M d, Y') }}</flux:text>
+                                            <flux:text size="xs" class="text-slate-400">
+                                                {{ $pending->created_at->diffForHumans() }}</flux:text>
+                                        </div>
+                                    </td>
+
+                                    {{-- Status --}}
+                                    <td class="px-6 py-4">
+                                        <span
+                                            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-800/50">
+                                            <span class="size-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                            Pending Review
+                                        </span>
+                                    </td>
+
+                                    {{-- Action --}}
+                                    <td class="px-6 py-4 text-right">
+                                        <flux:button href="/admin/registrations/{{ $pending->id }}" wire:navigate
+                                            size="sm" variant="ghost" icon-trailing="chevron-right"
+                                            class="">
+                                            Details
+                                        </flux:button>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="px-6 py-20">
+                                        <div class="flex flex-col items-center justify-center">
+                                            <div class="relative">
+                                                <div
+                                                    class="absolute -inset-1 bg-gradient-to-r from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 rounded-full blur opacity-50">
+                                                </div>
+                                                <div
+                                                    class="relative size-16 rounded-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 flex items-center justify-center shadow-sm">
+                                                    <flux:icon name="check-circle" class="size-8 text-slate-300" />
+                                                </div>
+                                            </div>
+                                            <flux:heading size="lg" class="mt-5">Queue Cleared</flux:heading>
+                                            <flux:text class="mt-1 text-center max-w-xs">All instructor applications
+                                                have been processed. New requests will appear here.</flux:text>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+
+                {{-- Pagination Wrapper --}}
+                @if ($this->pendingRegistrations->hasPages())
+                    <div
+                        class="px-6 py-4 bg-slate-50/30 dark:bg-slate-800/20 border-t border-slate-100 dark:border-slate-800">
+                        {{ $this->pendingRegistrations->links() }}
+                    </div>
+                @endif
             </div>
-        </div>
+        
 
-        {{-- RIGHT: DASHBOARD WIDGETS (1/3 width) --}}
-        {{-- Replaced "Specific User Details" with "General Admin Tools" since we navigate away for details --}}
-        <div class="space-y-6">
-
-
-            {{-- Verification Stats --}}
-            <div
-                class="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm p-5">
-                <h4 class="font-bold text-sm text-slate-900 dark:text-slate-100 mb-4">Verification Stats</h4>
-                <div class="space-y-3">
-                    <div class="flex items-center justify-between text-sm">
-                        <span class="text-slate-500">This Week</span>
-                        <span class="font-bold">42 verified</span>
-                    </div>
-                    <div class="flex items-center justify-between text-sm">
-                        <span class="text-slate-500">Rejection Rate</span>
-                        <span class="font-bold text-red-600">8.5%</span>
-                    </div>
-                </div>
-                <div class="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-                    <div class="flex items-center justify-between text-xs text-slate-400">
-                        <span>LTO Compliance</span>
-                        <span class="text-emerald-500 font-medium">Good</span>
-                    </div>
-                </div>
-            </div>
-
-        </div>
 
     </div>
 </div>

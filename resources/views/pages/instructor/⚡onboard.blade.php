@@ -17,7 +17,7 @@ new class extends Component {
     #[Validate('required|array')]
     public $skills = [];
 
-    #[Validate('required|array')]
+    #[Validate('array')]
     public $vehicle_types = [];
 
     #[Validate('required|array')]

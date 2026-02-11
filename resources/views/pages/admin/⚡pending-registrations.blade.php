@@ -25,7 +25,10 @@ new class extends Component {
     #[Computed]
     public function pendingRegistrations()
     {
-        return InstructorProfile::with('user:id,name')->select('id', 'user_id', 'license_number', 'created_at')->where('is_active', 0)->paginate(5);
+        return InstructorProfile::with('user:id,name')
+        ->select('id', 'user_id', 'license_number', 'created_at')
+        ->where('is_active', 0)
+        ->paginate(5);
     }
 };
 ?>

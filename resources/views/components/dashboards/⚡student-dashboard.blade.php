@@ -80,7 +80,6 @@ new class extends Component {
                     <div
                         class="flex items-center justify-center size-10 rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
                         <flux:icon icon="check-circle" class="size-6" />
-                        {{-- Or use <svg> if flux not available --}}
                     </div>
                     <div>
                         <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Account Status</h3>

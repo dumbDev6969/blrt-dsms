@@ -4,8 +4,7 @@ use Livewire\Component;
 use App\Models\InstructorProfile;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-new class extends Component
-{
+new class extends Component {
     //
 };
 ?>
@@ -16,7 +15,7 @@ new class extends Component
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
             <flux:heading size="xl" class="text-2xl font-bold tracking-tight">{{ Auth::user()->name }}</flux:heading>
-            <flux:text >
+            <flux:text>
                 {{ now()->format('l, F j, Y') }} • <span class="text-emerald-600 font-medium">Active Status</span>
             </flux:text>
         </div>
@@ -28,7 +27,7 @@ new class extends Component
 
     {{-- SECTION 1: KEY METRICS (Derived from INSTRUCTOR_METRIC table) --}}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        
+
         {{-- Metric: Revenue --}}
         <div class="p-5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm">
             <div class="flex items-center justify-between mb-4">
@@ -37,9 +36,8 @@ new class extends Component
                     <flux:icon icon="currency-dollar" class="size-5" />
                 </div>
             </div>
-            <div class="">
+            <div>
                 <span class="text-2xl font-bold">10k Kilometers</span>
-
             </div>
         </div>
 
@@ -51,9 +49,8 @@ new class extends Component
                     <flux:icon icon="clock" class="size-5" />
                 </div>
             </div>
-            <div >
+            <div>
                 <span class="text-2xl font-bold">42.5 hrs</span>
-
             </div>
         </div>
 
@@ -94,74 +91,158 @@ new class extends Component
         <div class="lg:col-span-2 space-y-6">
 
             {{-- ALERT: Pending Signatures (Critical for PDC_SESSION_LOG) --}}
-            {{-- Only show if there are logs where instructor_signed = false --}}
             <flux:callout variant="danger" icon="pencil-square" class="w-full">
                 <div class="flex justify-between items-center w-full">
                     <div>
-                        <flux:callout.heading>Signatures Required</flux:callout.heading>
-                        <flux:callout.text>You have 3 PDC Session Logs pending your digital signature.</flux:callout.text>
+                        <flux:callout.heading>You haven't uploaded documents yet</flux:callout.heading>
+                        <flux:callout.text> Please upload the remaining documents to proceed with your teaching journey.
+                        </flux:callout.text>
                     </div>
-                    <flux:button size="sm" variant="ghost">Review Logs</flux:button>
+                    <flux:button size="sm" variant="ghost">Upload documents</flux:button>
                 </div>
             </flux:callout>
 
             {{-- TODAY'S AGENDA (From BOOKING_SESSION) --}}
-            <div class="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm overflow-hidden">
-                <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
-                    <h3 class="font-bold text-lg">Today's Schedule</h3>
+            <div
+                class="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm overflow-hidden">
+                <div
+                    class="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900">
+                    <h3 class="font-semibold text-zinc-900 dark:text-white">Today's Schedule</h3>
                     <flux:button size="sm" variant="ghost" icon="calendar">View Calendar</flux:button>
                 </div>
 
-                <div class="divide-y divide-slate-100 dark:divide-slate-800">
-                    {{-- Session 1: Completed --}}
-                    <div class="p-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                        <div class="flex flex-col items-center justify-center w-14 h-14 bg-slate-100 rounded-lg dark:bg-slate-800 text-slate-500">
-                            <span class="text-xs font-bold uppercase">08:00</span>
-                            <span class="text-[10px] uppercase">AM</span>
-                        </div>
-                        <div class="flex-1">
-                            <h4 class="font-semibold text-slate-900 dark:text-slate-100">Juan Dela Cruz</h4>
-                            <p class="text-sm text-slate-500">PDC - Manual Transmission (Toyota Vios)</p>
-                        </div>
-                        <div class="text-right">
-                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">
-                                Completed
-                            </span>
-                        </div>
-                    </div>
+                {{-- Table --}}
+                <div class="overflow-auto">
+                    {{-- FIXED: Removed 'whitespace-nowrap' so text wraps and table fits width --}}
+                    <table class="min-w-full text-left text-sm">
+                        <thead class="bg-zinc-50/50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
+                            <tr>
+                                <th class="px-6 py-4 font-semibold text-zinc-900 dark:text-white">Time</th>
+                                <th class="px-6 py-4 font-semibold text-zinc-900 dark:text-white">Student</th>
+                                <th class="px-6 py-4 font-semibold text-zinc-900 dark:text-white">Session Details</th>
+                                <th class="px-6 py-4 font-semibold text-zinc-900 dark:text-white">Status</th>
+                                <th class="px-6 py-4 font-semibold text-zinc-900 dark:text-white text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800">
 
-                    {{-- Session 2: Up Next --}}
-                    <div class="p-4 flex items-center gap-4 bg-blue-50/50 dark:bg-blue-900/10 border-l-4 border-l-[var(--color-accent)]">
-                        <div class="flex flex-col items-center justify-center w-14 h-14 bg-white rounded-lg dark:bg-slate-800 text-[var(--color-accent)] border border-blue-100 dark:border-blue-900">
-                            <span class="text-xs font-bold uppercase">01:00</span>
-                            <span class="text-[10px] uppercase">PM</span>
-                        </div>
-                        <div class="flex-1">
-                            <h4 class="font-semibold text-slate-900 dark:text-slate-100">Maria Clara</h4>
-                            <p class="text-sm text-slate-500">PDC - Automatic (Honda City)</p>
-                            <p class="text-xs text-[var(--color-accent)] mt-1 font-medium">Starts in 45 mins</p>
-                        </div>
-                        <div class="text-right">
-                            <flux:button size="sm" variant="primary">Start Session</flux:button>
-                        </div>
-                    </div>
+                            {{-- Row 1: Completed --}}
+                            <tr class="group hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
+                                <td class="px-6 py-4">
+                                    <span
+                                        class="font-mono text-xs text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-md border border-zinc-200 dark:border-zinc-700">
+                                        08:00 AM
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="flex items-center justify-center size-8 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 border border-zinc-200 dark:border-zinc-700 text-[10px] font-bold">
+                                            JD
+                                        </div>
+                                        <span class="font-medium text-zinc-900 dark:text-white">Juan Dela Cruz</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-zinc-600 dark:text-zinc-400">
+                                    PDC - Manual <span class="text-zinc-400">(Toyota Vios)</span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div
+                                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/50">
+                                        Completed
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <flux:dropdown>
+                                        <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal"
+                                            inset="top bottom" />
+                                        <flux:menu>
+                                            <flux:menu.item icon="document-text">View Report</flux:menu.item>
+                                        </flux:menu>
+                                    </flux:dropdown>
+                                </td>
+                            </tr>
 
-                    {{-- Session 3: Future --}}
-                    <div class="p-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                        <div class="flex flex-col items-center justify-center w-14 h-14 bg-slate-100 rounded-lg dark:bg-slate-800 text-slate-500">
-                            <span class="text-xs font-bold uppercase">03:30</span>
-                            <span class="text-[10px] uppercase">PM</span>
-                        </div>
-                        <div class="flex-1">
-                            <h4 class="font-semibold text-slate-900 dark:text-slate-100">Assessment: Jose Rizal</h4>
-                            <p class="text-sm text-slate-500">Final Practical Exam</p>
-                        </div>
-                        <div class="text-right">
-                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300">
-                                Scheduled
-                            </span>
-                        </div>
-                    </div>
+                            {{-- Row 2: Up Next (Active) --}}
+                            <tr
+                                class="bg-blue-50/30 dark:bg-blue-900/10 group hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors">
+                                <td class="px-6 py-4">
+                                    <span
+                                        class="font-mono text-xs text-blue-600 bg-blue-100/50 dark:bg-blue-900/30 px-2 py-1 rounded-md border border-blue-200 dark:border-blue-800">
+                                        01:00 PM
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="flex items-center justify-center size-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-800 text-[10px] font-bold">
+                                            MC
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="font-medium text-zinc-900 dark:text-white">Maria Clara</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex flex-col">
+                                        <span class="text-zinc-900 dark:text-zinc-100">PDC - Automatic (Honda
+                                            City)</span>
+                                        <span class="text-xs text-blue-600 dark:text-blue-400 font-medium mt-0.5">Starts
+                                            in 45 mins</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div
+                                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800/50">
+                                        <div class="size-1.5 rounded-full bg-blue-500 animate-pulse"></div>
+                                        Up Next
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <flux:button size="sm" variant="primary" icon="play">Start</flux:button>
+                                </td>
+                            </tr>
+
+                            {{-- Row 3: Future --}}
+                            <tr class="group hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
+                                <td class="px-6 py-4">
+                                    <span
+                                        class="font-mono text-xs text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-md border border-zinc-200 dark:border-zinc-700">
+                                        03:30 PM
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="flex items-center justify-center size-8 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 border border-zinc-200 dark:border-zinc-700 text-[10px] font-bold">
+                                            JR
+                                        </div>
+                                        <span class="font-medium text-zinc-900 dark:text-white">Jose Rizal</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-zinc-600 dark:text-zinc-400">
+                                    Final Practical Exam
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div
+                                        class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-zinc-100 text-zinc-600 border border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700">
+                                        Scheduled
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <flux:dropdown>
+                                        <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal"
+                                            inset="top bottom" />
+                                        <flux:menu>
+                                            <flux:menu.item icon="pencil-square">Edit Time</flux:menu.item>
+                                            <flux:menu.item icon="trash" variant="danger">Cancel</flux:menu.item>
+                                        </flux:menu>
+                                    </flux:dropdown>
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -172,7 +253,9 @@ new class extends Component
                 </div>
                 <div class="p-5 space-y-4">
                     <div class="flex gap-4 items-start">
-                        <div class="size-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold">JD</div>
+                        <div
+                            class="size-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-bold">
+                            JD</div>
                         <div>
                             <div class="flex items-center gap-2">
                                 <span class="text-sm font-semibold">Juan D.</span>
@@ -184,7 +267,8 @@ new class extends Component
                                     <flux:icon icon="star" variant="solid" class="size-3" />
                                 </div>
                             </div>
-                            <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">"Sir is very patient with my parking skills. Explained the reference points clearly."</p>
+                            <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">"Sir is very patient with my
+                                parking skills. Explained the reference points clearly."</p>
                             <span class="text-xs text-slate-400 mt-1 block">2 days ago</span>
                         </div>
                     </div>
@@ -196,9 +280,10 @@ new class extends Component
         <div class="space-y-6">
 
             {{-- PROFILE & AVAILABILITY --}}
-            <div class="p-5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm">
+            <div
+                class="p-5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm">
                 <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-4">Availability</h3>
-                
+
                 {{-- Toggle Logic linked to 'is_active' or specific schedule --}}
                 <div class="flex items-center justify-between mb-6">
                     <div class="flex flex-col">
@@ -209,7 +294,8 @@ new class extends Component
                 </div>
 
                 <h4 class="text-xs font-semibold text-slate-500 uppercase mb-3">Next Maintenance</h4>
-                <div class="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                <div
+                    class="flex items-center gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
                     <flux:icon icon="wrench" class="size-5 text-slate-400" />
                     <div>
                         <p class="text-sm font-medium">Toyota Vios (ABC-123)</p>
@@ -219,18 +305,22 @@ new class extends Component
             </div>
 
             {{-- QUICK LINKS --}}
-            <div class="p-5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm">
+            <div
+                class="p-5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm">
                 <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-4">Quick Actions</h3>
                 <div class="space-y-2">
-                    <button class="w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left text-slate-700 dark:text-slate-300">
+                    <button
+                        class="w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left text-slate-700 dark:text-slate-300">
                         <flux:icon icon="clipboard-document-list" class="size-5 text-slate-400" />
                         Submit Incident Report
                     </button>
-                    <button class="w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left text-slate-700 dark:text-slate-300">
+                    <button
+                        class="w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left text-slate-700 dark:text-slate-300">
                         <flux:icon icon="user-group" class="size-5 text-slate-400" />
                         View Student List
                     </button>
-                    <button class="w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left text-slate-700 dark:text-slate-300">
+                    <button
+                        class="w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left text-slate-700 dark:text-slate-300">
                         <flux:icon icon="document-text" class="size-5 text-slate-400" />
                         Update License Info
                     </button>
@@ -244,7 +334,9 @@ new class extends Component
                     <div>
                         <h4 class="font-bold text-blue-900 dark:text-blue-100 text-sm">License Status</h4>
                         <p class="text-xs text-blue-700 dark:text-blue-300 mt-1">Valid until Oct 2027</p>
-                        <p class="text-xs text-blue-600 dark:text-blue-400 mt-2 font-medium cursor-pointer hover:underline">View Digital ID</p>
+                        <p
+                            class="text-xs text-blue-600 dark:text-blue-400 mt-2 font-medium cursor-pointer hover:underline">
+                            View Digital ID</p>
                     </div>
                 </div>
             </div>

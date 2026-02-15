@@ -1,3 +1,4 @@
+@props(['isComplete' => false])
 
 {{-- Be present above all else. - Naval Ravikant --}}
 <div class="mb-6">
@@ -27,7 +28,8 @@
 
                 <div class="mt-6 flex items-center justify-between">
                     <span class="text-lg font-bold text-slate-900 dark:text-slate-100">{{ $course->price }}</span>
-                    <flux:button variant="primary" size="sm" icon="arrow-right">Enroll</flux:button>
+                    <flux:button variant="primary" size="sm" icon="arrow-right" :disabled="!$isComplete">Enroll
+                    </flux:button>
                 </div>
             </div>
         </div>

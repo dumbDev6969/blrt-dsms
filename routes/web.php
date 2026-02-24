@@ -22,6 +22,10 @@ Route::middleware(['auth'])->group(function () {
         // Student documents
         Route::livewire('student/upload-document', 'pages::student.upload-document')
             ->name('document.upload');
+
+        // Enrollment form
+        Route::livewire('student/enrollment', 'pages::student.enrollment-form')
+            ->name('enrollment.create');
     });
 
     // Admin routes

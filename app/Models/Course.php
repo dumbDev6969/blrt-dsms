@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use App\Models\EnrollmentForm;
+
 class Course extends Model
 {
     /** @use HasFactory<\Database\Factories\CourseFactory> */
@@ -29,12 +31,12 @@ class Course extends Model
     protected $casts = [
         // 'decimal:2' ensures price is returned as a string with 2 decimal places, 
         // preventing floating-point errors common with money.
-        'price' => 'decimal:2', 
+        'price' => 'decimal:2',
         // 'integer' ensures strict type safety for the duration.
         'duration_hours' => 'integer',
-        'prerequisites' => 'array', 
+        'prerequisites' => 'array',
         'is_active' => 'boolean',
-        
+
     ];
 
     /**
@@ -63,4 +65,8 @@ class Course extends Model
         return $code;
     }
 
+    public function enrollmentForms()
+    {
+        return $this->hasMany(EnrollmentForm::class, 'course_id');
+    }
 }

@@ -26,6 +26,13 @@
                             {{ __('Manage courses') }}
                         </flux:sidebar.item>
                     @endcan
+
+                    {{-- Student navigation --}}
+                    @can('student.view_own')
+                        <flux:sidebar.item icon="document" :href="route('enrollment.create')" :current="request()->routeIs('enrollment.create')" wire:navigate>
+                            {{ __('Enrollment form') }}
+                        </flux:sidebar.item>
+                    @endcan
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 

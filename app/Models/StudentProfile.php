@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
+use App\Models\EnrollmentForm;
 
 class StudentProfile extends Model
 {
@@ -40,5 +41,10 @@ class StudentProfile extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function enrollmentForms()
+    {
+        return $this->hasMany(EnrollmentForm::class, 'student_id');
     }
 }

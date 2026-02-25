@@ -24,7 +24,7 @@ Route::middleware(['auth'])->group(function () {
             ->name('document.upload');
 
         // Enrollment form
-        Route::livewire('student/enrollment', 'pages::student.enrollment-form')
+        Route::livewire('student/enrollment/{course}', 'pages::student.enrollment-form')
             ->name('enrollment.create');
     });
 

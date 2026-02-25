@@ -7,18 +7,19 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use App\Models\EnrollmentForm;
 use App\Models\StudentProfile;
+use App\Models\Course;
 new class extends Component {
-    #[Validate('required')]
-    public $package_type = '';
-
     #[Validate('required')]
     public $course_id = '';
 
+    public $course_type = '';
+    public $is_refresher = false;
+
     // PDC Specifics
-    #[Validate('required_if:package_type,PDC')]
+    #[Validate('required_if:course_type,PDC')]
     public $vehicle_category = '';
 
-    #[Validate('required_if:package_type,PDC')]
+    #[Validate('required_if:course_type,PDC')]
     public $transmission = '';
 
     // Personal Info (JSON: {emergency_contact:{}})
@@ -34,18 +35,39 @@ new class extends Component {
 
     public $control_number = '';
 
-    public function mount()
+    public function mount(Course $course)
     {
-        // Generate a random control number for demonstration if not provided
-        $this->control_number = 'BLRT-' . Str::upper(Str::random(8));
+        // Get the course id
+        $this->course_id = $course->id;
+
+        // Set the course type based on course type
+        if ($course->type === 'practical') {
+            $this->course_type = 'PDC';
+        } elseif ($course->type === 'theoretical') {
+            $this->course_type = 'TDC';
+        } else {
+            $this->course_type = str_contains(strtolower($course->title), 'refresher') ? 'Refresher' : 'TDC';
+        }
+
+        if (str_contains(strtolower($course->title), 'refresher')) {
+            $this->is_refresher = true;
+            if ($course->type === 'practical') {
+                $this->course_type = 'PDC';
+            }
+        }
+
+        // Generate control number
+        do {
+            $this->control_number = 'BLRT-' . Str::upper(Str::random(8));
+        } while (EnrollmentForm::where('control_number', $this->control_number)->exists());
     }
 
     #[Computed]
     public function progress()
     {
-        $fields = [$this->package_type, $this->emergency_contact_name, $this->emergency_contact_number];
+        $fields = [$this->course_type, $this->emergency_contact_name, $this->emergency_contact_number];
 
-        if ($this->package_type === 'PDC') {
+        if ($this->course_type === 'PDC') {
             $fields[] = $this->vehicle_category;
             $fields[] = $this->transmission;
         }
@@ -58,14 +80,17 @@ new class extends Component {
     {
         $this->validate();
 
+        // Get the student id
+        $student_id = StudentProfile::where('user_id', Auth::user()->id)->first()->id;
+
         // Save to db
         EnrollmentForm::create([
-            'student_id' => StudentProfile::where('user_id', Auth::user()->id)->first()->id,
+            'student_id' => $student_id,
             'course_id' => $this->course_id,
             'control_number' => $this->control_number,
-            'package_type' => $this->package_type,
-            'vehicle_category' => $this->package_type === 'PDC' ? $this->vehicle_category : null,
-            'transmission' => $this->package_type === 'PDC' ? $this->transmission : null,
+            'package_type' => $this->is_refresher ? 'Refresher' : $this->course_type,
+            'vehicle_category' => $this->course_type === 'PDC' ? $this->vehicle_category : null,
+            'transmission' => $this->course_type === 'PDC' ? $this->transmission : null,
             'personal_info' => [
                 'emergency_contact' => [
                     'name' => $this->emergency_contact_name,
@@ -120,44 +145,31 @@ new class extends Component {
         <div
             class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-slate-950/50 border border-slate-200/50 dark:border-slate-800/50 p-8 lg:p-10">
             <form wire:submit.prevent="save" class="space-y-12">
-
-                {{-- Section 1: Package & Course Selection --}}
-                <flux:fieldset>
+                {{-- Section 1: Course Options --}}
+                <flux:fieldset class="animate-in fade-in slide-in-from-top-2">
                     <div class="flex items-center gap-4 mb-8">
                         <div
-                            class="flex items-center justify-center w-10 h-10 rounded-xl bg-[var(--color-accent)] shadow-lg shadow-sky-200 dark:shadow-sky-950/50">
-                            <flux:icon icon="gift" class="text-white size-5" />
+                            class="flex items-center justify-center w-10 h-10 rounded-xl bg-sky-500 shadow-lg shadow-sky-200 dark:shadow-sky-950/50">
+                            <flux:icon icon="arrow-path" class="text-white size-5" />
                         </div>
                         <div>
                             <flux:legend class="!text-lg font-bold text-slate-900 dark:text-slate-100">
-                                Program Selection
+                                Course Options
                             </flux:legend>
-                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Choose your training package and
-                                specific course</p>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Configure additional options for
+                                your course</p>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                        <flux:radio.group wire:model.live="package_type" label="Training Package" variant="segmented"
-                            class="sm:col-span-2">
-                            <flux:radio value="TDC" label="TDC" description="Theoretical Driving Course" />
-                            <flux:radio value="PDC" label="PDC" description="Practical Driving Course" />
-                            <flux:radio value="Refresher" label="Refresher" description="Course Refresher" />
-                        </flux:radio.group>
-
-                        <flux:select wire:model="course_id" label="Select Course"
-                            placeholder="Select available course..." class="sm:col-span-2">
-                            @foreach (\App\Models\Course::where('is_active', true)->get() as $course)
-                                <flux:select.option value="{{ $course->id }}" wire:key="course-{{ $course->id }}">{{ $course->title }}
-                                    ({{ $course->code }})
-                                </flux:select.option>
-                            @endforeach
-                        </flux:select>
+                    <div
+                        class="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-xl border border-slate-200 dark:border-slate-700/50">
+                        <flux:switch wire:model.live="is_refresher" label="Refresher Course"
+                            description="Check this if you are actively taking this course as a refresher." />
                     </div>
                 </flux:fieldset>
 
                 {{-- Section 2: PDC Customization (Dynamic) --}}
-                @if ($package_type === 'PDC')
+                @if ($course_type === 'PDC')
                     <flux:fieldset class="animate-in fade-in slide-in-from-top-2">
                         <div class="flex items-center gap-4 mb-8">
                             <div

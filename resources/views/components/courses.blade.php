@@ -28,10 +28,14 @@
 
                 <div class="mt-6 flex items-center justify-between">
                     <span class="text-lg font-bold text-slate-900 dark:text-slate-100">{{ $course->price }}</span>
-                    <flux:button variant="primary" size="sm" icon="arrow-right" :disabled="!$isComplete">Enroll
+                    <flux:button variant="primary" size="sm" icon="arrow-right" :disabled="!$isComplete">
+                        <a href="{{ route('enrollment.create', $course->id) }}">Enroll</a>
                     </flux:button>
                 </div>
             </div>
         </div>
     @endforeach
 </div>
+
+
+

@@ -1,9 +1,14 @@
 <?php
 
 use Livewire\Component;
-
+use App\Models\Document;
+use Livewire\Attributes\Computed;
 new class extends Component {
-    //
+    #[Computed]
+    public function pendingDocsCount()
+    {
+        return Document::where('status', 'pending')->get()->count();
+    }
 };
 ?>
 
@@ -32,25 +37,30 @@ new class extends Component {
                     <flux:callout.heading>5 Enrollment Forms Pending Review</flux:callout.heading>
                     <flux:callout.text>Students are waiting for approval to start their courses.</flux:callout.text>
                 </div>
-                <flux:button size="sm" variant="primary" href="">Review Now</flux:button>
+                <flux:button size="sm" variant="primary">Review Now</flux:button>
             </div>
         </flux:callout>
 
         {{-- Document Verification Alert --}}
-        <flux:callout icon="document-text" variant="info" class="w-full">
-            <div class="flex justify-between items-center w-full">
-                <div>
-                    <flux:callout.heading>12 Documents Awaiting Verification</flux:callout.heading>
-                    <flux:callout.text>Medical certificates, IDs, and other compliance documents need review.</flux:callout.text>
+        @if ($this->pendingDocsCount > 0)
+            <flux:callout icon="document-text" variant="info" class="w-full">
+                <div class="flex justify-between items-center w-full">
+                    <div>
+                        <flux:callout.heading>{{ $this->pendingDocsCount }} Documents Awaiting Verification
+                        </flux:callout.heading>
+                        <flux:callout.text>Medical certificates, IDs, and other compliance documents need review.
+                        </flux:callout.text>
+                    </div>
+                    <flux:button size="sm" variant="ghost" href="{{ route('admin.pending-documents') }}">View Queue
+                    </flux:button>
                 </div>
-                <flux:button size="sm" variant="ghost" href="">View Queue</flux:button>
-            </div>
-        </flux:callout>
+            </flux:callout>
+        @endif
     </div>
 
     {{-- SECTION 1: KEY PERFORMANCE INDICATORS --}}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        
+
         {{-- KPI: Total Revenue (This Month) --}}
         <div class="p-5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm">
             <div class="flex items-center justify-between mb-4">
@@ -100,7 +110,7 @@ new class extends Component {
             <div class="flex gap-2 mt-2 text-xs">
                 <span class="text-slate-500">Forms: 5</span>
                 <span class="text-slate-300">|</span>
-                <span class="text-slate-500">Docs: 12</span>
+                <span class="text-slate-500">Docs: {{ $this->pendingDocsCount }}</span>
             </div>
         </div>
 
@@ -131,7 +141,8 @@ new class extends Component {
         <div class="lg:col-span-2 space-y-6">
 
             {{-- ENROLLMENT FORMS QUEUE (EnrollmentForm table - status: submitted) --}}
-            <div class="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm overflow-hidden">
+            <div
+                class="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm overflow-hidden">
                 <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
                     <div>
                         <h3 class="font-bold text-lg">Enrollment Forms - Pending Review</h3>
@@ -142,19 +153,23 @@ new class extends Component {
 
                 <div class="divide-y divide-slate-100 dark:divide-slate-800">
                     {{-- Form 1 --}}
-                    <div class="p-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                        <div class="flex flex-col items-center justify-center w-16 h-16 bg-blue-50 rounded-lg dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900">
+                    <div
+                        class="p-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <div
+                            class="flex flex-col items-center justify-center w-16 h-16 bg-blue-50 rounded-lg dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900">
                             <span class="text-xs font-bold text-blue-600">TDC</span>
                             <span class="text-[10px] text-slate-500 uppercase">PDC</span>
                         </div>
                         <div class="flex-1">
                             <div class="flex items-center gap-2">
                                 <h4 class="font-semibold text-slate-900 dark:text-slate-100">Maria Santos</h4>
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                <span
+                                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
                                     Package: TDC
                                 </span>
                             </div>
-                            <p class="text-sm text-slate-500">Control No: <span class="font-mono">TDC-2026-0234</span></p>
+                            <p class="text-sm text-slate-500">Control No: <span class="font-mono">TDC-2026-0234</span>
+                            </p>
                             <p class="text-xs text-slate-400 mt-1">Submitted: 2 hours ago • Student Permit Holder</p>
                         </div>
                         <div class="text-right space-x-2">
@@ -164,19 +179,23 @@ new class extends Component {
                     </div>
 
                     {{-- Form 2 --}}
-                    <div class="p-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                        <div class="flex flex-col items-center justify-center w-16 h-16 bg-purple-50 rounded-lg dark:bg-purple-900/20 border border-purple-100 dark:border-purple-900">
+                    <div
+                        class="p-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <div
+                            class="flex flex-col items-center justify-center w-16 h-16 bg-purple-50 rounded-lg dark:bg-purple-900/20 border border-purple-100 dark:border-purple-900">
                             <span class="text-xs font-bold text-purple-600">PDC</span>
                             <span class="text-[10px] text-slate-500 uppercase">4W/MT</span>
                         </div>
                         <div class="flex-1">
                             <div class="flex items-center gap-2">
                                 <h4 class="font-semibold text-slate-900 dark:text-slate-100">Juan Dela Cruz</h4>
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
+                                <span
+                                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
                                     4-Wheel Manual
                                 </span>
                             </div>
-                            <p class="text-sm text-slate-500">Control No: <span class="font-mono">PDC-2026-0451</span></p>
+                            <p class="text-sm text-slate-500">Control No: <span class="font-mono">PDC-2026-0451</span>
+                            </p>
                             <p class="text-xs text-slate-400 mt-1">Submitted: 5 hours ago • Has TDC Certificate</p>
                         </div>
                         <div class="text-right space-x-2">
@@ -186,19 +205,23 @@ new class extends Component {
                     </div>
 
                     {{-- Form 3 --}}
-                    <div class="p-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                        <div class="flex flex-col items-center justify-center w-16 h-16 bg-amber-50 rounded-lg dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900">
+                    <div
+                        class="p-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                        <div
+                            class="flex flex-col items-center justify-center w-16 h-16 bg-amber-50 rounded-lg dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900">
                             <span class="text-xs font-bold text-amber-600">REF</span>
                             <span class="text-[10px] text-slate-500 uppercase">2W</span>
                         </div>
                         <div class="flex-1">
                             <div class="flex items-center gap-2">
                                 <h4 class="font-semibold text-slate-900 dark:text-slate-100">Ana Reyes</h4>
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                                <span
+                                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
                                     Refresher Course
                                 </span>
                             </div>
-                            <p class="text-sm text-slate-500">Control No: <span class="font-mono">REF-2026-0089</span></p>
+                            <p class="text-sm text-slate-500">Control No: <span class="font-mono">REF-2026-0089</span>
+                            </p>
                             <p class="text-xs text-slate-400 mt-1">Submitted: 1 day ago • Motorcycle (2-Wheel)</p>
                         </div>
                         <div class="text-right space-x-2">
@@ -210,20 +233,24 @@ new class extends Component {
             </div>
 
             {{-- TODAY'S SESSIONS OVERVIEW (BookingSession table) --}}
-            <div class="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm overflow-hidden">
+            <div
+                class="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm overflow-hidden">
                 <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
                     <div>
                         <h3 class="font-bold text-lg">Today's Sessions</h3>
                         <p class="text-xs text-slate-500 mt-1">Real-time session monitoring</p>
                     </div>
                     <div class="flex gap-2">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                        <span
+                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
                             18 Completed
                         </span>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <span
+                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                             5 In Progress
                         </span>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
+                        <span
+                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
                             12 Scheduled
                         </span>
                     </div>
@@ -233,9 +260,11 @@ new class extends Component {
                     {{-- Active Session Snapshot --}}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {{-- Session 1: In Progress --}}
-                        <div class="p-4 rounded-lg border-2 border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-900/10">
+                        <div
+                            class="p-4 rounded-lg border-2 border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-900/10">
                             <div class="flex items-center justify-between mb-3">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-600 text-white">
+                                <span
+                                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-600 text-white">
                                     IN PROGRESS
                                 </span>
                                 <span class="text-xs text-slate-500">Started 1:00 PM</span>
@@ -249,9 +278,11 @@ new class extends Component {
                         </div>
 
                         {{-- Session 2: In Progress --}}
-                        <div class="p-4 rounded-lg border-2 border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-900/10">
+                        <div
+                            class="p-4 rounded-lg border-2 border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-900/10">
                             <div class="flex items-center justify-between mb-3">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-600 text-white">
+                                <span
+                                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-600 text-white">
                                     IN PROGRESS
                                 </span>
                                 <span class="text-xs text-slate-500">Started 2:30 PM</span>
@@ -266,13 +297,15 @@ new class extends Component {
                     </div>
 
                     <div class="mt-4">
-                        <flux:button size="sm" variant="ghost" icon="arrow-right" class="w-full">View Full Schedule</flux:button>
+                        <flux:button size="sm" variant="ghost" icon="arrow-right" class="w-full">View Full
+                            Schedule</flux:button>
                     </div>
                 </div>
             </div>
 
             {{-- INSTRUCTOR PERFORMANCE SNAPSHOT (InstructorMetric table) --}}
-            <div class="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm overflow-hidden">
+            <div
+                class="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm overflow-hidden">
                 <div class="p-5 border-b border-slate-200 dark:border-slate-800">
                     <h3 class="font-bold text-lg">Instructor Performance (This Month)</h3>
                     <p class="text-xs text-slate-500 mt-1">Based on sessions, ratings, and pass rates</p>
@@ -280,8 +313,10 @@ new class extends Component {
                 <div class="p-5">
                     <div class="space-y-3">
                         {{-- Top Instructor --}}
-                        <div class="flex items-center gap-4 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900">
-                            <div class="size-10 rounded-full bg-emerald-200 dark:bg-emerald-800 flex items-center justify-center text-sm font-bold text-emerald-700 dark:text-emerald-300">
+                        <div
+                            class="flex items-center gap-4 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900">
+                            <div
+                                class="size-10 rounded-full bg-emerald-200 dark:bg-emerald-800 flex items-center justify-center text-sm font-bold text-emerald-700 dark:text-emerald-300">
                                 AC
                             </div>
                             <div class="flex-1">
@@ -298,8 +333,10 @@ new class extends Component {
                         </div>
 
                         {{-- Instructor 2 --}}
-                        <div class="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                            <div class="size-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-bold">
+                        <div
+                            class="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                            <div
+                                class="size-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-bold">
                                 BT
                             </div>
                             <div class="flex-1">
@@ -316,8 +353,10 @@ new class extends Component {
                         </div>
 
                         {{-- Instructor 3 --}}
-                        <div class="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                            <div class="size-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-bold">
+                        <div
+                            class="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                            <div
+                                class="size-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-bold">
                                 JR
                             </div>
                             <div class="flex-1">
@@ -342,17 +381,20 @@ new class extends Component {
         <div class="space-y-6">
 
             {{-- DOCUMENT VERIFICATION QUEUE --}}
-            <div class="p-5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm">
+            <div
+                class="p-5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="font-bold text-slate-900 dark:text-slate-100">Document Queue</h3>
-                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                        12 Pending
+                    <span
+                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                        {{ $this->pendingDocsCount }} Pending
                     </span>
                 </div>
 
                 <div class="space-y-3">
                     {{-- Doc 1: Medical Certificate --}}
-                    <div class="flex items-start gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                    <div
+                        class="flex items-start gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
                         <div class="p-2 bg-white dark:bg-slate-900 rounded">
                             <flux:icon icon="document-text" class="size-4 text-blue-600" />
                         </div>
@@ -365,7 +407,8 @@ new class extends Component {
                     </div>
 
                     {{-- Doc 2: Valid ID --}}
-                    <div class="flex items-start gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                    <div
+                        class="flex items-start gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
                         <div class="p-2 bg-white dark:bg-slate-900 rounded">
                             <flux:icon icon="identification" class="size-4 text-purple-600" />
                         </div>
@@ -378,7 +421,8 @@ new class extends Component {
                     </div>
 
                     {{-- Doc 3: TDC Certificate --}}
-                    <div class="flex items-start gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                    <div
+                        class="flex items-start gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
                         <div class="p-2 bg-white dark:bg-slate-900 rounded">
                             <flux:icon icon="academic-cap" class="size-4 text-emerald-600" />
                         </div>
@@ -414,15 +458,17 @@ new class extends Component {
                                 <p class="text-amber-700 dark:text-amber-300">Due: Feb 28, 2026 (25 days)</p>
                             </div>
                         </div>
-                        <flux:button size="sm" variant="ghost" class="mt-3 w-full">Schedule Maintenance</flux:button>
+                        <flux:button size="sm" variant="ghost" class="mt-3 w-full">Schedule Maintenance
+                        </flux:button>
                     </div>
                 </div>
             </div>
 
             {{-- SYSTEM STATISTICS --}}
-            <div class="p-5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm">
+            <div
+                class="p-5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm">
                 <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-4">System Stats</h3>
-                
+
                 <div class="space-y-3">
                     <div class="flex justify-between items-center">
                         <span class="text-sm text-slate-600 dark:text-slate-400">Total Students</span>
@@ -446,22 +492,27 @@ new class extends Component {
                 </div>
             </div>
             {{-- QUICK ACTIONS --}}
-            <div class="p-5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm">
+            <div
+                class="p-5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm">
                 <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-4">Quick Actions</h3>
                 <div class="space-y-2">
-                    <button class="w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left text-slate-700 dark:text-slate-300">
+                    <button
+                        class="w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left text-slate-700 dark:text-slate-300">
                         <flux:icon icon="user-plus" class="size-5 text-slate-400" />
                         Add New Instructor
                     </button>
-                    <button class="w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left text-slate-700 dark:text-slate-300">
+                    <button
+                        class="w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left text-slate-700 dark:text-slate-300">
                         <flux:icon icon="truck" class="size-5 text-slate-400" />
                         Register Vehicle
                     </button>
-                    <button class="w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left text-slate-700 dark:text-slate-300">
+                    <button
+                        class="w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left text-slate-700 dark:text-slate-300">
                         <flux:icon icon="document-duplicate" class="size-5 text-slate-400" />
                         Generate Reports
                     </button>
-                    <button class="w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left text-slate-700 dark:text-slate-300">
+                    <button
+                        class="w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left text-slate-700 dark:text-slate-300">
                         <flux:icon icon="chart-bar" class="size-5 text-slate-400" />
                         View Analytics
                     </button>

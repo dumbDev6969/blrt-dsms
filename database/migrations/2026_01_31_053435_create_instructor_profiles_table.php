@@ -20,6 +20,7 @@ return new class extends Migration
             $table->json('vehicle_types');
             $table->json('weekly_schedule');
             $table->boolean('is_active')->default(true);
+            $table->string('status')->default('pending'); 
             $table->timestamps();
         });
     }

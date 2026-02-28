@@ -19,6 +19,7 @@ class InstructorProfile extends Model
         'vehicle_types',
         'weekly_schedule',
         'is_active',
+        'status',
     ];
 
     protected $casts = [

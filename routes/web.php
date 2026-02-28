@@ -35,6 +35,9 @@ Route::middleware(['auth'])->group(function () {
 
         Route::livewire('manage-courses', 'pages::admin.manage-course')
             ->name('admin.manage-courses');
+
+        Route::livewire('pending-documents', 'pages::admin.pending-documents')
+            ->name('admin.pending-documents');
     });
 });
 

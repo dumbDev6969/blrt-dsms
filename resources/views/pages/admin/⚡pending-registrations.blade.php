@@ -39,21 +39,21 @@ new class extends Component {
     public function verify(InstructorProfile $instructor)
     {
         $instructor->update(['status' => 'verified', 'is_active' => 1]);
-        $this->dispatch('alert', type: 'success', message: 'Instructor verified successfully.');
+        session()->flash('status', 'Instructor verified successfully.');
     }
 
     // Unverify / Back to Pending
     public function unverify(InstructorProfile $instructor)
     {
         $instructor->update(['status' => 'pending', 'is_active' => 0]);
-        $this->dispatch('alert', type: 'success', message: 'Instructor moved back to pending.');
+        session()->flash('status', 'Instructor moved back to pending.');
     }
 
     // Reject Instructor
     public function reject(InstructorProfile $instructor)
     {
         $instructor->update(['status' => 'rejected', 'is_active' => 0]);
-        $this->dispatch('alert', type: 'success', message: 'Instructor application rejected.');
+        session()->flash('status', 'Instructor application rejected.');
     }
 };
 ?>
@@ -61,6 +61,17 @@ new class extends Component {
 
 {{-- The biggest battle is the war against ignorance. - Mustafa Kemal Atatürk --}}
 <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl font-sans text-slate-900 dark:text-slate-100">
+
+    {{-- Callout Alert --}}
+    @if (session('status'))
+        <flux:callout icon="check-circle" variant="success" class="shadow-sm fixed top-5 w-5xl z-10" x-data="{ visible: true }"
+            x-show="visible">
+            <flux:callout.heading>{{ session('status') }}</flux:callout.heading>
+            <x-slot name="controls">
+                <flux:button icon="x-mark" variant="ghost" x-on:click="visible = false" />
+            </x-slot>
+        </flux:callout>
+    @endif
 
     {{-- HEADER --}}
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -324,8 +335,5 @@ new class extends Component {
                 </div>
             @endif
         </div>
-
-
-
     </div>
 </div>

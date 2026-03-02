@@ -25,6 +25,10 @@
                         <flux:sidebar.item icon="academic-cap" :href="route('admin.manage-courses')" :current="request()->routeIs('admin.manage-courses')" wire:navigate>
                             {{ __('Manage courses') }}
                         </flux:sidebar.item>
+
+                        <flux:sidebar.item icon="truck" :href="route('admin.manage-vehicle')" :current="request()->routeIs('admin.manage-vehicle')" wire:navigate>
+                            {{ __('Manage vehicles') }}
+                        </flux:sidebar.item>
                     @endcan
                 </flux:sidebar.group>
             </flux:sidebar.nav>

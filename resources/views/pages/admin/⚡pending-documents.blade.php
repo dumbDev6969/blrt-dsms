@@ -12,7 +12,7 @@ new class extends Component {
 
     public $document;
     public $status = 'pending';
-    
+
     public $search = '';
 
     #[Computed]
@@ -50,7 +50,7 @@ new class extends Component {
             'status' => 'rejected',
         ]);
 
-        $this->dispatch('alert', type: 'success', message: 'Document rejected successfully.');
+        session()->flash('status', 'Document rejected successfully.');
     }
 
     // Accept Document
@@ -60,7 +60,7 @@ new class extends Component {
             'status' => 'verified',
         ]);
 
-        $this->dispatch('alert', type: 'success', message: 'Document accepted successfully.');
+        session()->flash('status', 'Document accepted successfully.');
     }
 
     // Back to Pending
@@ -70,13 +70,23 @@ new class extends Component {
             'status' => 'pending',
         ]);
 
-        $this->dispatch('alert', type: 'success', message: 'Document back to pending successfully.');
+        session()->flash('status', 'Document back to pending successfully.');
     }
 };
 ?>
 
 {{-- The biggest battle is the war against ignorance. - Mustafa Kemal Atatürk --}}
 <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl font-sans text-slate-900 dark:text-slate-100">
+
+    {{-- Callout Alert --}}
+    @if (session('status'))
+        <flux:callout icon="check-circle" variant="success" class="shadow-sm" x-data="{ visible: true }" x-show="visible">
+            <flux:callout.heading>{{ session('status') }}</flux:callout.heading>
+            <x-slot name="controls">
+                <flux:button icon="x-mark" variant="ghost" x-on:click="visible = false" />
+            </x-slot>
+        </flux:callout>
+    @endif
 
     {{-- HEADER --}}
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -166,7 +176,8 @@ new class extends Component {
                 </button>
             </div>
             <div class="pr-1">
-                <flux:input placeholder="Search by name" icon="magnifying-glass" class="w-64" wire:model.live.debounce.500ms="search"/>
+                <flux:input placeholder="Search by name" icon="magnifying-glass" class="w-64"
+                    wire:model.live.debounce.500ms="search" />
             </div>
         </div>
 
@@ -236,7 +247,8 @@ new class extends Component {
                                 {{-- Document Count --}}
                                 <td class="px-6 py-4">
                                     <flux:badge :color="$user->documents->count() < 3 ? 'red' : 'zinc'">
-                                        {{ $user->documents->count() }} {{ str('Document')->plural($user->documents->count()) }}
+                                        {{ $user->documents->count() }}
+                                        {{ str('Document')->plural($user->documents->count()) }}
                                     </flux:badge>
                                 </td>
                                 {{-- Date --}}
@@ -309,7 +321,8 @@ new class extends Component {
                         @empty
                             {{-- Empty State --}}
                             <tr>
-                                <td colspan="5" class="py-12 text-center animate-in fade-in zoom-in-95 duration-300">
+                                <td colspan="5"
+                                    class="py-12 text-center animate-in fade-in zoom-in-95 duration-300">
                                     <div class="flex flex-col items-center justify-center max-w-sm mx-auto">
                                         <div
                                             class="flex items-center justify-center size-10 rounded-full bg-zinc-100/50 dark:bg-zinc-800/50 border border-zinc-200/50 dark:border-zinc-700/50 mb-3 shadow-sm">

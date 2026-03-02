@@ -30,14 +30,21 @@ Route::middleware(['auth'])->group(function () {
 
     // Admin routes
     Route::middleware(['can:user.view'])->group(function () {
+        //Registration management
         Route::livewire('pending-registrations', 'pages::admin.pending-registrations')
             ->name('admin.pending-registrations');
 
+        // Course management
         Route::livewire('manage-courses', 'pages::admin.manage-course')
             ->name('admin.manage-courses');
 
+        // Document management
         Route::livewire('pending-documents', 'pages::admin.pending-documents')
             ->name('admin.pending-documents');
+
+        // Vehicle management
+        Route::livewire('manage-vehicle', 'pages::admin.manage-vehicle')
+            ->name('admin.manage-vehicle');
     });
 });
 

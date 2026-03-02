@@ -5,6 +5,7 @@ use App\Models\Course;
 use Livewire\Attributes\Validate;
 use Livewire\Attributes\Computed;
 new class extends Component {
+    public $search = '';
     public Course $course;
     #[Validate('required|string|min:3|max:100')]
     public $title = '';
@@ -47,7 +48,20 @@ new class extends Component {
     #[Computed]
     public function courses()
     {
-        return Course::query()->select('id', 'title', 'code', 'description', 'price', 'duration_hours')->orderBy('title')->get();
+        return Course::query()
+            ->select('id', 'title', 'code', 'description', 'price', 'duration_hours')
+            ->when($this->search, function ($query) {
+                $query->where('title', 'like', '%' . $this->search . '%')->orWhere('code', 'like', '%' . $this->search . '%');
+            })
+            ->orderBy('title')
+            ->get();
+    }
+
+    // Get all courses for prerequisites (unfiltered)
+    #[Computed]
+    public function allCourses()
+    {
+        return Course::query()->select('id', 'title', 'code')->orderBy('title')->get();
     }
 
     public function delete(Course $course)
@@ -116,25 +130,33 @@ new class extends Component {
 
                         <flux:separator variant="subtle" />
 
-                        {{-- Bottom Row: Metrics --}}
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <flux:input type="number" step="0.01" label="Price (PHP)" wire:model.blur="price"
                                 placeholder="0.00" icon="currency-dollar" />
 
                             <flux:input type="number" label="Duration (Hours)" wire:model.blur="duration_hours"
                                 placeholder="15" icon="clock" />
+                        </div>
 
-                            <flux:select label="Prerequisites" wire:model.blur="prerequisites" multiple
-                                placeholder="Select courses...">
+                        <flux:separator variant="subtle" />
 
-                                @foreach ($this->courses as $course)
-                                    <flux:select.option value="{{ $course->id }}">
-                                        {{ $course->title }}
-                                        <span class="text-zinc-400 text-xs">({{ $course->code }})</span>
-                                    </flux:select.option>
-                                @endforeach
+                        {{-- Prerequisites Section --}}
+                        <div class="space-y-4">
+                            <div>
+                                <flux:heading size="sm">Course Prerequisites</flux:heading>
+                                <flux:subheading>Determine the mandatory modules required before enrolling in this
+                                    course.</flux:subheading>
+                            </div>
 
-                            </flux:select>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                @forelse ($this->allCourses as $course)
+                                    <flux:checkbox wire:model="prerequisites" value="{{ $course->id }}"
+                                        label="{{ $course->title }}" description="{{ $course->code }}" />
+                                @empty
+                                    <flux:text color="zinc" size="sm">No existing courses found to set as
+                                        prerequisites.</flux:text>
+                                @endforelse
+                            </div>
                         </div>
 
                         {{-- Footer Actions --}}
@@ -162,7 +184,8 @@ new class extends Component {
                     </div>
                 </div>
                 <div class="w-full sm:w-72">
-                    <flux:input icon="magnifying-glass" placeholder="Search courses..." variant="filled" />
+                    <flux:input icon="magnifying-glass" placeholder="Search courses..." variant="filled"
+                        wire:model.live.debounce.500ms="search" />
                 </div>
             </div>
 

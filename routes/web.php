@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 Route::middleware(['guest'])->group(function () {
     Route::view('/', 'welcome')->name('home');
@@ -45,6 +46,15 @@ Route::middleware(['auth'])->group(function () {
         // Vehicle management
         Route::livewire('manage-vehicle', 'pages::admin.manage-vehicle')
             ->name('admin.manage-vehicle');
+
+        // Serve private documents 
+        Route::get('document/serve/{document}', function (App\Models\Document $document) {
+            return Storage::disk('local')->response($document->file_path);
+        })->name('admin.document.serve');
+
+        // Document checking
+        Route::livewire('document/{document}', 'pages::admin.document')
+            ->name('admin.document.check');
     });
 });
 

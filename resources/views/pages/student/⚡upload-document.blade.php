@@ -5,6 +5,9 @@ use Livewire\Attributes\Validate;
 use Livewire\WithFileUploads;
 use App\Models\Document;
 new class extends Component {
+
+    // TODO: Remove the document in the select tag if the user already uploaded it
+
     use WithFileUploads;
     #[Validate('required')]
     public $type = '';

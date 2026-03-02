@@ -294,7 +294,7 @@ new class extends Component {
                                         <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal"
                                             inset="top bottom" />
                                         <flux:menu>
-                                            <flux:menu.item icon="eye">
+                                            <flux:menu.item icon="eye" :href="route('admin.document.check', $user->documents->first()->id)">
                                                 Review User
                                             </flux:menu.item>
                                             @if ($status === 'verified' || $status === 'rejected')

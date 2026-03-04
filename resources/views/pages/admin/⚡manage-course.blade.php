@@ -4,8 +4,15 @@ use Livewire\Component;
 use App\Models\Course;
 use Livewire\Attributes\Validate;
 use Livewire\Attributes\Computed;
+use Livewire\WithPagination;
+
 new class extends Component {
+    use WithPagination;
     public $search = '';
+    public function updatingSearch()
+    {
+        $this->resetPage();
+    }
     public Course $course;
     #[Validate('required|string|min:3|max:100')]
     public $title = '';
@@ -54,7 +61,7 @@ new class extends Component {
                 $query->where('title', 'like', '%' . $this->search . '%')->orWhere('code', 'like', '%' . $this->search . '%');
             })
             ->orderBy('title')
-            ->get();
+            ->paginate(2);
     }
 
     // Get all courses for prerequisites (unfiltered)
@@ -71,6 +78,54 @@ new class extends Component {
         if ($delete) {
             session()->flash('status', 'Course deleted successfully');
         }
+    }
+
+    // Edit Properties
+    public ?Course $editingCourse = null;
+    public $edit_title = '';
+    public $edit_description = '';
+    public $edit_price = '';
+    public $edit_duration_hours = '';
+    public $edit_type = '';
+    public $edit_prerequisites = [];
+
+    public function edit(Course $course)
+    {
+        $this->editingCourse = $course;
+        $this->edit_title = $course->title;
+        $this->edit_description = $course->description;
+        $this->edit_price = $course->price;
+        $this->edit_duration_hours = $course->duration_hours;
+        $this->edit_type = $course->type;
+        $this->edit_prerequisites = $course->prerequisites ?? [];
+
+        $this->resetValidation();
+    }
+
+    public function update()
+    {
+        $this->validate([
+            'edit_title' => 'required|string|min:3|max:100',
+            'edit_description' => 'nullable|string|max:1000',
+            'edit_price' => 'required|numeric|min:0',
+            'edit_duration_hours' => 'required|integer|min:1',
+            'edit_type' => 'required|string',
+            'edit_prerequisites' => 'array',
+        ]);
+
+        $this->editingCourse->update([
+            'title' => $this->edit_title,
+            'description' => $this->edit_description,
+            'price' => $this->edit_price,
+            'duration_hours' => $this->edit_duration_hours,
+            'type' => $this->edit_type,
+            'prerequisites' => $this->edit_prerequisites,
+        ]);
+
+        session()->flash('status', 'Course updated successfully.');
+        $this->reset(['edit_title', 'edit_description', 'edit_price', 'edit_duration_hours', 'edit_type', 'edit_prerequisites', 'editingCourse']);
+
+        \Flux::modal('edit-course')->close();
     }
 };
 ?>
@@ -153,7 +208,7 @@ new class extends Component {
                                     <flux:checkbox wire:model="prerequisites" value="{{ $course->id }}"
                                         label="{{ $course->title }}" description="{{ $course->code }}" />
                                 @empty
-                                    <flux:text color="zinc" size="sm">No existing courses found to set as
+                                    <flux:text color="blue" size="sm">No existing courses found to set as
                                         prerequisites.</flux:text>
                                 @endforelse
                             </div>
@@ -208,7 +263,8 @@ new class extends Component {
                         <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800" wire:transition>
 
                             @forelse ($this->courses as $course)
-                                <tr class="group hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
+                                <tr wire:key="course-{{ $course->id }}"
+                                    class="group hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
                                     <td class="px-6 py-4">
                                         <span
                                             class="font-mono text-xs text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-md border border-zinc-200 dark:border-zinc-700">
@@ -240,7 +296,11 @@ new class extends Component {
                                             <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal"
                                                 inset="top bottom" />
                                             <flux:menu>
-                                                <flux:menu.item icon="pencil-square">Edit Details</flux:menu.item>
+                                                <flux:modal.trigger name="edit-course">
+                                                    <flux:menu.item icon="pencil-square"
+                                                        wire:click="edit({{ $course->id }})">Edit Details
+                                                    </flux:menu.item>
+                                                </flux:modal.trigger>
                                                 <flux:menu.separator />
                                                 <flux:menu.item icon="trash" variant="danger"
                                                     wire:click="delete({{ $course->id }})">Delete</flux:menu.item>
@@ -272,28 +332,92 @@ new class extends Component {
                                     </td>
                                 </tr>
                             @endforelse
-
-
-
-
-
                         </tbody>
                     </table>
                 </div>
 
                 {{-- Table Footer / Pagination --}}
-                <div
-                    class="flex items-center justify-between px-6 py-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900">
-                    <div class="text-xs text-zinc-500">
-                        Showing 1-2 of 12 courses
+                @if ($this->courses->hasPages())
+                    <div
+                        class="flex items-center justify-between px-6 py-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900">
+                        <div class="text-xs text-zinc-500">
+                            Showing {{ $this->courses->firstItem() }} to {{ $this->courses->lastItem() }} of
+                            {{ $this->courses->total() }} results
+                        </div>
+                        <div class="flex gap-2">
+                            <flux:button size="sm" icon="chevron-left" variant="subtle"
+                                wire:click="previousPage" :disabled="$this->courses->onFirstPage()" />
+                            <flux:button size="sm" icon="chevron-right" variant="subtle" wire:click="nextPage"
+                                :disabled="!$this->courses->hasMorePages()" />
+                        </div>
                     </div>
-                    <div class="flex gap-2">
-                        <flux:button size="sm" icon="chevron-left" variant="subtle" disabled />
-                        <flux:button size="sm" icon="chevron-right" variant="subtle" />
-                    </div>
-                </div>
+                @endif
             </div>
         </div>
 
     </div>
+
+    {{-- Edit Course Modal --}}
+    <flux:modal name="edit-course" class="md:w-2xl">
+        <form wire:submit.prevent="update">
+            <div class="space-y-6">
+                <div>
+                    <flux:heading size="lg">Update Course</flux:heading>
+                    <flux:text class="mt-2">Make changes to the course details.</flux:text>
+                </div>
+
+                {{-- Title & Type --}}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-2">
+                        <flux:input wire:model="edit_title" label="Course Title"
+                            placeholder="e.g. Theoretical Driving Course" icon="academic-cap" required />
+                    </div>
+                    <div>
+                        <flux:select wire:model="edit_type" label="Type" placeholder="Select..." icon="tag">
+                            <flux:select.option value="theoretical">Theoretical</flux:select.option>
+                            <flux:select.option value="practical">Practical</flux:select.option>
+                        </flux:select>
+                    </div>
+                </div>
+
+                {{-- Description --}}
+                <flux:textarea wire:model="edit_description" label="Description"
+                    placeholder="Briefly describe what the student will learn..." rows="3" />
+
+                <flux:separator variant="subtle" />
+
+                {{-- Price & Duration --}}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <flux:input type="number" step="0.01" wire:model="edit_price" label="Price (PHP)"
+                        placeholder="0.00" icon="currency-dollar" />
+                    <flux:input type="number" wire:model="edit_duration_hours" label="Duration (Hours)"
+                        placeholder="15" icon="clock" />
+                </div>
+
+                <flux:separator variant="subtle" />
+
+                {{-- Prerequisites --}}
+                <div class="space-y-3">
+                    <flux:heading size="sm">Course Prerequisites</flux:heading>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        @forelse ($this->allCourses as $c)
+                            @if ($editingCourse?->id !== $c->id)
+                                <flux:checkbox wire:model="edit_prerequisites" value="{{ $c->id }}"
+                                    label="{{ $c->title }}" description="{{ $c->code }}" />
+                            @endif
+                        @empty
+                            <flux:text size="sm">No other courses available.</flux:text>
+                        @endforelse
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4">
+                    <flux:modal.close>
+                        <flux:button variant="ghost">Cancel</flux:button>
+                    </flux:modal.close>
+                    <flux:button type="submit" variant="primary">Save changes</flux:button>
+                </div>
+            </div>
+        </form>
+    </flux:modal>
 </div>

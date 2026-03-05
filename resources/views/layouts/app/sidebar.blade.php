@@ -29,6 +29,10 @@
                         <flux:sidebar.item icon="truck" :href="route('admin.manage-vehicle')" :current="request()->routeIs('admin.manage-vehicle')" wire:navigate>
                             {{ __('Manage vehicles') }}
                         </flux:sidebar.item>
+
+                        <flux:sidebar.item icon="user-group" :href="route('admin.manage-users')" :current="request()->routeIs('admin.manage-users')" wire:navigate>
+                            {{ __('Manage users') }}
+                        </flux:sidebar.item>
                     @endcan
                 </flux:sidebar.group>
             </flux:sidebar.nav>

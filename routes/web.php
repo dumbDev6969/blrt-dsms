@@ -55,6 +55,10 @@ Route::middleware(['auth'])->group(function () {
         // Document checking
         Route::livewire('document/{document}', 'pages::admin.document')
             ->name('admin.document.check');
+
+        // User management
+        Route::livewire('manage-users', 'pages::admin.manage-users')
+            ->name('admin.manage-users');
     });
 });
 

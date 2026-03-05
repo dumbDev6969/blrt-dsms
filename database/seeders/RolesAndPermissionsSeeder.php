@@ -1,4 +1,5 @@
 <?php
+
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
@@ -16,19 +17,32 @@ class RolesAndPermissionsSeeder extends Seeder
         // 2. Define Permissions Grouped by Domain
         $permissions = [
             // User Management
-            'user.view', 'user.create', 'user.update', 'user.delete',
-            
+            'user.view',
+            'user.create',
+            'user.update',
+            'user.delete',
+
             // Student Profiles
-            'student.view_any', 'student.view_own', 'student.update_own',
-            
+            'student.view_any',
+            'student.view_own',
+            'student.update_own',
+
             // Instructor Management
-            'instructor.view_any', 'instructor.view_own', 'instructor.manage_performance',
+            'instructor.view_any',
+            'instructor.view_own',
+            'instructor.manage_performance',
 
             // Assets (Vehicles)
-            'vehicle.view', 'vehicle.create', 'vehicle.update', 'vehicle.maintenance',
+            'vehicle.view',
+            'vehicle.create',
+            'vehicle.update',
+            'vehicle.maintenance',
 
             // Academic (Courses)
-            'course.view', 'course.create', 'course.update', 'course.publish',
+            'course.view',
+            'course.create',
+            'course.update',
+            'course.publish',
 
             // Enrollment & Forms
             'enrollment.submit',     // For students submitting forms
@@ -98,16 +112,46 @@ class RolesAndPermissionsSeeder extends Seeder
         // Ideally, simply give all permissions or use a Super Admin gate.
         // Here we assign specific administrative rights:
         $adminRole->givePermissionTo([
-            'user.view', 'user.create', 'user.update', 'user.delete',
+            'user.view',
+            'user.create',
+            'user.update',
+            'user.delete',
             'student.view_any',
-            'instructor.view_any', 'instructor.manage_performance',
-            'vehicle.view', 'vehicle.create', 'vehicle.update', 'vehicle.maintenance',
-            'course.view', 'course.create', 'course.update', 'course.publish',
-            'enrollment.review', 'enrollment.view_any',
-            'booking.create', 'booking.view_any', 'booking.cancel',
+            'instructor.view_any',
+            'instructor.manage_performance',
+            'vehicle.view',
+            'vehicle.create',
+            'vehicle.update',
+            'vehicle.maintenance',
+            'course.view',
+            'course.create',
+            'course.update',
+            'course.publish',
+            'enrollment.review',
+            'enrollment.view_any',
+            'booking.create',
+            'booking.view_any',
+            'booking.cancel',
             'assessment.finalize',
             'document.verify',
-            'report.view_financial', 'report.view_performance',
+            'report.view_financial',
+            'report.view_performance',
+        ]);
+
+        // --- ROLE: STAFF ---
+        $staffRole = Role::firstOrCreate(['name' => 'Staff']);
+        $staffRole->givePermissionTo([
+            'student.view_any',
+            'instructor.view_any',
+            'vehicle.view',
+            'course.view',
+            'enrollment.review',
+            'enrollment.view_any',
+            'booking.create',
+            'booking.view_any',
+            'booking.cancel',
+            'document.verify',
+            'report.view_performance',
         ]);
 
         $this->createDemoUsers();
@@ -119,7 +163,7 @@ class RolesAndPermissionsSeeder extends Seeder
         $admin = \App\Models\User::factory()->create([
             'name' => 'System Admin',
             'email' => 'admin@blrt.com',
-            'password' => 'password', 
+            'password' => 'password',
         ]);
         $admin->assignRole('Admin');
 
@@ -138,5 +182,13 @@ class RolesAndPermissionsSeeder extends Seeder
             'password' => 'password',
         ]);
         $student->assignRole('Student');
+
+        // Staff
+        $staff = \App\Models\User::factory()->create([
+            'name' => 'Operations Staff',
+            'email' => 'staff@blrt.com',
+            'password' => 'password',
+        ]);
+        $staff->assignRole('Staff');
     }
 }

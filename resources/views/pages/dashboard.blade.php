@@ -19,5 +19,9 @@
     @role('Admin')
         <livewire:dashboards.admin-dashboard />
     @endrole
+
+    @role('Staff')
+        <livewire:dashboards.staff-dashboard />
+    @endrole
 </x-layouts::app>
                     

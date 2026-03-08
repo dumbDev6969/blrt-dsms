@@ -34,21 +34,18 @@
                             {{ __('Manage users') }}
                         </flux:sidebar.item>
                     @endcan
+
+                    {{-- Staff navigation --}}
+                    @can('student.view_any')
+                        <flux:sidebar.item icon="user-group" :href="route('staff.manage-enrollments')" :current="request()->routeIs('staff.manage-enrollments')" wire:navigate>
+                            {{ __('Manage enrollments') }}
+                        </flux:sidebar.item>
+                    @endcan
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 
             <flux:spacer />
 
-            <flux:sidebar.nav>
-                <flux:sidebar.item icon="folder-git-2" href="https://github.com/laravel/livewire-starter-kit" target="_blank">
-                    {{ __('Repository') }}
-                </flux:sidebar.item>
-
-                <flux:sidebar.item icon="book-open-text" href="https://laravel.com/docs/starter-kits#livewire" target="_blank">
-                    {{ __('Documentation') }}
-                </flux:sidebar.item>
-            </flux:sidebar.nav>
-            
                 <x-desktop-user-menu class="hidden lg:block" :name="auth()->user()->name" />
             
             

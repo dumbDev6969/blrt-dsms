@@ -2,8 +2,13 @@
 
 {{-- Be present above all else. - Naval Ravikant --}}
 <div class="mb-6">
-    <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100">Available Courses</h2>
-    <p class="text-sm text-slate-500">Select a program to start your driving journey.</p>
+    <flux:heading size="lg">Available Courses</flux:heading>
+    <flux:text>Select a program to start your driving journey.</flux:text>
+
+    @if (!$isComplete)
+        <flux:text color="red" class="mt-2 font-semibold italic">Submit your documents before you can enroll.
+        </flux:text>
+    @endif
 </div>
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     @foreach ($this->courses as $course)
@@ -36,6 +41,3 @@
         </div>
     @endforeach
 </div>
-
-
-

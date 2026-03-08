@@ -73,7 +73,7 @@ new class extends Component {
     {{-- Header / Breadcrumbs --}}
     <div class="flex items-center justify-between">
         <div class="flex items-center gap-3">
-            <flux:button icon="chevron-left" variant="ghost" size="sm" :href="route('admin.pending-documents')" />
+            <flux:button icon="chevron-left" variant="ghost" size="sm" :href="url()->previous()" />
             <div>
                 <flux:heading size="xl" class="font-bold">Review Document</flux:heading>
                 <flux:text>Reviewing submissions from <span

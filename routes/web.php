@@ -60,6 +60,26 @@ Route::middleware(['auth'])->group(function () {
         Route::livewire('manage-users', 'pages::admin.manage-users')
             ->name('admin.manage-users');
     });
+
+    Route::middleware(['can:enrollment.view_any'])->group(function (){
+    Route::get('document/serve/{document}', function (App\Models\Document $document) {
+                return Storage::disk('local')->response($document->file_path);
+            })->name('admin.document.serve');
+
+        // Document checking
+        Route::livewire('document/{document}', 'pages::admin.document')
+            ->name('admin.document.check');
+    });
+    
+    // Staff routes
+    Route::middleware(['can:student.view_any'])->group(function () {
+        // Enrollment management
+        Route::livewire('manage-enrollments', 'pages::staff.enrollments')
+            ->name('staff.manage-enrollments');
+
+        Route::livewire('enrollment/{enrollment}', 'pages::staff.enrollment')
+            ->name('staff.enrollment.show');
+    });
 });
 
 require __DIR__ . '/settings.php';

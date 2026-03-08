@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use App\Models\EnrollmentForm;
-
+use App\Models\BookingSession;
+use App\Models\Enrollment;
 class StudentProfile extends Model
 {
     /** @use HasFactory<\Database\Factories\StudentProfileFactory> */
@@ -46,5 +47,10 @@ class StudentProfile extends Model
     public function enrollmentForms()
     {
         return $this->hasMany(EnrollmentForm::class, 'student_id');
+    }
+
+    public function enrollments()
+    {
+        return $this->hasMany(Enrollment::class, 'student_id');
     }
 }

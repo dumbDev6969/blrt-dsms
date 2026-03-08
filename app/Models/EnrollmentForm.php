@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use App\Models\StudentProfile;
 use App\Models\Course;
-
+use App\Models\Enrollment;
 class EnrollmentForm extends Model
 {
     /** @use HasFactory<\Database\Factories\EnrollmentFormFactory> */
@@ -57,5 +57,10 @@ class EnrollmentForm extends Model
     public function reviewer()
     {
         return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    public function enrollment()
+    {
+        return $this->hasOne(Enrollment::class);
     }
 }

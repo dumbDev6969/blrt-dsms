@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use App\Models\EnrollmentForm;
+use App\Models\Enrollment;
 
 class Course extends Model
 {
@@ -68,5 +69,10 @@ class Course extends Model
     public function enrollmentForms()
     {
         return $this->hasMany(EnrollmentForm::class, 'course_id');
+    }
+
+    public function enrollments()
+    {
+        return $this->hasMany(Enrollment::class);
     }
 }

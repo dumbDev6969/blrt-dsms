@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\BookingSession;
 
 class Vehicle extends Model
 {
@@ -24,4 +25,9 @@ class Vehicle extends Model
         'maintenance_history' => 'array',
         'next_maintenance_date' => 'date',
     ];
+
+    public function bookingSessions()
+    {
+        return $this->hasMany(BookingSession::class);
+    }
 }

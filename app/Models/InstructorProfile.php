@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
+use App\Models\Enrollment;
+use App\Models\BookingSession;
 
 class InstructorProfile extends Model
 {
@@ -32,5 +34,15 @@ class InstructorProfile extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function enrollments()
+    {
+        return $this->hasMany(Enrollment::class, 'instructor_id');
+    }
+
+    public function bookingSessions()
+    {
+        return $this->hasMany(BookingSession::class, 'instructor_id');
     }
 }

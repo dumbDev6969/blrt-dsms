@@ -35,6 +35,9 @@ Route::middleware(['auth'])->group(function () {
         Route::livewire('pending-registrations', 'pages::admin.pending-registrations')
             ->name('admin.pending-registrations');
 
+        Route::livewire('admin/registrations/{instructor}', 'pages::admin.registration-data')
+            ->name('admin.registration-data');
+
         // Course management
         Route::livewire('manage-courses', 'pages::admin.manage-course')
             ->name('admin.manage-courses');
@@ -61,16 +64,16 @@ Route::middleware(['auth'])->group(function () {
             ->name('admin.manage-users');
     });
 
-    Route::middleware(['can:enrollment.view_any'])->group(function (){
-    Route::get('document/serve/{document}', function (App\Models\Document $document) {
-                return Storage::disk('local')->response($document->file_path);
-            })->name('admin.document.serve');
+    Route::middleware(['can:enrollment.view_any'])->group(function () {
+        Route::get('document/serve/{document}', function (App\Models\Document $document) {
+            return Storage::disk('local')->response($document->file_path);
+        })->name('admin.document.serve');
 
         // Document checking
         Route::livewire('document/{document}', 'pages::admin.document')
             ->name('admin.document.check');
     });
-    
+
     // Staff routes
     Route::middleware(['can:student.view_any'])->group(function () {
         // Enrollment management

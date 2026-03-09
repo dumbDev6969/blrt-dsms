@@ -76,7 +76,8 @@ new class extends Component {
     {{-- HEADER --}}
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-            <flux:heading size="xl" class="text-2xl font-bold tracking-tight">Pending Registrations</flux:heading>
+            <flux:heading size="xl" class="text-2xl font-bold tracking-tight">Pending Instructor Registrations
+            </flux:heading>
             <flux:text>
                 {{ now()->format('l, F j, Y') }} • Review and manage instructor applications
             </flux:text>
@@ -86,9 +87,6 @@ new class extends Component {
     {{-- STATS OVERVIEW --}}
     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         {{-- Pending --}}
-
-
-
         <div class="p-5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm">
             <div class="flex items-center justify-between mb-4">
                 <span class="text-sm font-medium text-slate-500 dark:text-slate-400">Pending</span>
@@ -278,7 +276,7 @@ new class extends Component {
                                             inset="top bottom" />
                                         <flux:menu>
                                             <flux:menu.item icon="eye"
-                                                href="/admin/registrations/{{ $pending->id }}" wire:navigate>
+                                                href="{{ route('admin.registration-data', $pending) }}" wire:navigate>
                                                 View Details
                                             </flux:menu.item>
                                             <flux:menu.separator />

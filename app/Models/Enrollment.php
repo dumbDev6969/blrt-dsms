@@ -16,6 +16,7 @@ class Enrollment extends Model
     use HasFactory;
 
     protected $fillable = [
+        'enrollment_form_id',
         'code',
         'student_id',
         'course_id',

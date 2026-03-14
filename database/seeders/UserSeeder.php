@@ -14,16 +14,24 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call(RolesAndPermissionsSeeder::class);
+
         // 1. Create 10 Users who have a Student Profile
         User::factory()
             ->count(10)
             ->has(StudentProfile::factory()) 
-            ->create();
+            ->create()
+            ->each(function ($user) {
+                $user->assignRole('Student');
+            });
 
         // 2. Create 10 Users who have an Instructor Profile
         User::factory()
             ->count(10)
             ->has(InstructorProfile::factory())
-            ->create();
+            ->create()
+            ->each(function ($user) {
+                $user->assignRole('Instructor');
+            });
     }
 }

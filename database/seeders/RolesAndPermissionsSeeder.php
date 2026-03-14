@@ -160,35 +160,43 @@ class RolesAndPermissionsSeeder extends Seeder
     private function createDemoUsers(): void
     {
         // Admin
-        $admin = \App\Models\User::factory()->create([
-            'name' => 'System Admin',
-            'email' => 'admin@blrt.com',
-            'password' => 'password',
-        ]);
+        $admin = \App\Models\User::firstOrCreate(
+            ['email' => 'admin@blrt.com'],
+            [
+                'name' => 'System Admin',
+                'password' => 'password', // Will be hashed via User model casts if properly set, or might need Hash::make
+            ]
+        );
         $admin->assignRole('Admin');
 
         // Instructor
-        $instructor = \App\Models\User::factory()->create([
-            'name' => 'John Instructor',
-            'email' => 'instructor@blrt.com',
-            'password' => 'password',
-        ]);
+        $instructor = \App\Models\User::firstOrCreate(
+            ['email' => 'instructor@blrt.com'],
+            [
+                'name' => 'John Instructor',
+                'password' => 'password',
+            ]
+        );
         $instructor->assignRole('Instructor');
 
         // Student
-        $student = \App\Models\User::factory()->create([
-            'name' => 'Jane Student',
-            'email' => 'student@blrt.com',
-            'password' => 'password',
-        ]);
+        $student = \App\Models\User::firstOrCreate(
+            ['email' => 'student@blrt.com'],
+            [
+                'name' => 'Jane Student',
+                'password' => 'password',
+            ]
+        );
         $student->assignRole('Student');
 
         // Staff
-        $staff = \App\Models\User::factory()->create([
-            'name' => 'Operations Staff',
-            'email' => 'staff@blrt.com',
-            'password' => 'password',
-        ]);
+        $staff = \App\Models\User::firstOrCreate(
+            ['email' => 'staff@blrt.com'],
+            [
+                'name' => 'Operations Staff',
+                'password' => 'password',
+            ]
+        );
         $staff->assignRole('Staff');
     }
 }

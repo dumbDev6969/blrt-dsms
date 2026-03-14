@@ -3,6 +3,7 @@
 use Livewire\Component;
 use App\Models\EnrollmentForm;
 use App\Models\Document;
+use App\Services\EnrollmentService;
 new class extends Component {
     public EnrollmentForm $enrollment;
 
@@ -14,8 +15,21 @@ new class extends Component {
 
     public function approveEnrollment()
     {
-        $this->enrollment->update(['status' => 'approved']);
-        session()->flash('status', 'Enrollment #' . $this->enrollment->control_number . ' has been approved.');
+        try {
+            $service = app(EnrollmentService::class);
+            $result = $service->approve($this->enrollment);
+
+            if ($result['instructor_assigned']) {
+                $instructorName = $result['enrollment']->instructorProfile?->user?->name ?? 'an instructor';
+                session()->flash('status', 'Enrollment #' . $this->enrollment->control_number . ' has been approved and assigned to ' . $instructorName . '.');
+            } else {
+                session()->flash('status', 'Enrollment #' . $this->enrollment->control_number . ' has been approved, but no matching instructor was found. Please assign one manually.');
+            }
+        } catch (\Exception $e) {
+            session()->flash('error', 'Failed to approve enrollment: ' . $e->getMessage());
+            return;
+        }
+
         $this->redirect(route('staff.manage-enrollments'), navigate: true);
     }
 

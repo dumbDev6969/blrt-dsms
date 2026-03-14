@@ -169,7 +169,7 @@ new class extends Component {
     {{-- Bottom Section: COURSE CATALOG --}}
     <div
         class="relative h-full flex-1 overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-8 shadow-sm">
-        <x-courses :is-complete="$this->isComplete" />
+        <x-courses :is-complete="true" />
 
         <div class="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800">
             <div class="mb-6">

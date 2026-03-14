@@ -4,6 +4,7 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\Computed;
 use App\Models\EnrollmentForm;
+use App\Services\EnrollmentService;
 
 new class extends Component {
     use WithPagination;
@@ -54,8 +55,19 @@ new class extends Component {
 
     public function approveEnrollment(EnrollmentForm $enrollment)
     {
-        $enrollment->update(['status' => 'approved']);
-        session()->flash('status', 'Enrollment #' . $enrollment->control_number . ' has been approved.');
+        try {
+            $service = app(EnrollmentService::class);
+            $result = $service->approve($enrollment);
+
+            if ($result['instructor_assigned']) {
+                $instructorName = $result['enrollment']->instructorProfile?->user?->name ?? 'an instructor';
+                session()->flash('status', 'Enrollment #' . $enrollment->control_number . ' has been approved and assigned to ' . $instructorName . '.');
+            } else {
+                session()->flash('status', 'Enrollment #' . $enrollment->control_number . ' has been approved, but no matching instructor was found.');
+            }
+        } catch (\Exception $e) {
+            session()->flash('error', 'Failed to approve enrollment: ' . $e->getMessage());
+        }
     }
 
     public function revertToPending(EnrollmentForm $enrollment)

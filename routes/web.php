@@ -82,6 +82,12 @@ Route::middleware(['auth'])->group(function () {
 
         Route::livewire('enrollment/{enrollment}', 'pages::staff.enrollment')
             ->name('staff.enrollment.show');
+
+        Route::livewire('approved-enrollments', 'pages::staff.approved-enrollments')
+            ->name('staff.approved-enrollments');
+
+        Route::livewire('approved-enrollment/{enrollment}', 'pages::staff.approved-enrollment')
+            ->name('staff.approved-enrollment.show');
     });
 });
 

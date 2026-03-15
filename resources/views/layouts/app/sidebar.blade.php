@@ -37,8 +37,12 @@
 
                     {{-- Staff navigation --}}
                     @can('student.view_any')
-                        <flux:sidebar.item icon="user-group" :href="route('staff.manage-enrollments')" :current="request()->routeIs('staff.manage-enrollments')" wire:navigate>
+                        <flux:sidebar.item icon="academic-cap" :href="route('staff.manage-enrollments')" :current="request()->routeIs('staff.manage-enrollments')" wire:navigate>
                             {{ __('Manage enrollments') }}
+                        </flux:sidebar.item>
+
+                        <flux:sidebar.item icon="academic-cap" :href="route('staff.approved-enrollments')" :current="request()->routeIs('staff.approved-enrollments')" wire:navigate>
+                            {{ __('Approved enrollments') }}
                         </flux:sidebar.item>
                     @endcan
                 </flux:sidebar.group>

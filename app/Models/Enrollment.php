@@ -56,7 +56,7 @@ class Enrollment extends Model
 
     public function studentProfile()
     {
-        return $this->belongsTo(StudentProfile::class);
+        return $this->belongsTo(StudentProfile::class, 'student_id');
     }
 
     public function bookingSessions()
@@ -71,7 +71,7 @@ class Enrollment extends Model
 
     public function instructorProfile()
     {
-        return $this->belongsTo(InstructorProfile::class);
+        return $this->belongsTo(InstructorProfile::class, 'instructor_id');
     }
 
     public function course()

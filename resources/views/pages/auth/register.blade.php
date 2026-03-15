@@ -53,7 +53,7 @@
             />
 
             {{-- Role --}}
-            <flux:radio.group name="role" variant="segmented">
+            <flux:radio.group name="role" variant="segmented" :label="__('Choose a role')">
                 <flux:radio label="Instructor" value="Instructor"  icon="book-open"/>
                 <flux:radio label="Student"  value="Student" icon="user"/>
             </flux:radio.group>

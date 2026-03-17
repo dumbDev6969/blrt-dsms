@@ -52,7 +52,14 @@ new class extends Component {
             return $this->addError('start_date', 'The instructor is not available on this date.');
         }
 
-        $this->enrollment->update(['start_date' => $validated['start_date']]);
+        $hoursPerDay = 8;
+        $totalHours = $this->enrollment->course->duration_hours;
+        $daysRequired = ceil($totalHours / $hoursPerDay);
+
+        $this->enrollment->update([
+            'start_date' => $validated['start_date'],
+            'target_completion_date' => $validated['start_date']->copy()->addDays($daysRequired),
+        ]);
 
         session()->flash('status', 'Start date updated!');
         \Flux::modal('start-date-' . $this->enrollment->id)->close();
@@ -85,32 +92,34 @@ new class extends Component {
             </div>
             <div class="flex flex-col gap-3">
                 <div class="flex items-center gap-3">
-                <flux:heading size="xl" class="text-2xl font-bold tracking-tight">Code:
-                    {{ $this->enrollment->code }}</flux:heading>
-                @php
-                    $statusConfig = [
-                        'pending' => ['color' => 'amber', 'label' => 'Pending'],
-                        'active' => ['color' => 'emerald', 'label' => 'Active'],
-                        'completed' => ['color' => 'blue', 'label' => 'Completed'],
-                        'dropped' => ['color' => 'red', 'label' => 'Dropped'],
-                    ];
-                    $config = $statusConfig[$this->enrollment->status] ?? [
-                        'color' => 'zinc',
-                        'label' => $this->enrollment->status,
-                    ];
-                @endphp
-                <flux:badge :color="$config['color']" size="sm" class="capitalize">
-                    {{ $config['label'] }}
-                </flux:badge>
-            </div>
-            <flux:separator />
-            <flux:text variant="strong" color="blue">Start Date: {{ $this->enrollment->start_date->format('M d, Y') ?? 'Not Set' }}</flux:text>
+                    <flux:heading size="xl" class="text-2xl font-bold tracking-tight">Code:
+                        {{ $this->enrollment->code }}</flux:heading>
+                    @php
+                        $statusConfig = [
+                            'pending' => ['color' => 'amber', 'label' => 'Pending'],
+                            'active' => ['color' => 'emerald', 'label' => 'Active'],
+                            'completed' => ['color' => 'blue', 'label' => 'Completed'],
+                            'dropped' => ['color' => 'red', 'label' => 'Dropped'],
+                        ];
+                        $config = $statusConfig[$this->enrollment->status] ?? [
+                            'color' => 'zinc',
+                            'label' => $this->enrollment->status,
+                        ];
+                    @endphp
+                    <flux:badge :color="$config['color']" size="sm" class="capitalize">
+                        {{ $config['label'] }}
+                    </flux:badge>
+                </div>
+                <flux:separator />
+                <flux:text variant="strong" color="blue">Start Date:
+                    {{ $this->enrollment->start_date->format('M d, Y') ?? 'Not Set' }}</flux:text>
             </div>
         </div>
         <flux:modal.trigger name="start-date-{{ $this->enrollment->id }}">
             <flux:button size="sm" variant="primary" icon="calendar">Start Date</flux:button>
         </flux:modal.trigger>
     </div>
+
 
     {{-- payment modal --}}
     <flux:modal name="start-date-{{ $this->enrollment->id }}" class="md:w-96">

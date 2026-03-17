@@ -89,6 +89,18 @@ Route::middleware(['auth'])->group(function () {
         Route::livewire('approved-enrollment/{enrollment}', 'pages::staff.approved-enrollment')
             ->name('staff.approved-enrollment.show');
     });
+
+    // Instructor routes
+    Route::middleware(['can:instructor.view_own'])->group(function () {
+        Route::livewire('my-schedule', 'pages::instructor.my-schedule')
+            ->name('instructor.my-schedule');
+
+        Route::livewire('my-students', 'pages::instructor.my-students')
+            ->name('instructor.my-students');
+
+        Route::livewire('my-students/{enrollment}', 'pages::instructor.view-student')
+            ->name('instructor.student.show');
+    });
 });
 
 require __DIR__ . '/settings.php';

@@ -36,13 +36,24 @@
                     @endcan
 
                     {{-- Staff navigation --}}
-                    @can('student.view_any')
+                    @can('enrollment.review')
                         <flux:sidebar.item icon="academic-cap" :href="route('staff.manage-enrollments')" :current="request()->routeIs('staff.manage-enrollments')" wire:navigate>
                             {{ __('Manage enrollments') }}
                         </flux:sidebar.item>
 
                         <flux:sidebar.item icon="academic-cap" :href="route('staff.approved-enrollments')" :current="request()->routeIs('staff.approved-enrollments')" wire:navigate>
                             {{ __('Approved enrollments') }}
+                        </flux:sidebar.item>
+                    @endcan
+
+                    {{-- Instructor navigation --}}
+                    @can('instructor.view_own')
+                        <flux:sidebar.item icon="calendar" :href="route('instructor.my-schedule')" :current="request()->routeIs('instructor.my-schedule')" wire:navigate>
+                            {{ __('My schedule') }}
+                        </flux:sidebar.item>
+
+                        <flux:sidebar.item icon="academic-cap" :href="route('instructor.my-students')" :current="request()->routeIs('instructor.my-students')" wire:navigate>
+                            {{ __('My students') }}
                         </flux:sidebar.item>
                     @endcan
                 </flux:sidebar.group>

@@ -19,6 +19,8 @@ new class extends Component {
             $service = app(EnrollmentService::class);
             $result = $service->approve($this->enrollment);
 
+            $this->enrollment->refresh();
+    
             if ($result['instructor_assigned']) {
                 $instructorName = $result['enrollment']->instructorProfile?->user?->name ?? 'an instructor';
                 session()->flash('status', 'Enrollment #' . $this->enrollment->control_number . ' has been approved and assigned to ' . $instructorName . '.');

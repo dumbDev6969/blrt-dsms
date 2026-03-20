@@ -27,6 +27,9 @@ Route::middleware(['auth'])->group(function () {
         // Enrollment form
         Route::livewire('student/enrollment/{course}', 'pages::student.enrollment-form')
             ->name('enrollment.create');
+
+        Route::livewire('student/my-schedule', 'pages::student.my-schedule')
+            ->name('student.my-schedule');
     });
 
     // Admin routes

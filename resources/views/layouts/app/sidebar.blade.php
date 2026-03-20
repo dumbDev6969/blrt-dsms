@@ -56,6 +56,13 @@
                             {{ __('My students') }}
                         </flux:sidebar.item>
                     @endcan
+
+                    {{-- Student navigation --}}
+                    @can('student.view_own')
+                        <flux:sidebar.item icon="calendar" :href="route('student.my-schedule')" :current="request()->routeIs('student.my-schedule')" wire:navigate>
+                            {{ __('My schedule') }}
+                        </flux:sidebar.item>
+                    @endcan
                 </flux:sidebar.group>
             </flux:sidebar.nav>
 

@@ -50,6 +50,7 @@ class EnrollmentService
                 'status' => 'active',
                 'progress_percent' => 0,
                 'start_date' => now()->toDateString(),
+                'target_completion_date' => now()->addMonths(1)->toDateString(),
                 'total_amount' => $course->price ?? 0,
                 'amount_paid' => 0,
                 'balance' => $course->price ?? 0,

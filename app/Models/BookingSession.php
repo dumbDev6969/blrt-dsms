@@ -44,7 +44,7 @@ class BookingSession extends Model
 
     public function instructorProfile()
     {
-        return $this->belongsTo(InstructorProfile::class);
+        return $this->belongsTo(InstructorProfile::class, 'instructor_id');
     }
 
     public function vehicle()

@@ -20,21 +20,24 @@
                         <flux:icon icon="book-open" class="size-6 text-[var(--color-accent)]" />
                     </div>
                     @if (str_contains($course->title, 'Theoritical'))
-                        <span
-                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                        <flux:badge color="blue" variant="subtle" size="sm" class="rounded-full">
                             Recommended
-                        </span>
+                        </flux:badge>
                     @endif
-
                 </div>
-                <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">{{ $course->title }}
-                </h3>
-                <p class="text-sm text-slate-500 mt-2 line-clamp-2">{{ $course->description }}</p>
+                <flux:heading size="sm" class="font-bold text-slate-900 dark:text-slate-100">{{ $course->title }}</flux:heading>
+                <flux:text size="sm" class="mt-2 line-clamp-2 text-slate-500">{{ $course->description }}</flux:text>
 
                 <div class="mt-6 flex items-center justify-between">
-                    <span class="text-lg font-bold text-slate-900 dark:text-slate-100">{{ $course->price }}</span>
-                    <flux:button variant="primary" size="sm" icon="arrow-right" :disabled="!$isComplete">
-                        <a href="{{ route('enrollment.create', $course->id) }}">Enroll</a>
+                    <flux:text size="lg" weight="bold" class="text-slate-900 dark:text-slate-100">{{ $course->price }}</flux:text>
+                    <flux:button 
+                        variant="primary" 
+                        size="sm" 
+                        icon-trailing="arrow-right" 
+                        :disabled="!$isComplete" 
+                        :href="$isComplete ? route('enrollment.create', $course->id) : null"
+                    >
+                        Enroll
                     </flux:button>
                 </div>
             </div>

@@ -4,7 +4,8 @@ use Livewire\Component;
 use App\Models\Document;
 use App\Models\Course;
 use Livewire\Attributes\Computed;
-
+use App\Models\Enrollment;
+use Illuminate\Support\Facades\Auth;
 new class extends Component {
     // Check if the student uploaded at least one document
     #[Computed]
@@ -31,6 +32,17 @@ new class extends Component {
     public function courses()
     {
         return Course::query()->select('id', 'title', 'description', 'price', 'type')->get();
+    }
+
+    //Get the active current enrollment fo the student
+    #[Computed]
+    public function currentEnrollment()
+    {
+        return Auth::user()
+        ->studentProfile
+        ->enrollments()
+        ->where('status', 'active')
+        ->first();
     }
 };
 ?>
@@ -67,8 +79,8 @@ new class extends Component {
         @endif
 
         <x-slot name="actions">
-            <flux:button size="sm">
-                <a href="{{ route('document.upload') }}" wire:navigate>Upload Documents</a>
+            <flux:button size="sm" href="{{ route('document.upload') }}" wire:navigate>
+                Upload Documents
             </flux:button>
         </x-slot>
     </flux:callout>
@@ -76,107 +88,93 @@ new class extends Component {
     <div class="grid auto-rows-min gap-6 md:grid-cols-3">
 
         {{-- CARD 1: COMPLIANCE STATUS --}}
-        {{-- Purpose: Tells the user if they are legally allowed to drive/enroll yet --}}
-        <div
-            class="relative overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-6 shadow-sm">
-            <div class="flex items-center gap-4 mb-4">
-                <div
-                    class="flex items-center justify-center size-10 rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400">
-                    <flux:icon icon="check-circle" class="size-6" />
-                </div>
-                <div>
-                    <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Account Status</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">Compliance & Requirements</p>
-                </div>
-            </div>
-
+        <x-kpi-cards
+            label="Account Status"
+            sublabel="Compliance & Requirements"
+            icon="check-circle"
+            color="emerald"
+            icon-position="left"
+        >
             <div class="space-y-3">
                 <div class="flex items-center justify-between text-sm">
-                    <span class="text-slate-600 dark:text-slate-400">Profile Completion</span>
-                    <span
-                        class="text-emerald-600 font-medium text-xs bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded-full">100%
-                        Complete</span>
+                    <flux:text size="sm">Profile Completion</flux:text>
+                    <flux:badge color="emerald" variant="subtle" size="sm">100% Complete</flux:badge>
                 </div>
                 <div class="flex items-center justify-between text-sm">
-                    <span class="text-slate-600 dark:text-slate-400">Documents</span>
-                    {{-- Static "Pending" state for demo --}}
+                    <flux:text size="sm">Documents</flux:text>
                     @if ($this->isComplete)
-                        <span
-                            class="text-zinc-600 font-medium text-xs bg-zinc-50 dark:bg-amber-900/20 px-2 py-1 rounded-full">Under
-                            review</span>
+                        <flux:badge variant="subtle" size="sm">Under review</flux:badge>
                     @elseif ($this->hasDocument)
-                        <span
-                            class="text-amber-600 font-medium text-xs bg-amber-50 dark:bg-amber-900/20 px-2 py-1 rounded-full">Documents
-                            need to be completed</span>
+                        <flux:badge color="amber" variant="subtle" size="sm">Incomplete</flux:badge>
                     @else
-                        <span
-                            class="text-red-600 font-medium text-xs bg-red-50 dark:bg-amber-900/20 px-2 py-1 rounded-full">No
-                            documents yet</span>
+                        <flux:badge color="red" variant="subtle" size="sm">No documents yet</flux:badge>
                     @endif
                 </div>
             </div>
-        </div>
+        </x-kpi-cards>
 
         {{-- CARD 2: CURRENT ENROLLMENT --}}
-        {{-- Purpose: The "Empty State" prompting them to take action --}}
-        <div
-            class="relative overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-6 shadow-sm">
-            <div class="flex items-center gap-4 mb-4">
-                <div
-                    class="flex items-center justify-center size-10 rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-                    <flux:icon icon="academic-cap" class="size-6" />
+        <x-kpi-cards
+            label="Current Enrollment"
+            sublabel="Active Courses"
+            icon="academic-cap"
+            color="blue"
+            icon-position="left"
+        >
+            @if ($this->currentEnrollment)
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between text-sm">
+                        <flux:text size="sm">Course</flux:text>
+                        <flux:text weight="medium" class="truncate max-w-[150px] text-right" title="{{ $this->currentEnrollment->course->title }}">
+                            {{ $this->currentEnrollment->course->title }}
+                        </flux:text>
+                    </div>
+                    <div class="flex items-center justify-between text-sm">
+                        <flux:text size="sm">Status</flux:text>
+                        <flux:badge color="emerald" variant="subtle" size="sm" class="capitalize">
+                            {{ $this->currentEnrollment->status }}
+                        </flux:badge>
+                    </div>
+                    <div class="flex items-center justify-between text-sm">
+                        <flux:text size="sm">Code</flux:text>
+                        <flux:text color="blue" weight="bold" class="font-mono text-xs bg-blue-50 dark:bg-blue-900/20 px-1.5 py-0.5 rounded">
+                            {{ $this->currentEnrollment->code }}
+                        </flux:text>
+                    </div>
                 </div>
-                <div>
-                    <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Current Enrollment</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">Active Courses</p>
+            @else
+                <div class="flex flex-col items-center justify-center h-20 text-center">
+                    <flux:text size="sm" weight="medium">No active courses</flux:text>
+                    <flux:text size="xs" class="mt-1">Select a course below to begin.</flux:text>
                 </div>
-            </div>
+            @endif
+        </x-kpi-cards>
 
-            <div class="flex flex-col items-center justify-center h-20 text-center">
-                <span class="text-sm font-medium text-slate-400 dark:text-slate-500">No active courses</span>
-                <p class="text-xs text-slate-400 mt-1">Select a course below to begin.</p>
+        {{-- CARD 3: COURSE PROGRESS --}}
+        <x-kpi-cards
+            label="Course Progress"
+            sublabel="Overall Completion"
+            value="65%"
+            icon="chart-bar"
+            color="purple"
+            icon-position="left"
+        >
+            <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2">
+                <div class="bg-purple-600 h-2 rounded-full" style="width: 65%"></div>
             </div>
-        </div>
-
-        {{-- CARD 3: SUPPORT / WALLET --}}
-        {{-- Purpose: Quick help or Balance check --}}
-        <div
-            class="relative overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-6 shadow-sm">
-            <div class="flex items-center gap-4 mb-4">
-                <div
-                    class="flex items-center justify-center size-10 rounded-lg bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400">
-                    <flux:icon icon="chat-bubble-left-right" class="size-6" />
-                </div>
-                <div>
-                    <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Need Help?</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400">Support & Inquiries</p>
-                </div>
-            </div>
-
-            <div class="space-y-2">
-                <button
-                    class="w-full text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 py-2 rounded-lg transition-colors">
-                    Contact Admin
-                </button>
-                <button
-                    class="w-full text-sm font-medium text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 py-2 rounded-lg transition-colors">
-                    View FAQs
-                </button>
-            </div>
-        </div>
+            <flux:text size="xs" class="text-slate-500 mt-3">Next Milestone: TDC Exam</flux:text>
+        </x-kpi-cards>
     </div>
 
     {{-- Bottom Section: COURSE CATALOG --}}
     <div
         class="relative h-full flex-1 overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-8 shadow-sm">
-        <x-courses :is-complete="true" />
+        <x-courses :is-complete="$this->isComplete" />
 
         <div class="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800">
             <div class="mb-6">
-                <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100">Your Roadmap to a Driver's License
-                </h3>
-                <p class="text-sm text-slate-500 dark:text-slate-400">Track your progress from student permit to
-                    non-professional license.</p>
+                <flux:heading size="lg" class="font-bold text-slate-900 dark:text-slate-100">Your Roadmap to a Driver's License</flux:heading>
+                <flux:text size="sm" class="text-slate-500 dark:text-slate-400">Track your progress from student permit to non-professional license.</flux:text>
             </div>
 
             {{-- Roadmap Container --}}
@@ -196,13 +194,11 @@ new class extends Component {
                                 class="flex items-center justify-center size-10 rounded-full bg-blue-50 text-[var(--color-accent)] mb-3">
                                 <flux:icon icon="book-open" class="size-5" />
                             </div>
-                            <h4 class="font-bold text-slate-900 dark:text-slate-100 text-sm">1. Theoretical (TDC)
-                            </h4>
-                            <p class="text-xs text-slate-500 mt-1">15-hr Seminar</p>
-                            <span
-                                class="mt-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                            <flux:heading size="sm" class="font-bold text-slate-900 dark:text-slate-100">1. Theoretical (TDC)</flux:heading>
+                            <flux:text size="xs" class="text-slate-500 mt-1">15-hr Seminar</flux:text>
+                            <flux:badge color="blue" size="sm" class="mt-2">
                                 You are here
-                            </span>
+                            </flux:badge>
                         </div>
                     </div>
 
@@ -214,9 +210,8 @@ new class extends Component {
                                 class="flex items-center justify-center size-10 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-400 mb-3">
                                 <flux:icon icon="identification" class="size-5" />
                             </div>
-                            <h4 class="font-semibold text-slate-700 dark:text-slate-300 text-sm">2. Student Permit
-                            </h4>
-                            <p class="text-xs text-slate-500 mt-1">Apply at LTO</p>
+                            <flux:heading size="sm" class="font-semibold text-slate-700 dark:text-slate-300">2. Student Permit</flux:heading>
+                            <flux:text size="xs" class="text-slate-500 mt-1">Apply at LTO</flux:text>
                         </div>
                     </div>
 
@@ -228,9 +223,8 @@ new class extends Component {
                                 class="flex items-center justify-center size-10 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-400 mb-3">
                                 <flux:icon icon="truck" class="size-5" />
                             </div>
-                            <h4 class="font-semibold text-slate-700 dark:text-slate-300 text-sm">3. Practical (PDC)
-                            </h4>
-                            <p class="text-xs text-slate-500 mt-1">8-hr Driving</p>
+                            <flux:heading size="sm" class="font-semibold text-slate-700 dark:text-slate-300">3. Practical (PDC)</flux:heading>
+                            <flux:text size="xs" class="text-slate-500 mt-1">8-hr Driving</flux:text>
                         </div>
                     </div>
 
@@ -242,10 +236,8 @@ new class extends Component {
                                 class="flex items-center justify-center size-10 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-400 mb-3">
                                 <flux:icon icon="star" class="size-5" />
                             </div>
-                            <h4 class="font-semibold text-slate-700 dark:text-slate-300 text-sm">4. Driver's
-                                License
-                            </h4>
-                            <p class="text-xs text-slate-500 mt-1">Final Exam</p>
+                            <flux:heading size="sm" class="font-semibold text-slate-700 dark:text-slate-300">4. Driver's License</flux:heading>
+                            <flux:text size="xs" class="text-slate-500 mt-1">Final Exam</flux:text>
                         </div>
                     </div>
                 </div>

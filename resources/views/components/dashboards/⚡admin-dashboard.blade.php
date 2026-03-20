@@ -62,76 +62,63 @@ new class extends Component {
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
         {{-- KPI: Total Revenue (This Month) --}}
-        <div class="p-5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm">
-            <div class="flex items-center justify-between mb-4">
-                <span class="text-sm font-medium text-slate-500 dark:text-slate-400">Monthly Revenue</span>
-                <div class="p-2 bg-emerald-50 text-emerald-600 rounded-lg dark:bg-emerald-900/20 dark:text-emerald-400">
-                    <flux:icon icon="banknotes" class="size-5" />
-                </div>
-            </div>
-            <div class="flex items-baseline gap-2">
-                <span class="text-2xl font-bold">₱285,400</span>
-                <span class="text-xs text-emerald-600 font-medium">+12.5%</span>
-            </div>
-            <p class="text-xs text-slate-400 mt-1">vs last month: ₱253,200</p>
-        </div>
+        <x-kpi-cards
+            label="Monthly Revenue"
+            value="₱285,400"
+            trend="+12.5%"
+            trend-color="emerald"
+            icon="banknotes"
+            color="emerald"
+            subtext="vs last month: ₱253,200"
+        />
 
         {{-- KPI: Active Enrollments --}}
-        <div class="p-5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm">
-            <div class="flex items-center justify-between mb-4">
-                <span class="text-sm font-medium text-slate-500 dark:text-slate-400">Active Enrollments</span>
-                <div class="p-2 bg-blue-50 text-blue-600 rounded-lg dark:bg-blue-900/20 dark:text-blue-400">
-                    <flux:icon icon="academic-cap" class="size-5" />
-                </div>
+        <x-kpi-cards
+            label="Active Enrollments"
+            value="127"
+            trend="students"
+            trend-color="zinc"
+            icon="academic-cap"
+            color="blue"
+        >
+            <div class="flex gap-2 mt-2">
+                <flux:text size="xs" class="text-slate-500">TDC: 52</flux:text>
+                <flux:text size="xs" class="text-slate-300">|</flux:text>
+                <flux:text size="xs" class="text-slate-500">PDC: 75</flux:text>
             </div>
-            <div class="flex items-baseline gap-2">
-                <span class="text-2xl font-bold">127</span>
-                <span class="text-xs text-slate-400">students</span>
-            </div>
-            <div class="flex gap-2 mt-2 text-xs">
-                <span class="text-slate-500">TDC: 52</span>
-                <span class="text-slate-300">|</span>
-                <span class="text-slate-500">PDC: 75</span>
-            </div>
-        </div>
+        </x-kpi-cards>
 
         {{-- KPI: Pending Actions --}}
-        <div class="p-5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm">
-            <div class="flex items-center justify-between mb-4">
-                <span class="text-sm font-medium text-slate-500 dark:text-slate-400">Pending Actions</span>
-                <div class="p-2 bg-amber-50 text-amber-600 rounded-lg dark:bg-amber-900/20 dark:text-amber-400">
-                    <flux:icon icon="clock" class="size-5" />
-                </div>
+        <x-kpi-cards
+            label="Pending Actions"
+            value="17"
+            trend="items"
+            trend-color="zinc"
+            icon="clock"
+            color="amber"
+        >
+            <div class="flex gap-2 mt-2">
+                <flux:text size="xs" class="text-slate-500">Forms: 5</flux:text>
+                <flux:text size="xs" class="text-slate-300">|</flux:text>
+                <flux:text size="xs" class="text-slate-500">Docs: {{ $this->pendingDocsCount }}</flux:text>
             </div>
-            <div class="flex items-baseline gap-2">
-                <span class="text-2xl font-bold">17</span>
-                <span class="text-xs text-slate-400">items</span>
-            </div>
-            <div class="flex gap-2 mt-2 text-xs">
-                <span class="text-slate-500">Forms: 5</span>
-                <span class="text-slate-300">|</span>
-                <span class="text-slate-500">Docs: {{ $this->pendingDocsCount }}</span>
-            </div>
-        </div>
+        </x-kpi-cards>
 
         {{-- KPI: Fleet Utilization --}}
-        <div class="p-5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm">
-            <div class="flex items-center justify-between mb-4">
-                <span class="text-sm font-medium text-slate-500 dark:text-slate-400">Fleet Status</span>
-                <div class="p-2 bg-purple-50 text-purple-600 rounded-lg dark:bg-purple-900/20 dark:text-purple-400">
-                    <flux:icon icon="truck" class="size-5" />
-                </div>
+        <x-kpi-cards
+            label="Fleet Status"
+            value="8/12"
+            trend="in use"
+            trend-color="zinc"
+            icon="truck"
+            color="purple"
+        >
+            <div class="flex gap-2 mt-2">
+                <flux:text color="emerald" size="xs">Available: 4</flux:text>
+                <flux:text size="xs" class="text-slate-300">|</flux:text>
+                <flux:text color="red" size="xs">Maintenance: 0</flux:text>
             </div>
-            <div class="flex items-baseline gap-2">
-                <span class="text-2xl font-bold">8/12</span>
-                <span class="text-xs text-slate-400">in use</span>
-            </div>
-            <div class="flex gap-2 mt-2 text-xs">
-                <span class="text-emerald-600">Available: 4</span>
-                <span class="text-slate-300">|</span>
-                <span class="text-red-600">Maintenance: 0</span>
-            </div>
-        </div>
+        </x-kpi-cards>
     </div>
 
     {{-- SECTION 2: OPERATIONAL DASHBOARD (Split View) --}}
@@ -145,8 +132,8 @@ new class extends Component {
                 class="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm overflow-hidden">
                 <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
                     <div>
-                        <h3 class="font-bold text-lg">Enrollment Forms - Pending Review</h3>
-                        <p class="text-xs text-slate-500 mt-1">Students awaiting course approval</p>
+                        <flux:heading size="lg" weight="bold">Enrollment Forms - Pending Review</flux:heading>
+                        <flux:text size="xs" class="text-slate-500 mt-1">Students awaiting course approval</flux:text>
                     </div>
                     <flux:button size="sm" variant="ghost" icon="arrow-right" href="">View All</flux:button>
                 </div>
@@ -157,20 +144,17 @@ new class extends Component {
                         class="p-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                         <div
                             class="flex flex-col items-center justify-center w-16 h-16 bg-blue-50 rounded-lg dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900">
-                            <span class="text-xs font-bold text-blue-600">TDC</span>
-                            <span class="text-[10px] text-slate-500 uppercase">PDC</span>
+                            <flux:text size="xs" weight="bold" color="blue">TDC</flux:text>
+                            <flux:text size="xs" class="text-slate-500 uppercase opacity-50" style="font-size: 10px;">PDC</flux:text>
                         </div>
                         <div class="flex-1">
                             <div class="flex items-center gap-2">
-                                <h4 class="font-semibold text-slate-900 dark:text-slate-100">Maria Santos</h4>
-                                <span
-                                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                                    Package: TDC
-                                </span>
+                                <flux:heading size="sm" weight="semibold">Maria Santos</flux:heading>
+                                <flux:badge color="blue" size="sm">Package: TDC</flux:badge>
                             </div>
-                            <p class="text-sm text-slate-500">Control No: <span class="font-mono">TDC-2026-0234</span>
-                            </p>
-                            <p class="text-xs text-slate-400 mt-1">Submitted: 2 hours ago • Student Permit Holder</p>
+                            <flux:text size="sm" class="text-slate-500">Control No: <flux:text class="font-mono">TDC-2026-0234</flux:text>
+                            </flux:text>
+                            <flux:text size="xs" class="text-slate-400 mt-1">Submitted: 2 hours ago • Student Permit Holder</flux:text>
                         </div>
                         <div class="text-right space-x-2">
                             <flux:button size="sm" variant="primary">Approve</flux:button>
@@ -183,20 +167,17 @@ new class extends Component {
                         class="p-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                         <div
                             class="flex flex-col items-center justify-center w-16 h-16 bg-purple-50 rounded-lg dark:bg-purple-900/20 border border-purple-100 dark:border-purple-900">
-                            <span class="text-xs font-bold text-purple-600">PDC</span>
-                            <span class="text-[10px] text-slate-500 uppercase">4W/MT</span>
+                            <flux:text size="xs" weight="bold" color="purple">PDC</flux:text>
+                            <flux:text size="xs" class="text-slate-500 uppercase opacity-50" style="font-size: 10px;">4W/MT</flux:text>
                         </div>
                         <div class="flex-1">
                             <div class="flex items-center gap-2">
-                                <h4 class="font-semibold text-slate-900 dark:text-slate-100">Juan Dela Cruz</h4>
-                                <span
-                                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
-                                    4-Wheel Manual
-                                </span>
+                                <flux:heading size="sm" weight="semibold">Juan Dela Cruz</flux:heading>
+                                <flux:badge color="purple" size="sm">4-Wheel Manual</flux:badge>
                             </div>
-                            <p class="text-sm text-slate-500">Control No: <span class="font-mono">PDC-2026-0451</span>
-                            </p>
-                            <p class="text-xs text-slate-400 mt-1">Submitted: 5 hours ago • Has TDC Certificate</p>
+                            <flux:text size="sm" class="text-slate-500">Control No: <flux:text class="font-mono">PDC-2026-0451</flux:text>
+                            </flux:text>
+                            <flux:text size="xs" class="text-slate-400 mt-1">Submitted: 5 hours ago • Has TDC Certificate</flux:text>
                         </div>
                         <div class="text-right space-x-2">
                             <flux:button size="sm" variant="primary">Approve</flux:button>
@@ -209,20 +190,17 @@ new class extends Component {
                         class="p-4 flex items-center gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                         <div
                             class="flex flex-col items-center justify-center w-16 h-16 bg-amber-50 rounded-lg dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900">
-                            <span class="text-xs font-bold text-amber-600">REF</span>
-                            <span class="text-[10px] text-slate-500 uppercase">2W</span>
+                            <flux:text size="xs" weight="bold" color="amber">REF</flux:text>
+                            <flux:text size="xs" class="text-slate-500 uppercase opacity-50" style="font-size: 10px;">2W</flux:text>
                         </div>
                         <div class="flex-1">
                             <div class="flex items-center gap-2">
-                                <h4 class="font-semibold text-slate-900 dark:text-slate-100">Ana Reyes</h4>
-                                <span
-                                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
-                                    Refresher Course
-                                </span>
+                                <flux:heading size="sm" weight="semibold">Ana Reyes</flux:heading>
+                                <flux:badge color="amber" size="sm">Refresher Course</flux:badge>
                             </div>
-                            <p class="text-sm text-slate-500">Control No: <span class="font-mono">REF-2026-0089</span>
-                            </p>
-                            <p class="text-xs text-slate-400 mt-1">Submitted: 1 day ago • Motorcycle (2-Wheel)</p>
+                            <flux:text size="sm" class="text-slate-500">Control No: <flux:text class="font-mono">REF-2026-0089</flux:text>
+                            </flux:text>
+                            <flux:text size="xs" class="text-slate-400 mt-1">Submitted: 1 day ago • Motorcycle (2-Wheel)</flux:text>
                         </div>
                         <div class="text-right space-x-2">
                             <flux:button size="sm" variant="primary">Approve</flux:button>
@@ -237,22 +215,13 @@ new class extends Component {
                 class="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm overflow-hidden">
                 <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
                     <div>
-                        <h3 class="font-bold text-lg">Today's Sessions</h3>
-                        <p class="text-xs text-slate-500 mt-1">Real-time session monitoring</p>
+                        <flux:heading size="lg" weight="bold">Today's Sessions</flux:heading>
+                        <flux:text size="xs" class="text-slate-500 mt-1">Real-time session monitoring</flux:text>
                     </div>
                     <div class="flex gap-2">
-                        <span
-                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
-                            18 Completed
-                        </span>
-                        <span
-                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                            5 In Progress
-                        </span>
-                        <span
-                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
-                            12 Scheduled
-                        </span>
+                        <flux:badge color="emerald" variant="subtle" size="sm">18 Completed</flux:badge>
+                        <flux:badge color="blue" variant="subtle" size="sm">5 In Progress</flux:badge>
+                        <flux:badge variant="subtle" size="sm">12 Scheduled</flux:badge>
                     </div>
                 </div>
 
@@ -263,17 +232,14 @@ new class extends Component {
                         <div
                             class="p-4 rounded-lg border-2 border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-900/10">
                             <div class="flex items-center justify-between mb-3">
-                                <span
-                                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-600 text-white">
-                                    IN PROGRESS
-                                </span>
-                                <span class="text-xs text-slate-500">Started 1:00 PM</span>
+                                <flux:badge color="blue" size="sm">IN PROGRESS</flux:badge>
+                                <flux:text size="xs" class="text-slate-500">Started 1:00 PM</flux:text>
                             </div>
-                            <h4 class="font-semibold text-sm">Juan D. → Instructor: Alex Cruz</h4>
-                            <p class="text-xs text-slate-500 mt-1">Vehicle: Toyota Vios (ABC-123)</p>
-                            <div class="mt-3 flex items-center gap-2 text-xs text-blue-600">
-                                <flux:icon icon="clock" class="size-3" />
-                                <span>45 mins elapsed</span>
+                            <flux:heading size="sm" weight="semibold">Juan D. → Instructor: Alex Cruz</flux:heading>
+                            <flux:text size="xs" class="text-slate-500 mt-1">Vehicle: Toyota Vios (ABC-123)</flux:text>
+                            <div class="mt-3 flex items-center gap-2">
+                                <flux:icon icon="clock" class="size-3 text-blue-600" />
+                                <flux:text size="xs" color="blue">45 mins elapsed</flux:text>
                             </div>
                         </div>
 
@@ -281,17 +247,14 @@ new class extends Component {
                         <div
                             class="p-4 rounded-lg border-2 border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-900/10">
                             <div class="flex items-center justify-between mb-3">
-                                <span
-                                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-600 text-white">
-                                    IN PROGRESS
-                                </span>
-                                <span class="text-xs text-slate-500">Started 2:30 PM</span>
+                                <flux:badge color="blue" size="sm">IN PROGRESS</flux:badge>
+                                <flux:text size="xs" class="text-slate-500">Started 2:30 PM</flux:text>
                             </div>
-                            <h4 class="font-semibold text-sm">Maria C. → Instructor: Beth Tan</h4>
-                            <p class="text-xs text-slate-500 mt-1">Vehicle: Honda City (XYZ-789)</p>
-                            <div class="mt-3 flex items-center gap-2 text-xs text-blue-600">
-                                <flux:icon icon="clock" class="size-3" />
-                                <span>15 mins elapsed</span>
+                            <flux:heading size="sm" weight="semibold">Maria C. → Instructor: Beth Tan</flux:heading>
+                            <flux:text size="xs" class="text-slate-500 mt-1">Vehicle: Honda City (XYZ-789)</flux:text>
+                            <div class="mt-3 flex items-center gap-2">
+                                <flux:icon icon="clock" class="size-3 text-blue-600" />
+                                <flux:text size="xs" color="blue">15 mins elapsed</flux:text>
                             </div>
                         </div>
                     </div>
@@ -307,8 +270,8 @@ new class extends Component {
             <div
                 class="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm overflow-hidden">
                 <div class="p-5 border-b border-slate-200 dark:border-slate-800">
-                    <h3 class="font-bold text-lg">Instructor Performance (This Month)</h3>
-                    <p class="text-xs text-slate-500 mt-1">Based on sessions, ratings, and pass rates</p>
+                    <flux:heading size="lg" weight="bold">Instructor Performance (This Month)</flux:heading>
+                    <flux:text size="xs" class="text-slate-500 mt-1">Based on sessions, ratings, and pass rates</flux:text>
                 </div>
                 <div class="p-5">
                     <div class="space-y-3">
@@ -320,15 +283,15 @@ new class extends Component {
                                 AC
                             </div>
                             <div class="flex-1">
-                                <h4 class="font-semibold text-sm">Alex Cruz</h4>
-                                <p class="text-xs text-slate-500">42.5 hrs taught • 17 students</p>
+                                <flux:heading size="sm" weight="semibold">Alex Cruz</flux:heading>
+                                <flux:text size="xs" class="text-slate-500">42.5 hrs taught • 17 students</flux:text>
                             </div>
                             <div class="text-right">
-                                <div class="flex items-center gap-1 text-yellow-500 text-xs mb-1">
+                                <div class="flex items-center justify-end gap-1 text-yellow-500 text-xs mb-1">
                                     <flux:icon icon="star" variant="solid" class="size-3" />
-                                    <span class="font-bold">4.9</span>
+                                    <flux:heading size="xs" weight="bold">4.9</flux:heading>
                                 </div>
-                                <span class="text-xs text-emerald-600 font-medium">96% Pass Rate</span>
+                                <flux:text size="xs" color="emerald" weight="medium">96% Pass Rate</flux:text>
                             </div>
                         </div>
 
@@ -336,19 +299,19 @@ new class extends Component {
                         <div
                             class="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                             <div
-                                class="size-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-bold">
+                                class="size-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-bold text-slate-500 dark:text-slate-400">
                                 BT
                             </div>
                             <div class="flex-1">
-                                <h4 class="font-semibold text-sm">Beth Tan</h4>
-                                <p class="text-xs text-slate-500">38 hrs taught • 14 students</p>
+                                <flux:heading size="sm" weight="semibold">Beth Tan</flux:heading>
+                                <flux:text size="xs" class="text-slate-500">38 hrs taught • 14 students</flux:text>
                             </div>
                             <div class="text-right">
-                                <div class="flex items-center gap-1 text-yellow-500 text-xs mb-1">
+                                <div class="flex items-center justify-end gap-1 text-yellow-500 text-xs mb-1">
                                     <flux:icon icon="star" variant="solid" class="size-3" />
-                                    <span class="font-bold">4.8</span>
+                                    <flux:heading size="xs" weight="bold">4.8</flux:heading>
                                 </div>
-                                <span class="text-xs text-slate-600 font-medium">92% Pass Rate</span>
+                                <flux:text size="xs" color="blue" weight="medium">92% Pass Rate</flux:text>
                             </div>
                         </div>
 
@@ -356,19 +319,19 @@ new class extends Component {
                         <div
                             class="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                             <div
-                                class="size-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-bold">
+                                class="size-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-bold text-slate-500 dark:text-slate-400">
                                 JR
                             </div>
                             <div class="flex-1">
-                                <h4 class="font-semibold text-sm">Jose Ramos</h4>
-                                <p class="text-xs text-slate-500">35 hrs taught • 12 students</p>
+                                <flux:heading size="sm" weight="semibold">Jose Ramos</flux:heading>
+                                <flux:text size="xs" class="text-slate-500">35 hrs taught • 12 students</flux:text>
                             </div>
                             <div class="text-right">
-                                <div class="flex items-center gap-1 text-yellow-500 text-xs mb-1">
+                                <div class="flex items-center justify-end gap-1 text-yellow-500 text-xs mb-1">
                                     <flux:icon icon="star" variant="solid" class="size-3" />
-                                    <span class="font-bold">4.7</span>
+                                    <flux:heading size="xs" weight="bold">4.7</flux:heading>
                                 </div>
-                                <span class="text-xs text-slate-600 font-medium">89% Pass Rate</span>
+                                <flux:text size="xs" weight="medium" class="opacity-70">89% Pass Rate</flux:text>
                             </div>
                         </div>
                     </div>
@@ -384,24 +347,21 @@ new class extends Component {
             <div
                 class="p-5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="font-bold text-slate-900 dark:text-slate-100">Document Queue</h3>
-                    <span
-                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                        {{ $this->pendingDocsCount }} Pending
-                    </span>
+                    <flux:heading size="lg" weight="bold">Document Queue</flux:heading>
+                    <flux:badge color="amber" variant="subtle" size="sm">{{ $this->pendingDocsCount }} Pending</flux:badge>
                 </div>
 
                 <div class="space-y-3">
                     {{-- Doc 1: Medical Certificate --}}
                     <div
                         class="flex items-start gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
-                        <div class="p-2 bg-white dark:bg-slate-900 rounded">
+                        <div class="p-2 bg-white dark:bg-slate-900 rounded shadow-sm">
                             <flux:icon icon="document-text" class="size-4 text-blue-600" />
                         </div>
                         <div class="flex-1">
-                            <h4 class="text-xs font-semibold">Medical Certificate</h4>
-                            <p class="text-xs text-slate-500">Juan Dela Cruz</p>
-                            <p class="text-[10px] text-slate-400 mt-1">2 hours ago</p>
+                            <flux:heading size="xs" weight="semibold">Medical Certificate</flux:heading>
+                            <flux:text size="xs" class="text-slate-500">Juan Dela Cruz</flux:text>
+                            <flux:text size="xs" class="text-slate-400 mt-1 opacity-70" style="font-size: 10px;">2 hours ago</flux:text>
                         </div>
                         <flux:button size="xs" variant="ghost">View</flux:button>
                     </div>
@@ -409,13 +369,13 @@ new class extends Component {
                     {{-- Doc 2: Valid ID --}}
                     <div
                         class="flex items-start gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
-                        <div class="p-2 bg-white dark:bg-slate-900 rounded">
+                        <div class="p-2 bg-white dark:bg-slate-900 rounded shadow-sm">
                             <flux:icon icon="identification" class="size-4 text-purple-600" />
                         </div>
                         <div class="flex-1">
-                            <h4 class="text-xs font-semibold">Valid ID</h4>
-                            <p class="text-xs text-slate-500">Maria Santos</p>
-                            <p class="text-[10px] text-slate-400 mt-1">4 hours ago</p>
+                            <flux:heading size="xs" weight="semibold">Valid ID</flux:heading>
+                            <flux:text size="xs" class="text-slate-500">Maria Santos</flux:text>
+                            <flux:text size="xs" class="text-slate-400 mt-1 opacity-70" style="font-size: 10px;">4 hours ago</flux:text>
                         </div>
                         <flux:button size="xs" variant="ghost">View</flux:button>
                     </div>
@@ -423,13 +383,13 @@ new class extends Component {
                     {{-- Doc 3: TDC Certificate --}}
                     <div
                         class="flex items-start gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
-                        <div class="p-2 bg-white dark:bg-slate-900 rounded">
+                        <div class="p-2 bg-white dark:bg-slate-900 rounded shadow-sm">
                             <flux:icon icon="academic-cap" class="size-4 text-emerald-600" />
                         </div>
                         <div class="flex-1">
-                            <h4 class="text-xs font-semibold">TDC Certificate</h4>
-                            <p class="text-xs text-slate-500">Ana Reyes</p>
-                            <p class="text-[10px] text-slate-400 mt-1">1 day ago</p>
+                            <flux:heading size="xs" weight="semibold">TDC Certificate</flux:heading>
+                            <flux:text size="xs" class="text-slate-500">Ana Reyes</flux:text>
+                            <flux:text size="xs" class="text-slate-400 mt-1 opacity-70" style="font-size: 10px;">1 day ago</flux:text>
                         </div>
                         <flux:button size="xs" variant="ghost">View</flux:button>
                     </div>
@@ -443,22 +403,22 @@ new class extends Component {
             </div>
 
             {{-- VEHICLE MAINTENANCE ALERTS --}}
-            <div class="p-5 rounded-xl border border-amber-100 bg-amber-50 dark:border-amber-900 dark:bg-amber-900/10">
+            <div class="p-5 rounded-xl border border-amber-100 bg-amber-50 dark:border-amber-900 dark:bg-amber-900/10 shadow-sm">
                 <div class="flex items-start gap-3">
                     <flux:icon icon="wrench-screwdriver" class="size-6 text-amber-600 dark:text-amber-400" />
                     <div>
-                        <h4 class="font-bold text-amber-900 dark:text-amber-100 text-sm">Maintenance Due</h4>
+                        <flux:heading size="sm" weight="bold" class="text-amber-900 dark:text-amber-100">Maintenance Due</flux:heading>
                         <div class="mt-3 space-y-2">
-                            <div class="text-xs">
-                                <p class="font-semibold text-amber-800 dark:text-amber-200">Toyota Vios (ABC-123)</p>
-                                <p class="text-amber-700 dark:text-amber-300">Due: Feb 15, 2026 (12 days)</p>
+                            <div>
+                                <flux:heading size="xs" weight="semibold" class="text-amber-800 dark:text-amber-200">Toyota Vios (ABC-123)</flux:heading>
+                                <flux:text size="xs" class="text-amber-700 dark:text-amber-300">Due: Feb 15, 2026 (12 days)</flux:text>
                             </div>
-                            <div class="text-xs">
-                                <p class="font-semibold text-amber-800 dark:text-amber-200">Honda City (XYZ-789)</p>
-                                <p class="text-amber-700 dark:text-amber-300">Due: Feb 28, 2026 (25 days)</p>
+                            <div>
+                                <flux:heading size="xs" weight="semibold" class="text-amber-800 dark:text-amber-200">Honda City (XYZ-789)</flux:heading>
+                                <flux:text size="xs" class="text-amber-700 dark:text-amber-300">Due: Feb 28, 2026 (25 days)</flux:text>
                             </div>
                         </div>
-                        <flux:button size="sm" variant="ghost" class="mt-3 w-full">Schedule Maintenance
+                        <flux:button size="sm" variant="ghost" class="mt-3 w-full" color="amber">Schedule Maintenance
                         </flux:button>
                     </div>
                 </div>
@@ -467,26 +427,26 @@ new class extends Component {
             {{-- SYSTEM STATISTICS --}}
             <div
                 class="p-5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm">
-                <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-4">System Stats</h3>
+                <flux:heading size="lg" weight="bold" class="mb-4">System Stats</flux:heading>
 
                 <div class="space-y-3">
                     <div class="flex justify-between items-center">
-                        <span class="text-sm text-slate-600 dark:text-slate-400">Total Students</span>
-                        <span class="text-sm font-bold">342</span>
+                        <flux:text size="sm" class="text-slate-600 dark:text-slate-400">Total Students</flux:text>
+                        <flux:heading size="sm" weight="bold">342</flux:heading>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-sm text-slate-600 dark:text-slate-400">Active Instructors</span>
-                        <span class="text-sm font-bold">8</span>
+                        <flux:text size="sm" class="text-slate-600 dark:text-slate-400">Active Instructors</flux:text>
+                        <flux:heading size="sm" weight="bold">8</flux:heading>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-sm text-slate-600 dark:text-slate-400">Completion Rate</span>
-                        <span class="text-sm font-bold text-emerald-600">87%</span>
+                        <flux:text size="sm" class="text-slate-600 dark:text-slate-400">Completion Rate</flux:text>
+                        <flux:text size="sm" weight="bold" color="emerald">87%</flux:text>
                     </div>
                     <div class="flex justify-between items-center">
-                        <span class="text-sm text-slate-600 dark:text-slate-400">Avg. Rating</span>
+                        <flux:text size="sm" class="text-slate-600 dark:text-slate-400">Avg. Rating</flux:text>
                         <div class="flex items-center gap-1">
                             <flux:icon icon="star" variant="solid" class="size-3 text-yellow-500" />
-                            <span class="text-sm font-bold">4.6</span>
+                            <flux:heading size="sm" weight="bold">4.6</flux:heading>
                         </div>
                     </div>
                 </div>
@@ -494,28 +454,20 @@ new class extends Component {
             {{-- QUICK ACTIONS --}}
             <div
                 class="p-5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm">
-                <h3 class="font-bold text-slate-900 dark:text-slate-100 mb-4">Quick Actions</h3>
+                <flux:heading size="lg" weight="bold" class="mb-4">Quick Actions</flux:heading>
                 <div class="space-y-2">
-                    <button
-                        class="w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left text-slate-700 dark:text-slate-300">
-                        <flux:icon icon="user-plus" class="size-5 text-slate-400" />
+                    <flux:button variant="ghost" class="w-full !justify-start" icon="user-plus">
                         Add New Instructor
-                    </button>
-                    <button
-                        class="w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left text-slate-700 dark:text-slate-300">
-                        <flux:icon icon="truck" class="size-5 text-slate-400" />
+                    </flux:button>
+                    <flux:button variant="ghost" class="w-full !justify-start" icon="truck">
                         Register Vehicle
-                    </button>
-                    <button
-                        class="w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left text-slate-700 dark:text-slate-300">
-                        <flux:icon icon="document-duplicate" class="size-5 text-slate-400" />
+                    </flux:button>
+                    <flux:button variant="ghost" class="w-full !justify-start" icon="document-duplicate">
                         Generate Reports
-                    </button>
-                    <button
-                        class="w-full flex items-center gap-3 p-3 rounded-lg text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left text-slate-700 dark:text-slate-300">
-                        <flux:icon icon="chart-bar" class="size-5 text-slate-400" />
+                    </flux:button>
+                    <flux:button variant="ghost" class="w-full !justify-start" icon="chart-bar">
                         View Analytics
-                    </button>
+                    </flux:button>
                 </div>
             </div>
         </div>

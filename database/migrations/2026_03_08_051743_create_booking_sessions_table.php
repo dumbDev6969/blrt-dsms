@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreignId('instructor_id')->nullable()->constrained('instructor_profiles')->nullOnDelete();
             $table->foreignId('vehicle_id')->nullable()->constrained('vehicles')->nullOnDelete();
             $table->dateTime('start_time');
-            $table->dateTime('end_time');
+            $table->dateTime('end_time')->nullable();
             $table->enum('type', ['lecture', 'driving', 'assessment']);
             $table->enum('status', ['scheduled', 'completed', 'cancelled', 'no-show'])->default('scheduled');
 

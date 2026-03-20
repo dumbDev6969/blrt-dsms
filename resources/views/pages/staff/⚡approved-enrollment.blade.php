@@ -5,6 +5,8 @@ use App\Models\Enrollment;
 use App\Models\Document;
 use Livewire\Attributes\Validate;
 use App\Services\InstructroAvailabilityService;
+use Illuminate\Support\Carbon;
+
 new class extends Component {
     public Enrollment $enrollment;
 
@@ -41,28 +43,36 @@ new class extends Component {
         \Flux::modal('add-payment-' . $this->enrollment->id)->close();
     }
 
-    public function startDate(InstructroAvailabilityService $availabilityService)
+    public function startDate(InstructorAvailabilityService $availabilityService)
     {
         $validated = $this->validateOnly('start_date');
 
-        // Check availability
+        //Convert the string input into a Carbon instance immediately
+        $startDate = Carbon::parse($validated['start_date']);
+
+        // Check availability (Ensure your service can handle a Carbon object or string)
         $availability = $availabilityService->getAvailability($this->enrollment->instructorProfile->id);
 
         if (!$availability->contains($validated['start_date'])) {
             return $this->addError('start_date', 'The instructor is not available on this date.');
         }
 
+        // Logic for completion calculation
         $hoursPerDay = 8;
         $totalHours = $this->enrollment->course->duration_hours;
-        $daysRequired = ceil($totalHours / $hoursPerDay);
+        $daysRequired = (int) ceil($totalHours / $hoursPerDay);
 
+        // Update the record
         $this->enrollment->update([
-            'start_date' => $validated['start_date'],
-            'target_completion_date' => $validated['start_date']->copy()->addDays($daysRequired),
+            'start_date' => $startDate,
+            // Now .copy() works because $startDate is a Carbon object
+            'target_completion_date' => $startDate->copy()->addDays($daysRequired),
         ]);
 
-        session()->flash('status', 'Start date updated!');
-        \Flux::modal('start-date-' . $this->enrollment->id)->close();
+        session()->flash('status', 'Start date and target completion updated!');
+
+        // Close the Flux modal
+        $this->dispatch('modal-close', name: 'start-date-' . $this->enrollment->id);
     }
 };
 ?>

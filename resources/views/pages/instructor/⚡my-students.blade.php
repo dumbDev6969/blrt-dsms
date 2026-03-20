@@ -13,7 +13,7 @@ new class extends Component {
     public $search = '';
     public $status = 'all';
     public $selectedEnrollmentId = null;
-    public $activeSessionExists = '';
+    public $activeSessionExists = false;
     public function updatingSearch()
     {
         $this->resetPage();
@@ -79,56 +79,35 @@ new class extends Component {
     public function beginTDC()
     {
         $instructorId = Auth::user()->instructorProfile->id;
+        $now = now();
 
-        // We check if this instructor has any session that hasn't "ended" yet
-        $activeSessionExists = BookingSession::where('instructor_id', $instructorId)
-            ->where(function ($query) {
-                $query->whereNull('end_time')->orWhere('end_time', '>', now());
-            })
-            ->exists();
-
-        if ($activeSessionExists) {
-            session()->flash('error', 'You already have an active session in progress.');
-            return;
-        }
-
-        //Optimization: Use value() if you only need the ID
+        // Get the TDC Course ID
         $courseId = Course::where('type', 'theoretical')->value('id');
 
-        if (!$courseId) {
-            session()->flash('error', 'TDC Course type not found in system.');
-            return;
-        }
-
-        // Get enrollments
+        // Fetch active enrollments for this instructor/course
         $enrollments = Enrollment::where('instructor_id', $instructorId)->where('status', 'active')->where('course_id', $courseId)->get();
 
-        if ($enrollments->isEmpty()) {
-            session()->flash('status', 'No TDC students found');
-            return;
-        }
+        \DB::transaction(function () use ($enrollments, $instructorId, $now) {
+            foreach ($enrollments as $enrollment) {
+                // Get the ssession that is not yet completed or cancelled
+                $hasActiveSession = BookingSession::where('enrollment_id', $enrollment->id)
+                    ->whereIn('status', ['scheduled']) 
+                    ->whereNull('end_time')
+                    ->exists();
 
-        $now = now();
-        $endTime = $now->copy()->addHours(3);
-
-        $data = $enrollments
-            ->map(function ($enrollment) use ($instructorId, $now, $endTime) {
-                return [
-                    'enrollment_id' => $enrollment->id,
-                    'instructor_id' => $instructorId,
-                    'start_time' => $now,
-                    'end_time' => $endTime,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ];
-            })
-            ->toArray();
-
-        \DB::transaction(function () use ($data) {
-            BookingSession::insert($data);
+                if (!$hasActiveSession) {
+                    BookingSession::create([
+                        'enrollment_id' => $enrollment->id,
+                        'instructor_id' => $instructorId,
+                        'start_time' => $now,
+                        'type' => 'lecture',
+                        'status' => 'scheduled',
+                    ]);
+                }
+            }
         });
 
-        session()->flash('success', 'TDC Session started successfully.');
+        session()->flash('success', 'TDC Session started.');
     }
 };
 ?>
@@ -253,13 +232,11 @@ new class extends Component {
                     </flux:text>
                 </div>
                 <flux:button variant="primary" size="sm" icon="play" wire:click="beginTDC"
-                    wire:loading.attr="disabled" wire:target="beginTDC" 
-                    :disabled="$activeSessionExists"
-                >
+                    wire:loading.attr="disabled" wire:target="beginTDC" :disabled="$activeSessionExists">
                     Begin TDC sessions
                 </flux:button>
             </div>
-            
+
 
             {{-- Enrollment Cards Grid --}}
             <div class="p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 bg-slate-50/30 dark:bg-slate-900/50"

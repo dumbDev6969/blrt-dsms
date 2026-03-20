@@ -25,8 +25,8 @@ return new class extends Migration
             $table->decimal('total_amount', 10, 2)->default(0);
             $table->decimal('amount_paid', 10, 2)->default(0);
             $table->decimal('balance', 10, 2)->default(0);
-            $table->integer('tdc_hours_completed')->default(0);
-            $table->integer('tdc_hours_required')->default(0);
+            $table->decimal('tdc_hours_completed', 5, 2)->default(0);
+            $table->decimal('tdc_hours_required', 5, 2)->default(0);
             $table->decimal('pdc_hours_completed', 5, 2)->default(0);
             $table->decimal('pdc_hours_required', 5, 2)->default(0);
             $table->decimal('pdc_kms_driven', 10, 2)->default(0);

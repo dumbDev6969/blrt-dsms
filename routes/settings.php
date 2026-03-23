@@ -23,4 +23,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ),
         )
         ->name('two-factor.show');
+    Route::livewire('settings/more-info', 'pages::settings.more-info')
+    ->name('user.more-info');
 });

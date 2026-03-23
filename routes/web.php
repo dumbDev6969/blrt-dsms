@@ -30,6 +30,9 @@ Route::middleware(['auth'])->group(function () {
 
         Route::livewire('student/my-schedule', 'pages::student.my-schedule')
             ->name('student.my-schedule');
+
+        Route::livewire('student/academic-records', 'pages::student.academic-records')
+            ->name('student.academic-records');
     });
 
     // Admin routes

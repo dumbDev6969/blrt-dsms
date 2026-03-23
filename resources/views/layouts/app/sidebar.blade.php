@@ -62,6 +62,10 @@
                         <flux:sidebar.item icon="calendar" :href="route('student.my-schedule')" :current="request()->routeIs('student.my-schedule')" wire:navigate>
                             {{ __('My schedule') }}
                         </flux:sidebar.item>
+
+                        <flux:sidebar.item icon="academic-cap" :href="route('student.academic-records')" :current="request()->routeIs('student.academic-records')" wire:navigate>
+                            {{ __('Academic records') }}
+                        </flux:sidebar.item>
                     @endcan
                 </flux:sidebar.group>
             </flux:sidebar.nav>

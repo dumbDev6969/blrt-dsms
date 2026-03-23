@@ -144,7 +144,10 @@ new class extends Component {
 
     <flux:heading class="sr-only">{{ __('Additional Information Settings') }}</flux:heading>
 
+    <x-callout />
+
     <x-pages::settings.layout :heading="__('Update information')" :subheading="__('Ensure your information is right.')">
+
         {{-- only student can view this form --}}
         @can('student.view_own')
             @include('components.student-update-profile')

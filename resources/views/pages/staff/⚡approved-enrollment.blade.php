@@ -78,19 +78,7 @@ new class extends Component {
 ?>
 
 <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl font-sans text-slate-900 dark:text-slate-100">
-    {{-- Callout Alert --}}
-    @if (session('status'))
-        <div class="fixed top-5 right-5 z-50 w-full max-w-sm px-4"> {{-- Container ensures proper layout --}}
-            <flux:callout icon="check-circle" variant="success" class="shadow-lg" x-data="{ visible: true }" x-show="visible"
-                x-transition>
-                <flux:callout.heading>{{ session('status') }}</flux:callout.heading>
-
-                <x-slot name="controls">
-                    <flux:button size="sm" icon="x-mark" variant="ghost" x-on:click="visible = false" />
-                </x-slot>
-            </flux:callout>
-        </div>
-    @endif
+    <x-callout />
     {{-- HEADER --}}
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>

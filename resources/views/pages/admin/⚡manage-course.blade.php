@@ -133,16 +133,7 @@ new class extends Component {
 <div class="min-h-screen py-12 px-4 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-5xl space-y-12">
 
-        {{-- Callout Alert --}}
-        @if (session('status'))
-            <flux:callout icon="check-circle" variant="success" class="shadow-sm fixed top-5 w-5xl z-10"
-                x-data="{ visible: true }" x-show="visible">
-                <flux:callout.heading>{{ session('status') }}</flux:callout.heading>
-                <x-slot name="controls">
-                    <flux:button icon="x-mark" variant="ghost" x-on:click="visible = false" />
-                </x-slot>
-            </flux:callout>
-        @endif
+        <x-callout />
 
 
         <div class="lg:col-span-1 space-y-2" id="create-course-form">

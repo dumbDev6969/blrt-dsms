@@ -124,6 +124,7 @@ new class extends Component {
     <div class="max-w-4xl mx-auto py-8 px-6 lg:px-8">
         {{-- Header --}}
         <div class="mb-8">
+            <x-callout />
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <flux:heading size="xl">Application Form</flux:heading>

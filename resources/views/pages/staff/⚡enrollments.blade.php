@@ -86,16 +86,7 @@ new class extends Component {
 
 <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl font-sans text-slate-900 dark:text-slate-100">
 
-    {{-- Callout Alert --}}
-    @if (session('status'))
-        <flux:callout icon="check-circle" variant="success" class="shadow-sm fixed top-5 w-5xl z-10" x-data="{ visible: true }"
-            x-show="visible">
-            <flux:callout.heading>{{ session('status') }}</flux:callout.heading>
-            <x-slot name="controls">
-                <flux:button icon="x-mark" variant="ghost" x-on:click="visible = false" />
-            </x-slot>
-        </flux:callout>
-    @endif
+    <x-callout />
 
     {{-- HEADER --}}
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">

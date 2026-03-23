@@ -111,6 +111,7 @@ new class extends Component {
 
 <div class="min-h-screen">
     <div class="max-w-4xl mx-auto py-8 px-6 lg:px-8">
+        <x-callout />
         {{-- Header --}}
         <div class="mb-8 relative">
             <div class="flex items-center justify-between mb-4">

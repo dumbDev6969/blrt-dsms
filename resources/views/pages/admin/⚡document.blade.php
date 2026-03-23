@@ -99,14 +99,7 @@ new class extends Component {
         </div>
     </div>
 
-    @if (session('status'))
-        <flux:callout icon="check-circle" variant="success" class="shadow-sm" x-data="{ visible: true }" x-show="visible">
-            <flux:callout.heading>{{ session('status') }}</flux:callout.heading>
-            <x-slot name="controls">
-                <flux:button icon="x-mark" variant="ghost" x-on:click="visible = false" />
-            </x-slot>
-        </flux:callout>
-    @endif
+    <x-callout />
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {{-- Sidebar: User Info & Document List --}}

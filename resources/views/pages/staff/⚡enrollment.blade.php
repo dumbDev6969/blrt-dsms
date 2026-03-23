@@ -53,6 +53,7 @@ new class extends Component {
 
 <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl font-sans text-slate-900 dark:text-slate-100">
 
+    <x-callout />
     {{-- HEADER --}}
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>

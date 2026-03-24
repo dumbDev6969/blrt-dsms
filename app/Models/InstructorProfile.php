@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use App\Models\Enrollment;
 use App\Models\BookingSession;
+use App\Models\InstructorMetric;
 
 class InstructorProfile extends Model
 {
@@ -44,5 +45,10 @@ class InstructorProfile extends Model
     public function bookingSessions()
     {
         return $this->hasMany(BookingSession::class, 'instructor_id');
+    }
+
+    public function metrics()
+    {
+        return $this->hasMany(InstructorMetric::class, 'instructor_id');
     }
 }

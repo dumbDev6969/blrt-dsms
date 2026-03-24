@@ -5,6 +5,7 @@ use App\Models\Enrollment;
 use App\Models\Instructor;
 use App\Models\Course;
 use App\Models\BookingSession;
+use App\Models\InstructorMetric;
 use Livewire\Attributes\Computed;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -88,14 +89,16 @@ new class extends Component {
         }
 
         $affectedCount = 0;
+        $totalBatchDuration = 0;
 
-        DB::transaction(function () use ($activeSessions, $now, &$affectedCount) {
+        DB::transaction(function () use ($activeSessions, $now, &$affectedCount, &$totalBatchDuration, $instructorId) {
             foreach ($activeSessions as $session) {
                 $enrollment = $session->enrollment;
-                
+
                 // Calculate duration in hours
                 $durationHours = $session->start_time->diffInMinutes($now) / 60;
                 $durationHours = round($durationHours, 2);
+                $totalBatchDuration += $durationHours;
 
                 // Update Session
                 $session->update([
@@ -106,7 +109,7 @@ new class extends Component {
                 // Update Enrollment Progress
                 $newTdcHours = ($enrollment->tdc_hours_completed ?? 0) + $durationHours;
                 $maxTdcHours = $enrollment->tdc_hours_required;
-                
+
                 // Cap at required hours
                 if ($newTdcHours > $maxTdcHours) {
                     $newTdcHours = $maxTdcHours;
@@ -118,16 +121,36 @@ new class extends Component {
                 $totalRequired = ($enrollment->tdc_hours_required ?? 0) + ($enrollment->pdc_hours_required ?? 0);
                 $totalCompleted = $newTdcHours + ($enrollment->pdc_hours_completed ?? 0);
                 $progressPercent = $totalRequired > 0 ? ($totalCompleted / $totalRequired) * 100 : 100;
-                
+
                 $enrollment->update([
                     'tdc_hours_completed' => $newTdcHours,
                     'tdc_status' => $tdcStatus,
                     'progress_percent' => round($progressPercent, 2),
-                    'status' => ($progressPercent >= 100) ? 'completed' : 'active',
+                    'status' => $progressPercent >= 100 ? 'completed' : 'active',
                 ]);
 
                 $affectedCount++;
             }
+
+            // Update Instructor Metrics for the current month
+            $metric = InstructorMetric::firstOrCreate(
+                [
+                    'instructor_id' => $instructorId,
+                    'metric_month' => $now->copy()->startOfMonth()->format('Y-m-d'),
+                ],
+                [
+                    'total_sessions' => 0,
+                    'completed_sessions' => 0,
+                    'total_hours' => 0,
+                    'avg_rating' => 0,
+                    'students_taught' => 0,
+                    'students_passed' => 0,
+                    'pass_rate' => 0,
+                ]
+            );
+
+            $metric->increment('total_sessions', $affectedCount);
+            $metric->increment('total_hours', round($totalBatchDuration, 2));
         });
 
         session()->flash('status', "TDC Session ended for {$affectedCount} records. Progress updated.");

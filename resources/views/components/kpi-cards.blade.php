@@ -58,9 +58,9 @@
         </div>
     @endif
 
-    @if ($value || $trend)
+    @if (isset($value) || $trend)
         <div class="flex items-baseline gap-2">
-            @if ($value)
+            @if (isset($value))
                 <flux:heading size="xl" class="font-bold">{{ $value }}</flux:heading>
             @endif
             @if ($trend)

@@ -4,8 +4,45 @@ use Livewire\Component;
 use App\Models\InstructorProfile;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use App\Models\InstructorMetric;
+use Livewire\Attributes\Computed;
+
 new class extends Component {
-    //
+    public $is_active;
+
+    public function mount()
+    {
+        $this->is_active = Auth::user()->instructorProfile->is_active;
+    }
+
+    public function updatedIsActive($value)
+    {
+        Auth::user()->instructorProfile->update(['is_active' => $value]);
+    }
+
+    #[Computed]
+    public function metrics()
+    {
+        $instructorId = Auth::user()->instructorProfile->id;
+        $metric = InstructorMetric::where('instructor_id', $instructorId)
+            ->where('metric_month', now()->startOfMonth()->format('Y-m-d'))
+            ->first();
+
+        if (!$metric) {
+            return (object) [
+                'metric_month' => now()->startOfMonth(),
+                'total_sessions' => 0,
+                'completed_sessions' => 0,
+                'total_hours' => 0,
+                'avg_rating' => 0,
+                'students_taught' => 0,
+                'students_passed' => 0,
+                'pass_rate' => 0,
+            ];
+        }
+
+        return $metric;
+    }
 };
 ?>
 
@@ -14,13 +51,17 @@ new class extends Component {
     {{-- HEADER: Welcome & Status --}}
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-            <flux:heading size="xl" class="font-bold tracking-tight">{{ Auth::user()->name }}</flux:heading>
+            <div class="flex items-center gap-3 mb-1">
+                <flux:heading size="xl" class="font-bold tracking-tight">{{ Auth::user()->name }}</flux:heading>
+                <flux:badge color="blue" variant="subtle" size="sm" class="uppercase font-bold tracking-widest px-2">
+                    {{ \Carbon\Carbon::parse($this->metrics->metric_month)->format('F Y') }}
+                </flux:badge>
+            </div>
             <flux:text>
-                {{ now()->format('l, F j, Y') }} • <flux:text color="emerald" weight="medium">Active Status</flux:text>
+                {{ now()->format('l, F j, Y') }} • <flux:text color="{{ $is_active ? 'emerald' : 'rose' }}" weight="medium">{{ $is_active ? 'Accepting Sessions' : 'On Break' }}</flux:text>
             </flux:text>
         </div>
         <div class="flex gap-3">
-            {{-- Quick Action: Log a Session manually if needed --}}
             <flux:button variant="filled" icon="plus">Log Session</flux:button>
         </div>
     </div>
@@ -28,40 +69,78 @@ new class extends Component {
     {{-- SECTION 1: KEY METRICS (Derived from INSTRUCTOR_METRIC table) --}}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
-        {{-- Metric: Revenue --}}
+        {{-- Metric: Sessions --}}
         <x-kpi-cards
-            label="Total Kilometers Guided"
-            value="10k Kilometers"
-            icon="currency-dollar"
+            label="Total Sessions"
+            :value="$this->metrics->total_sessions"
+            icon="calendar-days"
             color="blue"
+            :subtext="'Goal: ' . round($this->metrics->total_sessions * 1.2) . ' next month'"
+        />
+
+        {{-- Metric: Completed Sessions --}}
+        <x-kpi-cards
+            label="Completed"
+            :value="$this->metrics->completed_sessions"
+            icon="check-circle"
+            color="emerald"
+            :sublabel="$this->metrics->total_sessions > 0 ? round(($this->metrics->completed_sessions / $this->metrics->total_sessions) * 100) . '% completion' : '0% completion'"
         />
 
         {{-- Metric: Teaching Hours --}}
         <x-kpi-cards
             label="Hours Taught"
-            value="42.5 hrs"
+            :value="number_format($this->metrics->total_hours, 1) . ' hrs'"
             icon="clock"
             color="orange"
-        />
-
-        {{-- Metric: Student Pass Rate --}}
-        <x-kpi-cards
-            label="Student Pass Rate"
-            value="94%"
-            icon="academic-cap"
-            color="purple"
-            subtext="16 of 17 students passed"
+            subtext="Productivity this month"
         />
 
         {{-- Metric: Rating --}}
         <x-kpi-cards
             label="Avg. Rating"
-            value="4.8"
+            :value="number_format($this->metrics->avg_rating, 1)"
             trend="/ 5.0"
             trend-color="zinc"
             icon="star"
             color="yellow"
-            subtext="Based on 28 reviews"
+            subtext="Student feedback"
+        />
+
+        {{-- Metric: Students Taught --}}
+        <x-kpi-cards
+            label="Students Taught"
+            :value="$this->metrics->students_taught"
+            icon="user-group"
+            color="blue"
+            subtext="Unique enrollees"
+        />
+
+        {{-- Metric: Students Passed --}}
+        <x-kpi-cards
+            label="Students Passed"
+            :value="$this->metrics->students_passed"
+            icon="hand-thumb-up"
+            color="emerald"
+            subtext="Certification ready"
+        />
+
+        {{-- Metric: Student Pass Rate --}}
+        <x-kpi-cards
+            label="Student Pass Rate"
+            :value="number_format($this->metrics->pass_rate, 0) . '%'"
+            icon="academic-cap"
+            color="purple"
+            :subtext="'Top ' . (100 - round($this->metrics->pass_rate)) . '% of instructors'"
+        />
+
+        {{-- Metric: Efficiency (Custom) --}}
+        <x-kpi-cards
+            label="Session Density"
+            :value="$this->metrics->total_sessions > 0 ? number_format($this->metrics->total_hours / max(1, $this->metrics->total_sessions), 1) : '0.0'"
+            icon="bolt"
+            color="amber"
+            subtext="Hours per session"
         />
     </div>
 
@@ -70,18 +149,6 @@ new class extends Component {
 
         {{-- LEFT COLUMN: Operational (Agenda & Tasks) --}}
         <div class="lg:col-span-2 space-y-6">
-
-            {{-- ALERT: Pending Signatures (Critical for PDC_SESSION_LOG) --}}
-            <flux:callout variant="danger" icon="pencil-square" class="w-full">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 w-full">
-                    <div>
-                        <flux:callout.heading>You haven't uploaded documents yet</flux:callout.heading>
-                        <flux:callout.text> Please upload the remaining documents to proceed with your teaching journey.
-                        </flux:callout.text>
-                    </div>
-                    <flux:button size="sm" variant="ghost" href="{{ route('document.upload') }}" wire:navigate>Upload documents</flux:button>
-                </div>
-            </flux:callout>
 
             {{-- TODAY'S AGENDA (From BOOKING_SESSION) --}}
             <div

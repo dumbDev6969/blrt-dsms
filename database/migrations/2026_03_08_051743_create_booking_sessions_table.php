@@ -20,7 +20,6 @@ return new class extends Migration
             $table->dateTime('end_time')->nullable();
             $table->enum('type', ['lecture', 'driving', 'assessment']);
             $table->enum('status', ['scheduled', 'completed', 'cancelled', 'no-show'])->default('scheduled');
-
             // ASSESSMENTS
             $table->decimal('score', 5, 2)->nullable();
             $table->boolean('is_passed')->nullable();

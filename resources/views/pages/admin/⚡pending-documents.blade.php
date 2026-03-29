@@ -168,8 +168,7 @@ new class extends Component {
                 </button>
             </div>
             <div class="pr-1">
-                <flux:input placeholder="Search by name" icon="magnifying-glass" class="w-64"
-                    wire:model.live.debounce.500ms="search" />
+                <x-live-search placeholder="Search by name" class="w-64" />
             </div>
         </div>
 

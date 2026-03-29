@@ -224,8 +224,7 @@ new class extends Component {
                 </button>
             </div>
             <div class="pr-1 w-full md:w-72">
-                <flux:input placeholder="Search users by name or email..." icon="magnifying-glass"
-                    wire:model.live.debounce.500ms="search" />
+                <x-live-search placeholder="Search users by name or email..." />
             </div>
         </div>
 

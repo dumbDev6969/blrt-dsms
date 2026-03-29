@@ -204,8 +204,7 @@ new class extends Component {
                     </div>
                 </div>
                 <div class="w-full sm:w-72">
-                    <flux:input icon="magnifying-glass" placeholder="Search vehicles..." variant="filled"
-                        wire:model.live.debounce.500ms="search" />
+                    <x-live-search placeholder="Search vehicles..." variant="filled" />
                 </div>
             </div>
 

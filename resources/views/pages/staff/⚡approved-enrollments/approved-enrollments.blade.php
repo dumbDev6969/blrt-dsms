@@ -103,8 +103,7 @@
                 </button>
             </div>
             <div class="pr-1 w-full md:w-72">
-                <flux:input placeholder="Search code or name..." icon="magnifying-glass"
-                    wire:model.live.debounce.500ms="search" />
+                <x-live-search placeholder="Search code or name..." />
             </div>
         </div>
 

@@ -229,9 +229,8 @@ new class extends Component {
                         Manage your existing curriculum and pricing.
                     </div>
                 </div>
-                <div class="w-full sm:w-72">
-                    <flux:input icon="magnifying-glass" placeholder="Search courses..." variant="filled"
-                        wire:model.live.debounce.500ms="search" />
+                <div class="pr-1 w-full md:w-72">
+                    <x-live-search placeholder="Search courses..." />
                 </div>
             </div>
 

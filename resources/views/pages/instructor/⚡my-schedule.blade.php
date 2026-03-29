@@ -257,8 +257,7 @@ new class extends Component {
                 @endforeach
             </div>
             <div class="px-2 pb-2 lg:p-0 w-full lg:w-72">
-                <flux:input placeholder="Search student or course..." icon="magnifying-glass"
-                    wire:model.live.debounce.500ms="search" class="w-full" />
+                <x-live-search placeholder="Search student or course..." class="w-full" />
             </div>
         </div>
 

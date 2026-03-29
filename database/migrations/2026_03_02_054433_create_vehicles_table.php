@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('model');
             $table->string('plate_number')->unique();
             $table->enum('transmission', ['auto', 'manual']);
-            $table->enum('type', ['2-wheel', '4-wheel']);
+            $table->enum('type', ['motorcycle', 'automobile', 'tricycle']);
             $table->enum('status', ['available', 'maintenance', 'in-use'])->default('available');
             $table->json('maintenance_history')->nullable();
             $table->date('next_maintenance_date')->nullable();

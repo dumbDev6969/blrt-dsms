@@ -127,10 +127,12 @@ new class extends Component {
                             <flux:checkbox.group>
                                 <flux:checkbox.all label="All" />
 
-                                <flux:checkbox wire:model.blur="vehicle_types" value="2-wheel"
-                                    label="Motorcycle (2-Wheel)" />
-                                <flux:checkbox wire:model.blur="vehicle_types" value="4-wheel"
-                                    label="Sedan / SUV (4-Wheel)" />
+                                <flux:checkbox wire:model.blur="vehicle_types" value="Motorcycle"
+                                    label="Motorcycle" />
+                                <flux:checkbox wire:model.blur="vehicle_types" value="Tricycle"
+                                    label="Tricycle" />
+                                <flux:checkbox wire:model.blur="vehicle_types" value="Automobile"
+                                    label="Automobile (4-Wheel)" />
                             </flux:checkbox.group>
                         </div>
                         <flux:error name="vehicle_types" />
@@ -195,7 +197,7 @@ new class extends Component {
 
                 {{-- Footer Action --}}
                 <div class="flex items-center justify-end pt-4">
-                    @if ($this->licenseStatus === 'expired')
+                    @if ($this->licenseStatus === 'expired' || Auth::user()->instructorProfile?->isPending())
                         <flux:button variant="primary" type="submit" class="w-full md:w-auto" disabled>
                             Save Profile
                         </flux:button>

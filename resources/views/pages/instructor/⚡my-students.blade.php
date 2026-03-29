@@ -78,6 +78,10 @@ new class extends Component {
 
     public function beginTDC()
     {
+        if (Auth::user()->instructorProfile->isPending()) {
+            return;
+        }
+
         $instructorId = Auth::user()->instructorProfile->id;
         $now = now();
 
@@ -222,7 +226,8 @@ new class extends Component {
                     </flux:text>
                 </div>
                 <flux:button variant="primary" size="sm" icon="play" wire:click="beginTDC"
-                    wire:loading.attr="disabled" wire:target="beginTDC" :disabled="$activeSessionExists">
+                    wire:loading.attr="disabled" wire:target="beginTDC" 
+                    :disabled="$activeSessionExists || Auth::user()->instructorProfile->isPending()">
                     Begin TDC sessions
                 </flux:button>
             </div>
@@ -411,7 +416,8 @@ new class extends Component {
                             {{-- Actions --}}
                             <div class="px-4 sm:px-5 py-3 flex flex-col sm:flex-row gap-2">
                                 <flux:button variant="primary" size="sm" class="w-full sm:flex-1 justify-center"
-                                    icon="eye" :href="route('instructor.student.show', $enrollment)" wire:navigate>
+                                    icon="eye" :href="route('instructor.student.show', $enrollment)" wire:navigate
+                                    :disabled="Auth::user()->instructorProfile->isPending()">
                                     View enrollment
                                 </flux:button>
                             </div>

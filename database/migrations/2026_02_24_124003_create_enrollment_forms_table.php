@@ -20,8 +20,8 @@ return new class extends Migration
             $table->enum('package_type', ['TDC', 'PDC', 'Refresher']);
 
             // PDC Specifics
-            $table->enum('vehicle_category', ['4-Wheel', 'Motorcycle', 'Tricycle'])->nullable();
-            $table->enum('transmission', ['Automatic', 'Manual'])->nullable();
+            $table->enum('vehicle_category', ['Automobile', 'Motorcycle', 'Tricycle'])->nullable();
+            $table->enum('transmission', ['Auto', 'Manual'])->nullable();
 
             $table->enum('status', ['draft', 'submitted', 'approved', 'rejected'])->default('draft');
             $table->json('personal_info')->comment('{emergency_contact:{}}');

@@ -17,8 +17,9 @@
             <flux:legend>{{ __('Authorized Vehicles') }}</flux:legend>
             <div class="grid grid-cols-1 gap-3 mt-4">
                 <flux:checkbox.group wire:model.blur="vehicle_types">
-                    <flux:checkbox value="2-wheel" :label="__('Motorcycle (2-Wheel)')" />
-                    <flux:checkbox value="4-wheel" :label="__('Sedan / SUV (4-Wheel)')" />
+                    <flux:checkbox value="Motorcycle" :label="__('Motorcycle')" />
+                    <flux:checkbox value="Tricycle" :label="__('Tricycle')" />
+                    <flux:checkbox value="Automobile" :label="__('Automobile')" />
                 </flux:checkbox.group>
             </div>
             <flux:error name="vehicle_types" />

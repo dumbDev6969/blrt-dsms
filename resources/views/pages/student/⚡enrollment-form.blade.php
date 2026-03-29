@@ -189,14 +189,14 @@ new class extends Component {
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <flux:select wire:model="vehicle_category" label="Vehicle Category"
                                 placeholder="Select category...">
-                                <flux:select.option value="4-Wheel">4-Wheel (Sedan/SUV)</flux:select.option>
+                                <flux:select.option value="Automobile">Automobile (4-wheel)</flux:select.option>
                                 <flux:select.option value="Motorcycle">Motorcycle</flux:select.option>
                                 <flux:select.option value="Tricycle">Tricycle</flux:select.option>
                             </flux:select>
 
                             <flux:select wire:model="transmission" label="Transmission Type"
                                 placeholder="Select transmission...">
-                                <flux:select.option value="Automatic">Automatic</flux:select.option>
+                                <flux:select.option value="Auto">Automatic</flux:select.option>
                                 <flux:select.option value="Manual">Manual</flux:select.option>
                             </flux:select>
                         </div>

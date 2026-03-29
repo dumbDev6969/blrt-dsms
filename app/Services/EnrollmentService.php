@@ -27,20 +27,20 @@ class EnrollmentService
         }
 
         return DB::transaction(function () use ($form) {
-            // 1. Update the enrollment form status
+            //Update the enrollment form status
             $form->update([
                 'status' => 'approved',
                 'reviewed_by' => Auth::id(),
                 'reviewed_at' => now(),
             ]);
 
-            // 2. Find the best matching instructor
+            //Find the best matching instructor
             $instructor = $this->findBestInstructor($form);
 
-            // 3. Load the course for pricing/duration info
+            // Load the course for pricing/duration info
             $course = $form->course;
 
-            // 4. Create the Enrollment record
+            // Create the Enrollment record
             $enrollment = Enrollment::create([
                 'enrollment_form_id' => $form->id,
                 'code' => $this->generateEnrollmentCode(),
@@ -72,38 +72,36 @@ class EnrollmentService
     {
         $form->loadMissing('course');
 
-        // Start: only active, verified instructors
         $query = InstructorProfile::where('is_active', true)
-            ->where('status', 'verified');
+            ->where('status', 'approved');
 
         // Get all candidates and filter in PHP (JSON columns)
         $candidates = $query->get();
 
-        // --- Filter by course type / skill matching ---
+        //Filter by course type / skill matching
         $candidates = $candidates->filter(function (InstructorProfile $instructor) use ($form) {
             $skills = collect($instructor->skills ?? []);
             $courseType = $form->course->type ?? null;
 
             if ($courseType === 'theoretical') {
-                // Must have theoretical driving skill
-                return $skills->contains('Theoretical Driving');
+                // Must have theoretical driving skill (tdc key)
+                return $skills->contains('tdc');
             }
 
             if ($courseType === 'practical') {
-                // Must have any driving-related practical skill
-                return $skills->contains('Manual Transmission')
-                    || $skills->contains('Automatic Transmission')
-                    || $skills->contains('Defensive Driving');
+                // Must have any driving-related practical skill (manual or auto)
+                return $skills->contains('manual')
+                    || $skills->contains('auto');
             }
 
             return true;
         });
 
-        // --- PDC-specific filters ---
+        //PDC-specific filters
         if ($form->package_type === 'PDC') {
             // Filter by transmission
             if ($form->transmission) {
-                $requiredSkill = $form->transmission . ' Transmission'; // e.g. "Manual Transmission"
+                $requiredSkill = strtolower($form->transmission); // "Manual" -> "manual", "Auto" -> "auto"
                 $candidates = $candidates->filter(function (InstructorProfile $instructor) use ($requiredSkill) {
                     return collect($instructor->skills ?? [])->contains($requiredSkill);
                 });
@@ -119,21 +117,27 @@ class EnrollmentService
             }
         }
 
-        // --- Schedule availability ---
+        // Map full day names to the abbreviations used in weekly_schedule
+        $dayMap = [
+            'Monday' => 'mon', 'Tuesday' => 'tue', 'Wednesday' => 'wed',
+            'Thursday' => 'thu', 'Friday' => 'fri', 'Saturday' => 'sat', 'Sunday' => 'sun',
+        ];
+
         $schedulePrefs = $form->course_preferences['schedule_pref'] ?? [];
         if (!empty($schedulePrefs)) {
-            $candidates = $candidates->filter(function (InstructorProfile $instructor) use ($schedulePrefs) {
+            $candidates = $candidates->filter(function (InstructorProfile $instructor) use ($schedulePrefs, $dayMap) {
                 $schedule = $instructor->weekly_schedule ?? [];
                 foreach ($schedulePrefs as $preferredDay) {
-                    if (isset($schedule[$preferredDay]) && !empty($schedule[$preferredDay])) {
-                        return true; // At least one preferred day is available
+                    $key = $dayMap[$preferredDay] ?? strtolower(substr($preferredDay, 0, 3));
+                    if (isset($schedule[$key]) && !empty($schedule[$key]['active'])) {
+                        return true; // At least one preferred day is active
                     }
                 }
                 return false;
             });
         }
 
-        // --- Workload balancing: sort by least active enrollments ---
+        //Workload balancing: sort by least active enrollments
         $candidates = $candidates->sortBy(function (InstructorProfile $instructor) {
             return $instructor->enrollments()
                 ->whereIn('status', ['pending', 'active'])
@@ -152,10 +156,10 @@ class EnrollmentService
     protected function mapVehicleCategoryToTypes(string $category): array
     {
         return match ($category) {
-            '4-Wheel' => ['Sedan', 'SUV', 'Hatchback', 'Light Truck'],
+            'Automobile' => ['Automobile'],
             'Motorcycle' => ['Motorcycle'],
-            'Tricycle' => ['Motorcycle'], // Closest available mapping
-            default => [],
+            'Tricycle'   => ['Tricycle'],
+            default      => [],
         };
     }
 

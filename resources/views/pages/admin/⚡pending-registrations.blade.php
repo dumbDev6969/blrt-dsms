@@ -38,7 +38,7 @@ new class extends Component {
     // Verify Instructor
     public function verify(InstructorProfile $instructor)
     {
-        $instructor->update(['status' => 'verified', 'is_active' => 1]);
+        $instructor->update(['status' => 'approved', 'is_active' => 1]);
         session()->flash('status', 'Instructor verified successfully.');
     }
 

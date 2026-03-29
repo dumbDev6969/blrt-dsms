@@ -133,6 +133,15 @@
             </flux:dropdown>
         </flux:header>
 
+        @if(auth()->user()->instructorProfile?->isPending())
+            <div class="px-6 py-4">
+                <flux:callout variant="warning" icon="clock">
+                    <flux:callout.heading>Your instructor profile is pending approval</flux:callout.heading>
+                    You cannot perform any actions until your profile has been reviewed and approved by the administrator.
+                </flux:callout>
+            </div>
+        @endif
+
         {{ $slot }}
 
         @fluxScripts

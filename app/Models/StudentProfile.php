@@ -53,4 +53,9 @@ class StudentProfile extends Model
     {
         return $this->hasMany(Enrollment::class, 'student_id');
     }
+
+    public function assessments()
+    {
+        return $this->hasMany(Assessment::class, 'student_id');
+    }
 }

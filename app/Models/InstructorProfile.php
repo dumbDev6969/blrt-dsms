@@ -51,4 +51,19 @@ class InstructorProfile extends Model
     {
         return $this->hasMany(InstructorMetric::class, 'instructor_id');
     }
+
+    public function assessments()
+    {
+        return $this->hasMany(Assessment::class, 'instructor_id');
+    }
+
+    public function isPending(): bool
+    {
+        return $this->status === 'pending';
+    }
+
+    public function canPerformActions(): bool
+    {
+        return $this->status === 'approved' && $this->is_active;
+    }
 }

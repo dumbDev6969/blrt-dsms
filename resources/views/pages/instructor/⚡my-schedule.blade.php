@@ -40,7 +40,7 @@ new class extends Component {
             'no-show' => BookingSession::where('instructor_id', $instructorId)->where('status', 'no-show')->count(),
         ];
     }
-
+    // Schedules
     #[Computed]
     public function bookings()
     {
@@ -69,6 +69,10 @@ new class extends Component {
 
     public function endTDC()
     {
+        if (Auth::user()->instructorProfile->isPending()) {
+            return;
+        }
+
         $instructorId = Auth::user()->instructorProfile->id;
         $now = now();
 
@@ -269,7 +273,8 @@ new class extends Component {
                         sessions.</flux:text>
                 </div>
                 <flux:button size="sm" variant="primary" icon="play" wire:click="endTDC"
-                    wire:loading.attr="disabled" wire:target="endTDC">End TDC sessions</flux:button>
+                    wire:loading.attr="disabled" wire:target="endTDC"
+                    :disabled="Auth::user()->instructorProfile->isPending()">End TDC sessions</flux:button>
             </div>
 
             {{-- Booking Cards Grid --}}
@@ -392,11 +397,13 @@ new class extends Component {
                         <div
                             class="px-4 sm:px-5 py-3 bg-slate-50/80 dark:bg-slate-800/20 border-t border-slate-100 dark:border-slate-800 flex gap-2">
                             <flux:button variant="ghost" size="sm" class="flex-1"
-                                :href="route('instructor.student.show', $booking->enrollment)" wire:navigate>
+                                :href="route('instructor.student.show', $booking->enrollment)" wire:navigate
+                                :disabled="Auth::user()->instructorProfile->isPending()">
                                 View Student
                             </flux:button>
                             @if ($booking->status === 'scheduled')
-                                <flux:button variant="primary" size="sm" class="flex-1">
+                                <flux:button variant="primary" size="sm" class="flex-1"
+                                    :disabled="Auth::user()->instructorProfile->isPending()">
                                     Manage Session
                                 </flux:button>
                             @endif

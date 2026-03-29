@@ -51,4 +51,9 @@ class BookingSession extends Model
     {
         return $this->belongsTo(Vehicle::class);
     }
+
+    public function assessments()
+    {
+        return $this->hasMany(Assessment::class);
+    }
 }

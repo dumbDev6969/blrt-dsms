@@ -79,4 +79,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(InstructorProfile::class);
     }
+
+    public function notedAssessments()
+    {
+        return $this->hasMany(Assessment::class, 'noted_by');
+    }
 }

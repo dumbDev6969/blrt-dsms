@@ -38,9 +38,9 @@ new class extends Component {
             </div>
         </div>
         <div class="flex flex-wrap items-center gap-2">
-            <flux:button variant="primary" icon="pencil-square">Update Progress</flux:button>
+            <flux:button variant="primary" icon="pencil-square" :disabled="Auth::user()->instructorProfile->isPending()">Update Progress</flux:button>
             <flux:dropdown>
-                <flux:button variant="ghost" icon="ellipsis-horizontal" />
+                <flux:button variant="ghost" icon="ellipsis-horizontal" :disabled="Auth::user()->instructorProfile->isPending()" />
                 <flux:menu>
                     <flux:menu.item icon="calendar-days">Schedule Session</flux:menu.item>
                     <flux:menu.item icon="chat-bubble-left-right">Message Student</flux:menu.item>
@@ -293,9 +293,6 @@ new class extends Component {
 
         </div>
 
-        {{-- ========================================== --}}
-        {{-- RIGHT COLUMN: SIDEBAR (Spans 1 col)        --}}
-        {{-- ========================================== --}}
         <div class="space-y-6">
 
             {{-- Student Info --}}

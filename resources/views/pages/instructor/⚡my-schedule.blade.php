@@ -402,8 +402,10 @@ new class extends Component {
                             </flux:button>
                             @if ($booking->status === 'scheduled')
                                 <flux:button variant="primary" size="sm" class="flex-1"
-                                    :disabled="Auth::user()->instructorProfile->isPending()">
-                                    Manage Session
+                                    :disabled="Auth::user()->instructorProfile->isPending()"
+                                    :href="route('instructor.assessment', ['enrollment' => $booking->enrollment_id, 'bookingSession' => $booking->id])"
+                                    wire:navigate>
+                                    Manage Assessment
                                 </flux:button>
                             @endif
                         </div>

@@ -138,9 +138,26 @@
                                 :disabled="Auth::user()->instructorProfile->isPending()">
                                 View enrollment
                             </flux:button>
+                            <flux:button variant="subtle" size="sm" class="w-full sm:flex-1 justify-center"
+                                icon="play"
+                                wire:click="beginPDC({{ $enrollment->id }})"
+                                wire:loading.attr="disabled"
+                                wire:target="beginPDC({{ $enrollment->id }})"
+                                :disabled="$enrollment->pdc_hours_required <= 0 || $enrollment->pdc_status === 'completed' || Auth::user()->instructorProfile->isPending()">
+                                Start PDC session
+                            </flux:button>
                         </x-slot>
                     </x-enrollment-card>
                 @empty
+                    <div class="col-span-full py-12 text-center">
+                        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 mb-4">
+                            <flux:icon icon="user-group" class="size-8 text-slate-400 dark:text-slate-500" />
+                        </div>
+                        <flux:heading size="lg" level="3" class="mb-2">No students found</flux:heading>
+                        <flux:text class="text-slate-500 dark:text-slate-400 max-w-md mx-auto">
+                            Try adjusting your search filters or check back later for new enrollments.
+                        </flux:text>
+                    </div>
                 @endforelse
             </div>
 

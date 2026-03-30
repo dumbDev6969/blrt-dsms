@@ -106,6 +106,9 @@ Route::middleware(['auth'])->group(function () {
 
         Route::livewire('my-students/{enrollment}', 'pages::instructor.view-student')
             ->name('instructor.student.show');
+
+        Route::livewire('assessment/{enrollment}/{bookingSession}', 'pages::instructor.assessment')
+            ->name('instructor.assessment');
     });
 });
 

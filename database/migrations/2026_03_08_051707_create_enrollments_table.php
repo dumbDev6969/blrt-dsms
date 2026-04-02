@@ -20,6 +20,8 @@ return new class extends Migration
             $table->enum('status', ['pending', 'active', 'completed', 'dropped'])->default('pending');
             $table->decimal('progress_percent', 5, 2)->default(0);
             $table->decimal('final_grade', 5, 2)->nullable();
+            $table->enum('final_result', ['pass', 'fail'])->nullable();
+            $table->text('remarks')->nullable();
             $table->date('start_date')->nullable();
             $table->date('target_completion_date')->nullable();
             $table->decimal('total_amount', 10, 2)->default(0);

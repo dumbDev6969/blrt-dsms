@@ -41,11 +41,15 @@ new class extends Component
 
     // Overall stats for "Important Note" logic
     public $total_poor_marks = 0;
+    
+    // Additional tracking
+    public $session_kms_driven = 0;
 
     protected $rules = [
         'assessment_type' => 'required',
         'assessment_date' => 'required|date',
         'learner_type' => 'required',
+        'session_kms_driven' => 'required|numeric|min:0',
         // is_passed is only required on final completion
     ];
 
@@ -83,6 +87,13 @@ new class extends Component
             $this->is_passed = $assessment->is_passed;
             $this->failure_reason = $assessment->failure_reason ?? '';
             
+            // Safety: If keys are in the old format (descriptive strings), reset to defaults
+            // This prevents desync between DB data and the new safe slug-based logic
+            $firstKey = !empty($this->pre_drive_checklist) ? array_key_first($this->pre_drive_checklist) : null;
+            if ($firstKey && !str_starts_with($firstKey, 'pd_')) {
+                $this->initDefaults();
+            }
+
             // If empty (newly created by beginPDC), initialize defaults
             if (empty($this->pre_drive_checklist)) $this->initDefaults();
         } else {
@@ -92,61 +103,82 @@ new class extends Component
         $this->calculateResults();
     }
 
+    #[Computed]
+    public function preDriveLabels()
+    {
+        return [
+            'pd_1' => '2.1 Check/Switch, Lights and Windshield Wiper.',
+            'pd_2' => '2.2 Adjust Mirrors ( Rear view mirror and Side mirror)',
+            'pd_3' => '2.3 Use Seatbelt/Helmet',
+            'pd_4' => '2.4 Check doors',
+            'pd_5' => '2.5 Disengage clutch when starting engine',
+            'pd_6' => '2.6 Disengage emergency/parking brake before moving',
+        ];
+    }
+
+    #[Computed]
+    public function immediateFailLabels()
+    {
+        return [
+            'if_1' => '1.1 Failure to stop at RED SIGNAL, STOP SIGN or STOP LINE.',
+            'if_2' => '1.2 Colliding with any mobile or immobile object, or curb.',
+            'if_3' => '1.3 Triggering Intervention of the instructor or causing any other motorist to swerve to avoid collision.',
+            'if_4' => '1.4 Not Adhering to Traffic Sign (entering No-Entry Sign or Yellow Box Junction) or instructor\'s directions.',
+            'if_5' => '1.5 Lack of Vehicle Control/Dangerous maneuver.',
+            'if_6' => '1.6 Failure to ensure the road, lane or roundabout is clear before entering/proceeding.',
+            'if_7' => '1.7 Speed/Lane violation.',
+        ];
+    }
+
+    #[Computed]
+    public function drivingSkillLabels()
+    {
+        return [
+            'ds_1' => '3.1 Steering: Position of hands, hand grip, smoothness',
+            'ds_2' => '3.2 Engine Control: Smooth start up',
+            'ds_3' => 'Use of gears',
+            'ds_4' => 'Use clutch',
+            'ds_5' => 'Use of accelerator',
+            'ds_6' => '3.3 Use of Brakes: Apply smooth braking',
+            'ds_7' => 'Reactions to Hazards',
+            'ds_8' => 'Vehicle/Motor turning',
+            'ds_9' => '3.4 Speed Control: Observance of speed limit',
+            'ds_10' => 'Observance of traffic rules',
+            'ds_11' => 'Road signs knowledge',
+            'ds_12' => '3.5 Maneuvering: Turning left/right/U-turn',
+            'ds_13' => 'Takes proper lane and Signal intention',
+            'ds_14' => 'Use of Hand and Light Signal',
+            'ds_15' => 'Backing/Parking: Control of the Vehicle',
+            'ds_16' => 'Correct Spacing/Distancing',
+            'ds_17' => 'Number of Attempts',
+        ];
+    }
+
+    #[Computed]
+    public function trafficRuleLabels()
+    {
+        return [
+            'tr_1' => '3.1 Right of Way: For other Vehicles',
+            'tr_2' => 'For Pedestrian, Emergency and Bicyclist',
+            'tr_3' => '3.2 Road signs knowledge',
+            'tr_4' => 'In Changing Lanes & Yielding',
+            'tr_5' => 'While approaching Intersection',
+            'tr_6' => 'In Passing/Being Passed',
+            'tr_7' => '3.3 Stop Lights/Signals & Others:',
+            'tr_8' => 'Obey Traffic Signs',
+            'tr_9' => '3.4 Position After Stopping',
+            'tr_10' => 'Making Full Stop when Necessary',
+            'tr_11' => 'Anticipating before Signal Changes',
+            'tr_12' => '3.5 Exercise due care for Pedestrian',
+        ];
+    }
+
     private function initDefaults()
     {
-        $this->pre_drive_checklist = [
-            '2.1 Check/Switch, Lights and Windshield Wiper.' => false,
-            '2.2 Adjust Mirrors ( Rear view mirror and Side mirror)' => false,
-            '2.3 Use Seatbelt/Helmet' => false,
-            '2.4 Check doors' => false,
-            '2.5 Disengage clutch when starting engine' => false,
-            '2.6 Disengage emergency/parking brake before moving' => false,
-        ];
-
-        $this->immediate_fails = [
-            '1.1 Failure to stop at RED SIGNAL, STOP SIGN or STOP LINE.' => false,
-            '1.2 Colliding with any mobile or immobile object, or curb.' => false,
-            '1.3 Triggering Intervention of the instructor or causing any other motorist to swerve to avoid collision.' => false,
-            '1.4 Not Adhering to Traffic Sign (entering No-Entry Sign or Yellow Box Junction) or instructor\'s directions.' => false,
-            '1.5 Lack of Vehicle Control/Dangerous maneuver.' => false,
-            '1.6 Failure to ensure the road, lane or roundabout is clear before entering/proceeding.' => false,
-            '1.7 Speed/Lane violation.' => false,
-        ];
-
-        $this->driving_skills = [
-            '3.1 Steering: Position of hands, hand grip, smoothness' => 3,
-            '3.2 Engine Control: Smooth start up' => 3,
-            'Use of gears' => 3,
-            'Use clutch' => 3,
-            'Use of accelerator' => 3,
-            '3.3 Use of Brakes: Apply smooth braking' => 3,
-            'Reactions to Hazards' => 3,
-            'Vehicle/Motor turning' => 3,
-            '3.4 Speed Control: Observance of speed limit' => 3,
-            'Observance of traffic rules' => 3,
-            'Road signs knowledge' => 3,
-            '3.5 Maneuvering: Turning left/right/U-turn' => 3,
-            'Takes proper lane and Signal intention' => 3,
-            'Use of Hand and Light Signal' => 3,
-            'Backing/Parking: Control of the Vehicle' => 3,
-            'Correct Spacing/Distancing' => 3,
-            'Number of Attempts' => 3,
-        ];
-
-        $this->traffic_rules = [
-            '3.1 Right of Way: For other Vehicles' => 3,
-            'For Pedestrian, Emergency and Bicyclist' => 3,
-            '3.2 Road signs knowledge' => 3,
-            'In Changing Lanes & Yielding' => 3,
-            'While approaching Intersection' => 3,
-            'In Passing/Being Passed' => 3,
-            '3.3 Stop Lights/Signals & Others:' => 3,
-            'Obey Traffic Signs' => 3,
-            '3.4 Position After Stopping' => 3,
-            'Making Full Stop when Necessary' => 3,
-            'Anticipating before Signal Changes' => 3,
-            '3.5 Exercise due care for Pedestrian' => 3,
-        ];
+        $this->pre_drive_checklist = collect($this->preDriveLabels())->mapWithKeys(fn($v, $k) => [$k => false])->toArray();
+        $this->immediate_fails = collect($this->immediateFailLabels())->mapWithKeys(fn($v, $k) => [$k => false])->toArray();
+        $this->driving_skills = collect($this->drivingSkillLabels())->mapWithKeys(fn($v, $k) => [$k => null])->toArray();
+        $this->traffic_rules = collect($this->trafficRuleLabels())->mapWithKeys(fn($v, $k) => [$k => null])->toArray();
     }
 
     public function updated($propertyName)
@@ -170,6 +202,31 @@ new class extends Component
         }
 
         if ($this->recommended_for_additional_driving) $this->learner_type = '4';
+    }
+
+    #[Computed]
+    public function finalScore()
+    {
+        // Only count items that have actually been rated (non-null)
+        $ratedSkills = collect($this->driving_skills)->filter(fn($val) => !is_null($val));
+        $ratedRules = collect($this->traffic_rules)->filter(fn($val) => !is_null($val));
+        
+        $drivingPoints = $ratedSkills->sum();
+        $trafficPoints = $ratedRules->sum();
+        
+        // Pre-drive Checklist: checked = error, so perfect = max points
+        $preDriveMax = count($this->preDriveLabels());
+        $preDrivePoints = $preDriveMax - $this->pre_drive_errors;
+        
+        // Denominator only counts rated items (each worth max 3) plus pre-drive
+        $ratedCount = $ratedSkills->count() + $ratedRules->count();
+        $maxPossible = ($ratedCount * 3) + $preDriveMax;
+        
+        if ($maxPossible <= 0) return 0;
+        
+        $score = (($drivingPoints + $trafficPoints + $preDrivePoints) / $maxPossible) * 100;
+        
+        return round($score, 2);
     }
 
     #[Computed]
@@ -266,12 +323,20 @@ new class extends Component
             $totalCompleted = ($this->enrollment->tdc_hours_completed ?? 0) + $newPdcHours;
             $progressPercent = $totalRequired > 0 ? ($totalCompleted / $totalRequired) * 100 : 100;
 
-            $this->enrollment->update([
+            $updateData = [
                 'pdc_hours_completed' => $newPdcHours,
+                'pdc_kms_driven' => ($this->enrollment->pdc_kms_driven ?? 0) + floatval($this->session_kms_driven),
                 'pdc_status' => $pdcStatus,
                 'progress_percent' => round($progressPercent, 2),
                 'status' => ($isFinal || $progressPercent >= 100) ? 'completed' : 'active',
-            ]);
+            ];
+            
+            if ($isFinal) {
+                $updateData['final_grade'] = $this->finalScore;
+                $updateData['final_result'] = $this->is_passed ? 'pass' : 'fail';
+            }
+
+            $this->enrollment->update($updateData);
 
             // Metrics
             $metric = \App\Models\InstructorMetric::firstOrCreate(

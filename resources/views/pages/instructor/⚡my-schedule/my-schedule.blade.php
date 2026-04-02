@@ -1,167 +1,3 @@
-<?php
-
-use Livewire\Component;
-use App\Models\Enrollment;
-use App\Models\Instructor;
-use App\Models\Course;
-use App\Models\BookingSession;
-use App\Models\InstructorMetric;
-use Livewire\Attributes\Computed;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Livewire\WithPagination;
-
-new class extends Component {
-    use WithPagination;
-
-    public $search = '';
-    public $status = 'all';
-    public $activeSessionExists = '';
-
-    public function updatingSearch()
-    {
-        $this->resetPage();
-    }
-
-    public function updatingStatus()
-    {
-        $this->resetPage();
-    }
-
-    #[Computed]
-    public function bookingCounts()
-    {
-        $instructorId = Auth::user()->instructorProfile->id;
-        return [
-            'total' => BookingSession::where('instructor_id', $instructorId)->count(),
-            'scheduled' => BookingSession::where('instructor_id', $instructorId)->where('status', 'scheduled')->count(),
-            'completed' => BookingSession::where('instructor_id', $instructorId)->where('status', 'completed')->count(),
-            'cancelled' => BookingSession::where('instructor_id', $instructorId)->where('status', 'cancelled')->count(),
-            'no-show' => BookingSession::where('instructor_id', $instructorId)->where('status', 'no-show')->count(),
-        ];
-    }
-    // Schedules
-    #[Computed]
-    public function bookings()
-    {
-        return BookingSession::query()
-            ->with(['enrollment.studentProfile.user', 'enrollment.course', 'vehicle'])
-            ->where('instructor_id', Auth::user()->instructorProfile->id)
-            ->when($this->search, function ($query) {
-                $query->where(function ($q) {
-                    $q->whereHas('enrollment.studentProfile.user', function ($sub) {
-                        $sub->where('name', 'like', '%' . $this->search . '%');
-                    })
-                        ->orWhereHas('enrollment.course', function ($sub) {
-                            $sub->where('title', 'like', '%' . $this->search . '%');
-                        })
-                        ->orWhereHas('vehicle', function ($sub) {
-                            $sub->where('plate_number', 'like', '%' . $this->search . '%')->orWhere('model', 'like', '%' . $this->search . '%');
-                        });
-                });
-            })
-            ->when($this->status !== 'all', function ($query) {
-                $query->where('status', $this->status);
-            })
-            ->latest('start_time')
-            ->paginate(12);
-    }
-
-    public function endTDC()
-    {
-        if (Auth::user()->instructorProfile->isPending()) {
-            return;
-        }
-
-        $instructorId = Auth::user()->instructorProfile->id;
-        $now = now();
-
-        // Get the TDC active sessions
-        $activeSessions = BookingSession::where('instructor_id', $instructorId)
-            ->where('status', 'scheduled')
-            ->whereNull('end_time')
-            ->where('start_time', '<=', $now)
-            ->whereHas('enrollment.course', function ($q) {
-                $q->where('type', 'theoretical');
-            })
-            ->with('enrollment')
-            ->get();
-
-        if ($activeSessions->isEmpty()) {
-            session()->flash('status', 'No active TDC sessions found to end.');
-            return;
-        }
-
-        $affectedCount = 0;
-        $totalBatchDuration = 0;
-
-        DB::transaction(function () use ($activeSessions, $now, &$affectedCount, &$totalBatchDuration, $instructorId) {
-            foreach ($activeSessions as $session) {
-                $enrollment = $session->enrollment;
-
-                // Calculate duration in hours
-                $durationHours = $session->start_time->diffInMinutes($now) / 60;
-                $durationHours = round($durationHours, 2);
-                $totalBatchDuration += $durationHours;
-
-                // Update Session
-                $session->update([
-                    'end_time' => $now,
-                    'status' => 'completed',
-                ]);
-
-                // Update Enrollment Progress
-                $newTdcHours = ($enrollment->tdc_hours_completed ?? 0) + $durationHours;
-                $maxTdcHours = $enrollment->tdc_hours_required;
-
-                // Cap at required hours
-                if ($newTdcHours > $maxTdcHours) {
-                    $newTdcHours = $maxTdcHours;
-                }
-
-                $tdcStatus = $newTdcHours >= $maxTdcHours ? 'completed' : 'in_progress';
-
-                // Recalculate overall progress
-                $totalRequired = ($enrollment->tdc_hours_required ?? 0) + ($enrollment->pdc_hours_required ?? 0);
-                $totalCompleted = $newTdcHours + ($enrollment->pdc_hours_completed ?? 0);
-                $progressPercent = $totalRequired > 0 ? ($totalCompleted / $totalRequired) * 100 : 100;
-
-                $enrollment->update([
-                    'tdc_hours_completed' => $newTdcHours,
-                    'tdc_status' => $tdcStatus,
-                    'progress_percent' => round($progressPercent, 2),
-                    'status' => $progressPercent >= 100 ? 'completed' : 'active',
-                ]);
-
-                $affectedCount++;
-            }
-
-            // Update Instructor Metrics for the current month
-            $metric = InstructorMetric::firstOrCreate(
-                [
-                    'instructor_id' => $instructorId,
-                    'metric_month' => $now->copy()->startOfMonth()->format('Y-m-d'),
-                ],
-                [
-                    'total_sessions' => 0,
-                    'completed_sessions' => 0,
-                    'total_hours' => 0,
-                    'avg_rating' => 0,
-                    'students_taught' => 0,
-                    'students_passed' => 0,
-                    'pass_rate' => 0,
-                ]
-            );
-
-            $metric->increment('total_sessions', $affectedCount);
-            $metric->increment('total_hours', round($totalBatchDuration, 2));
-        });
-
-        session()->flash('status', "TDC Session ended for {$affectedCount} records. Progress updated.");
-    }
-};
-?>
-
 <div class="flex h-full w-full flex-1 flex-col gap-4 sm:gap-6 rounded-xl font-sans text-slate-900 dark:text-slate-100">
 
     <x-callout />
@@ -400,7 +236,7 @@ new class extends Component {
                                 :disabled="Auth::user()->instructorProfile->isPending()">
                                 View Student
                             </flux:button>
-                            @if ($booking->status === 'scheduled')
+                            @if ($booking->status === 'scheduled' && $booking->type === 'pdc')
                                 <flux:button variant="primary" size="sm" class="flex-1"
                                     :disabled="Auth::user()->instructorProfile->isPending()"
                                     :href="route('instructor.assessment', ['enrollment' => $booking->enrollment_id, 'bookingSession' => $booking->id])"
@@ -410,6 +246,8 @@ new class extends Component {
                             @endif
                         </div>
                     </div>
+                    
+
                 @empty
                     <div
                         class="col-span-full py-12 flex flex-col items-center justify-center bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">

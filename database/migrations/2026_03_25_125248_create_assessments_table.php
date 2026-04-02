@@ -49,13 +49,6 @@ return new class extends Migration
             $table->boolean('is_passed')->nullable();
             $table->text('failure_reason')->nullable();
 
-            // SIGNATURES
-            $table->text('instructor_signature_path')->nullable();
-            $table->date('instructor_signature_date')->nullable();
-            $table->text('admin_signature_path')->nullable();
-            $table->date('admin_noted_date')->nullable();
-            $table->foreignId('noted_by')->nullable()->constrained('users')->nullOnDelete();
-
             $table->timestamps();
         });
     }

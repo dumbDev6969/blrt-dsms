@@ -79,9 +79,9 @@
                     </div>
                 </div>
                 <div class="space-y-3">
-                    @foreach($pre_drive_checklist as $label => $checked)
+                    @foreach($this->preDriveLabels as $key => $label)
                         <label class="flex items-start gap-3 p-3 rounded-xl border border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-all cursor-pointer">
-                            <flux:checkbox wire:model.live="pre_drive_checklist.{{ $label }}" />
+                            <flux:checkbox wire:model.live="pre_drive_checklist.{{ $key }}" />
                             <span class="text-sm font-medium leading-tight pt-0.5">{{ $label }}</span>
                         </label>
                     @endforeach
@@ -97,9 +97,9 @@
                     </div>
                 </div>
                 <div class="space-y-3">
-                    @foreach($immediate_fails as $label => $checked)
+                    @foreach($this->immediateFailLabels as $key => $label)
                         <label class="flex items-start gap-3 p-3 rounded-xl border border-red-200/50 bg-white/50 dark:bg-slate-900/50 hover:bg-red-100 dark:hover:bg-red-900/30 transition-all cursor-pointer">
-                            <flux:checkbox wire:model.live="immediate_fails.{{ $label }}" />
+                            <flux:checkbox wire:model.live="immediate_fails.{{ $key }}" />
                             <span class="text-sm font-bold leading-tight pt-0.5">{{ $label }}</span>
                         </label>
                     @endforeach
@@ -123,12 +123,12 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                        @foreach($driving_skills as $label => $rating)
+                        @foreach($this->drivingSkillLabels as $key => $label)
                             <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                                 <td class="py-4 px-6 text-sm font-semibold text-slate-700 dark:text-slate-300 leading-tight">{{ $label }}</td>
                                 @foreach([1, 2, 3] as $val)
                                     <td class="py-4 px-6 text-center">
-                                        <input type="radio" wire:model.live="driving_skills.{{ $label }}" value="{{ $val }}" 
+                                        <input type="radio" wire:model.live="driving_skills.{{ $key }}" value="{{ $val }}" name="ds_{{ $key }}"
                                             class="size-6 cursor-pointer text-blue-600 focus:ring-blue-500 dark:bg-slate-800 dark:border-slate-700">
                                     </td>
                                 @endforeach
@@ -155,12 +155,12 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                        @foreach($traffic_rules as $label => $rating)
+                        @foreach($this->trafficRuleLabels as $key => $label)
                             <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                                 <td class="py-4 px-6 text-sm font-semibold text-slate-700 dark:text-slate-300 leading-tight">{{ $label }}</td>
                                 @foreach([1, 2, 3] as $val)
                                     <td class="py-4 px-6 text-center">
-                                        <input type="radio" wire:model.live="traffic_rules.{{ $label }}" value="{{ $val }}" 
+                                        <input type="radio" wire:model.live="traffic_rules.{{ $key }}" value="{{ $val }}" name="tr_{{ $key }}"
                                             class="size-6 cursor-pointer text-indigo-600 focus:ring-indigo-500 dark:bg-slate-800 dark:border-slate-700">
                                     </td>
                                 @endforeach
@@ -199,8 +199,14 @@
 
                 <div class="space-y-6">
                     <flux:field>
-                        <flux:label class="font-black uppercase text-xs tracking-widest">5. Remarks and Observations</flux:label>
-                        <flux:textarea wire:model="instructor_remarks" placeholder="Enter session remarks..." rows="8" />
+                        <flux:label class="font-black uppercase text-xs tracking-widest">5. Kilometers Driven (This Session)</flux:label>
+                        <flux:input type="number" step="0.1" min="0" wire:model="session_kms_driven" placeholder="e.g. 5.5" />
+                        <flux:error name="session_kms_driven" />
+                    </flux:field>
+
+                    <flux:field>
+                        <flux:label class="font-black uppercase text-xs tracking-widest">6. Remarks and Observations</flux:label>
+                        <flux:textarea wire:model="instructor_remarks" placeholder="Enter session remarks..." rows="5" />
                     </flux:field>
                 </div>
             </div>
@@ -216,7 +222,15 @@
                     <flux:heading size="xl" class="text-4xl font-black {{ $is_passed === true ? 'text-emerald-700 dark:text-emerald-400' : ($is_passed === false ? 'text-red-700' : 'text-slate-400') }}">
                         {{ $is_passed === true ? 'PASSED' : ($is_passed === false ? 'FAILED' : 'IN PROGRESS') }}
                     </flux:heading>
-                    <flux:text class="mt-2 font-medium">Final result will only be locked and recorded upon **Complete Assessment**.</flux:text>
+                    
+                    <div class="mt-4 flex items-baseline gap-2">
+                        <flux:text size="sm" class="font-bold text-slate-500 uppercase tracking-wider">Calculated Score:</flux:text>
+                        <span class="text-2xl font-black {{ $this->finalScore >= 75 ? 'text-blue-600 dark:text-blue-400' : 'text-amber-600 dark:text-amber-400' }}">
+                            {{ $this->finalScore }}<span class="text-lg opacity-50">%</span>
+                        </span>
+                    </div>
+                    
+                    <flux:text class="mt-2 font-medium text-slate-500">Final result and score will be locked and recorded upon **Complete Assessment**.</flux:text>
                 </div>
 
                 <div class="w-full md:w-auto flex flex-col gap-3">

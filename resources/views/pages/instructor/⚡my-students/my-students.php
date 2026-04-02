@@ -18,6 +18,10 @@ new class extends Component {
     public $selectedEnrollmentId = null;
     public $activeSessionExists = false;
 
+    public $grades = [];
+    public $results = [];
+    public $remarks = [];
+
     public function updatingSearch()
     {
         $this->resetPage();
@@ -183,5 +187,41 @@ new class extends Component {
             'enrollment'     => $enrollment->id,
             'bookingSession' => $session->id,
         ]), navigate: true);
+    }
+
+    public function submitGrade($enrollmentId)
+    {
+        if (Auth::user()->instructorProfile->isPending()) {
+            return;
+        }
+
+        $enrollment = Enrollment::where('id', $enrollmentId)
+            ->where('instructor_id', Auth::user()->instructorProfile->id)
+            ->firstOrFail();
+
+        $this->validate([
+            "grades.$enrollmentId" => 'nullable|numeric|min:0|max:100',
+            "results.$enrollmentId" => 'required|in:pass,fail',
+            "remarks.$enrollmentId" => 'nullable|string',
+        ]);
+
+        DB::transaction(function () use ($enrollment, $enrollmentId) {
+            // Update the enrollment with final grade results
+            $enrollment->update([
+                'final_grade'  => $this->grades[$enrollmentId] ?? null,
+                'final_result' => $this->results[$enrollmentId],
+                'remarks'      => $this->remarks[$enrollmentId] ?? null,
+                'status'       => 'completed',
+            ]);
+
+            // If there's an active TDC session, mark it as completed
+            BookingSession::where('enrollment_id', $enrollmentId)
+                ->where('status', 'scheduled')
+                ->whereHas('enrollment.course', function($q) { $q->where('type', 'theoretical'); })
+                ->update(['status' => 'completed', 'end_time' => now()]);
+        });
+
+        session()->flash('success', 'Student grade submitted successfully.');
+        \Flux::modal("score-{$enrollmentId}")->close();
     }
 };

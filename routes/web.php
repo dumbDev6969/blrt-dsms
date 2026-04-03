@@ -33,6 +33,9 @@ Route::middleware(['auth'])->group(function () {
 
         Route::livewire('student/academic-records', 'pages::student.academic-records')
             ->name('student.academic-records');
+
+        Route::livewire('student/performance-analytics/{enrollment}', 'pages::student.performance-analytics')
+            ->name('student.performance-analytics');
     });
 
     // Admin routes

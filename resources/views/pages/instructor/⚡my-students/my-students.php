@@ -9,6 +9,7 @@ use App\Models\BookingSession;
 use App\Models\Course;
 use App\Models\Assessment;
 use Illuminate\Support\Facades\DB;
+use Flux\Flux;
 new class extends Component {
     use WithPagination;
 
@@ -161,6 +162,11 @@ new class extends Component {
             return;
         }
 
+        //Update PDC status to in_progress if it was not_started
+        if ($enrollment->pdc_status === 'not_started') {
+            $enrollment->update(['pdc_status' => 'in_progress']);
+        }
+
         $session = BookingSession::create([
             'enrollment_id' => $enrollment->id,
             'instructor_id' => $instructorId,
@@ -222,6 +228,6 @@ new class extends Component {
         });
 
         session()->flash('success', 'Student grade submitted successfully.');
-        \Flux::modal("score-{$enrollmentId}")->close();
+        Flux::modal("score-{$enrollmentId}")->close();
     }
 };

@@ -3,6 +3,7 @@
 use Livewire\Component;
 use App\Models\Enrollment;
 use App\Models\BookingSession;
+use App\Services\AssessmentAnalyticsService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 
@@ -28,6 +29,25 @@ new class extends Component
             ->with(['instructorProfile.user', 'vehicle'])
             ->orderBy('start_time', 'asc')
             ->get();
+    }
+
+    #[Computed]
+    public function assessmentAnalytics()
+    {
+        if (!$this->enrollment) {
+            return null;
+        }
+
+        $assessment = $this->enrollment->assessments()
+            ->where('assessment_type', 'practical')
+            ->latest()
+            ->first();
+
+        if (!$assessment) {
+            return null;
+        }
+
+        return app(AssessmentAnalyticsService::class)->generate($assessment);
     }
 };
 ?>
@@ -154,6 +174,11 @@ new class extends Component
                 </div>
             </div>
         </div>
+
+ 
+        
+        <x-assessment-analytics :analytics="$this->assessmentAnalytics" />
+
 
         {{-- Sessions Timeline Section --}}
         <div>

@@ -338,15 +338,13 @@ new class extends Component
 
             $this->enrollment->update($updateData);
 
-            // Metrics
-            $metric = \App\Models\InstructorMetric::firstOrCreate(
-                ['instructor_id' => $this->enrollment->instructor_id, 'metric_month' => $now->copy()->startOfMonth()->format('Y-m-d')],
-                ['total_sessions' => 0, 'completed_sessions' => 0, 'total_hours' => 0, 'avg_rating' => 0, 'students_taught' => 0, 'students_passed' => 0, 'pass_rate' => 0]
-            );
-            $metric->increment('total_sessions');
-            $metric->increment('completed_sessions');
-            $metric->increment('total_hours', $durationHours);
-            if ($isFinal && $this->is_passed) $metric->increment('students_passed');
+            // Metrics Update using Service
+            $metricService = app(\App\Services\InstructorMetricService::class);
+            $metricService->recordSessionCompletion($this->enrollment->instructor_id, $durationHours);
+
+            if ($isFinal) {
+                $metricService->recordCourseCompletion($this->enrollment->instructor_id, $this->is_passed);
+            }
         });
     }
 };

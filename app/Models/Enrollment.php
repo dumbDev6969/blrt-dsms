@@ -83,4 +83,9 @@ class Enrollment extends Model
     {
         return $this->hasMany(Assessment::class);
     }
+
+    public function instructorPerformances()
+    {
+        return $this->hasMany(InstructorPerformance::class, 'enrollment_id');
+    }
 }

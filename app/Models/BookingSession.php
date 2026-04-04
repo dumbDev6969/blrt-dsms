@@ -56,4 +56,9 @@ class BookingSession extends Model
     {
         return $this->hasMany(Assessment::class);
     }
+
+    public function instructorPerformance()
+    {
+        return $this->hasOne(InstructorPerformance::class, 'booking_session_id');
+    }
 }

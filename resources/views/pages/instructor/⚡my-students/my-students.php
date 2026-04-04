@@ -8,6 +8,7 @@ use Livewire\WithPagination;
 use App\Models\BookingSession;
 use App\Models\Course;
 use App\Models\Assessment;
+use App\Models\InstructorMetric;
 use Illuminate\Support\Facades\DB;
 use Flux\Flux;
 new class extends Component {
@@ -197,6 +198,7 @@ new class extends Component {
 
     public function submitGrade($enrollmentId)
     {
+        // the instructor should be verified
         if (Auth::user()->instructorProfile->isPending()) {
             return;
         }
@@ -211,7 +213,9 @@ new class extends Component {
             "remarks.$enrollmentId" => 'nullable|string',
         ]);
 
-        DB::transaction(function () use ($enrollment, $enrollmentId) {
+        $now = now();
+
+        DB::transaction(function () use ($enrollment, $enrollmentId, $now) {
             // Update the enrollment with final grade results
             $enrollment->update([
                 'final_grade'  => $this->grades[$enrollmentId] ?? null,
@@ -224,7 +228,13 @@ new class extends Component {
             BookingSession::where('enrollment_id', $enrollmentId)
                 ->where('status', 'scheduled')
                 ->whereHas('enrollment.course', function($q) { $q->where('type', 'theoretical'); })
-                ->update(['status' => 'completed', 'end_time' => now()]);
+                ->update(['status' => 'completed', 'end_time' => $now]);
+
+            // Metrics Update using Service
+            app(\App\Services\InstructorMetricService::class)->recordCourseCompletion(
+                $enrollment->instructor_id,
+                $this->results[$enrollmentId] === 'pass'
+            );
         });
 
         session()->flash('success', 'Student grade submitted successfully.');

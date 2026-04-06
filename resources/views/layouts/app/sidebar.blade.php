@@ -55,6 +55,10 @@
                         <flux:sidebar.item icon="academic-cap" :href="route('instructor.my-students')" :current="request()->routeIs('instructor.my-students')" wire:navigate>
                             {{ __('My students') }}
                         </flux:sidebar.item>
+
+                        <flux:sidebar.item icon="star" :href="route('instructor.performance-reviews')" :current="request()->routeIs('instructor.performance-reviews')" wire:navigate>
+                            {{ __('Performance reviews') }}
+                        </flux:sidebar.item>
                     @endcan
 
                     {{-- Student navigation --}}

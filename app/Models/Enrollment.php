@@ -24,6 +24,8 @@ class Enrollment extends Model
         'status',
         'progress_percent',
         'final_grade',
+        'final_result',
+        'remarks',
         'start_date',
         'target_completion_date',
         'total_amount',

@@ -112,6 +112,9 @@ Route::middleware(['auth'])->group(function () {
 
         Route::livewire('assessment/{enrollment}/{bookingSession}', 'pages::instructor.assessment')
             ->name('instructor.assessment');
+
+        Route::livewire('performance-reviews', 'pages::instructor.performance-reviews')
+            ->name('instructor.performance-reviews');
     });
 });
 

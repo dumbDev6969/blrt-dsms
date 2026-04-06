@@ -3,9 +3,14 @@
 use Livewire\Component;
 use App\Models\Enrollment;
 use App\Models\Document;
+use App\Models\Assessment;
+use App\Models\BookingSession;
 use Livewire\Attributes\Validate;
-use App\Services\InstructroAvailabilityService;
+use App\Services\InstructorAvailabilityService;
+use App\Services\InstructorMetricService;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Flux\Flux;
 
 new class extends Component {
     public Enrollment $enrollment;
@@ -13,6 +18,11 @@ new class extends Component {
     public $amount_paid;
 
     public $start_date;
+
+    // Grade and Assessment Results
+    public $final_grade;
+    public $final_result;
+    public $remarks;
     // Define the rules ofr the max value
     public function rules()
     {
@@ -28,6 +38,65 @@ new class extends Component {
         $this->enrollment = $enrollment->load(['studentProfile.user.documents', 'course', 'instructorProfile.user']);
         $this->amount_paid = $this->enrollment->amount_paid;
         $this->start_date = $this->enrollment->start_date?->format('Y-m-d');
+
+        // Load assessment data
+        $this->final_grade = $this->enrollment->final_grade;
+        $this->final_result = $this->enrollment->final_result ?? 'pass';
+        $this->remarks = $this->enrollment->remarks;
+    }
+
+    public function updateAssessment()
+    {
+        $this->validate([
+            'final_grade' => 'nullable|numeric|min:0|max:100',
+            'final_result' => 'required|in:pass,fail',
+            'remarks' => 'nullable|string',
+        ]);
+
+        $now = now();
+        $enrollmentId = $this->enrollment->id;
+
+        DB::transaction(function () use ($now, $enrollmentId) {
+            $oldResult = $this->enrollment->final_result;
+
+            // 1. Update Enrollment
+            $this->enrollment->update([
+                'final_grade' => $this->final_grade,
+                'final_result' => $this->final_result,
+                'remarks' => $this->remarks,
+                'status' => 'completed',
+            ]);
+
+            // 2. Update/Create Assessment record (Theoretical for TDC)
+            Assessment::updateOrCreate(
+                ['enrollment_id' => $enrollmentId, 'assessment_type' => 'theoretical'],
+                [
+                    'student_id'        => $this->enrollment->student_id,
+                    'instructor_id'     => $this->enrollment->instructor_id,
+                    'assessment_date'   => $now->format('Y-m-d'),
+                    'is_passed'         => $this->final_result === 'pass',
+                    'failure_reason'    => $this->final_result === 'fail' ? $this->remarks : null,
+                    'instructor_remarks' => $this->remarks,
+                ]
+            );
+
+            // 3. Mark any active sessions as completed
+            BookingSession::where('enrollment_id', $enrollmentId)
+                ->where('status', 'scheduled')
+                ->whereHas('enrollment.course', function($q) { $q->where('type', 'theoretical'); })
+                ->update(['status' => 'completed', 'end_time' => $now]);
+
+            // 4. Update Instructor Metrics if results changed
+            if ($oldResult !== $this->final_result) {
+                app(InstructorMetricService::class)->recordCourseCompletion(
+                    $this->enrollment->instructor_id,
+                    $this->final_result === 'pass'
+                );
+            }
+        });
+
+        session()->flash('status', 'Assessment records updated successfully.');
+        Flux::modal('update-assessment-' . $this->enrollment->id)->close();
     }
 
     public function payment()
@@ -113,10 +182,66 @@ new class extends Component {
                     {{ $this->enrollment->start_date->format('M d, Y') ?? 'Not Set' }}</flux:text>
             </div>
         </div>
-        <flux:modal.trigger name="start-date-{{ $this->enrollment->id }}">
-            <flux:button size="sm" variant="primary" icon="calendar">Start Date</flux:button>
-        </flux:modal.trigger>
+        <div class="flex gap-2">
+            <flux:modal.trigger name="update-assessment-{{ $this->enrollment->id }}">
+                <flux:button size="sm" variant="ghost" icon="academic-cap">Assessment</flux:button>
+            </flux:modal.trigger>
+            <flux:modal.trigger name="start-date-{{ $this->enrollment->id }}">
+                <flux:button size="sm" variant="primary" icon="calendar">Start Date</flux:button>
+            </flux:modal.trigger>
+        </div>
     </div>
+
+    {{-- Assessment Update Modal --}}
+    <flux:modal name="update-assessment-{{ $this->enrollment->id }}" class="md:w-[450px]">
+        <div class="space-y-6">
+            <div>
+                <flux:heading size="lg">Override Official Grade</flux:heading>
+                <flux:text class="mt-2 text-red-500 font-medium">Warning: You are overriding the official record for this student. This also updates instructor performance metrics.</flux:text>
+            </div>
+
+            <div class="space-y-4">
+                <flux:input wire:model="final_grade" label="Numerical Score (%)" type="number" step="0.01" max="100" min="0" placeholder="e.g. 95.00" icon="chart-bar" />
+                
+                <flux:field>
+                    <flux:label>Final Evaluation Result</flux:label>
+                    <div class="grid grid-cols-2 gap-3 mt-2">
+                        {{-- Pass Button --}}
+                        <label class="relative flex items-center justify-between p-4 rounded-xl border-2 border-slate-100 dark:border-slate-800 hover:border-emerald-500 hover:bg-emerald-50/10 dark:hover:bg-emerald-900/10 transition-all cursor-pointer group has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50 dark:has-[:checked]:bg-emerald-900/20">
+                            <input type="radio" wire:model="final_result" value="pass" class="sr-only" />
+                            <div class="flex items-center gap-3">
+                                    <div class="p-2 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 rounded-lg group-hover:scale-110 transition-transform group-has-[:checked]:bg-emerald-500 group-has-[:checked]:text-white">
+                                        <flux:icon icon="check" class="size-4" />
+                                    </div>
+                                    <span class="text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-tight group-has-[:checked]:text-emerald-700 dark:group-has-[:checked]:text-emerald-400">Passed</span>
+                            </div>
+                        </label>
+
+                        {{-- Fail Button --}}
+                        <label class="relative flex items-center justify-between p-4 rounded-xl border-2 border-slate-100 dark:border-slate-800 hover:border-red-500 hover:bg-red-50/10 dark:hover:bg-red-900/10 transition-all cursor-pointer group has-[:checked]:border-red-500 has-[:checked]:bg-red-50 dark:has-[:checked]:bg-red-900/20">
+                            <input type="radio" wire:model="final_result" value="fail" class="sr-only" />
+                            <div class="flex items-center gap-3">
+                                    <div class="p-2 bg-red-100 dark:bg-red-900/40 text-red-600 rounded-lg group-hover:scale-110 transition-transform group-has-[:checked]:bg-red-600 group-has-[:checked]:text-white">
+                                        <flux:icon icon="x-mark" class="size-4" />
+                                    </div>
+                                    <span class="text-sm font-black text-slate-700 dark:text-slate-300 uppercase tracking-tight group-has-[:checked]:text-red-700 dark:group-has-[:checked]:text-red-400">Failed</span>
+                            </div>
+                        </label>
+                    </div>
+                </flux:field>
+
+                <flux:textarea wire:model="remarks" label="Administrative Remarks & Observations" placeholder="Notes for this override..." rows="4" />
+            </div>
+
+            <div class="flex gap-3">
+                <flux:spacer />
+                <flux:modal.close>
+                    <flux:button variant="ghost">Cancel</flux:button>
+                </flux:modal.close>
+                <flux:button type="button" variant="primary" wire:click="updateAssessment" wire:loading.attr="disabled" wire:target="updateAssessment">Update Records</flux:button>
+            </div>
+        </div>
+    </flux:modal>
 
 
     {{-- payment modal --}}
@@ -279,6 +404,41 @@ new class extends Component {
             {{-- PROGRESS --}}
             <div
                 class="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm overflow-hidden p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <flux:heading size="sm" weight="bold">Assessment Results</flux:heading>
+                    @if($this->enrollment->final_result)
+                        <flux:badge :color="$this->enrollment->final_result === 'pass' ? 'emerald' : 'red'" variant="subtle" size="sm" icon="{{ $this->enrollment->final_result === 'pass' ? 'check' : 'x-mark' }}">
+                            {{ $this->enrollment->final_result === 'pass' ? 'Passed' : 'Failed' }}
+                        </flux:badge>
+                    @endif
+                </div>
+
+                <div class="space-y-4 mb-6">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-slate-50 dark:bg-slate-800/40 p-3 rounded-lg border border-slate-100 dark:border-slate-800/50">
+                            <flux:text size="xs" class="text-slate-500 uppercase tracking-wider mb-1">Final Grade</flux:text>
+                            <flux:text size="sm" weight="bold" class="{{ $this->enrollment->final_grade ? 'text-emerald-600' : 'text-slate-400' }}">
+                                {{ $this->enrollment->final_grade ? $this->enrollment->final_grade . '%' : 'Not Graded' }}
+                            </flux:text>
+                        </div>
+                        <div class="bg-slate-50 dark:bg-slate-800/40 p-3 rounded-lg border border-slate-100 dark:border-slate-800/50">
+                            <flux:text size="xs" class="text-slate-500 uppercase tracking-wider mb-1">Result</flux:text>
+                            <flux:text size="sm" weight="bold" class="capitalize">
+                                {{ $this->enrollment->final_result ?? 'N/A' }}
+                            </flux:text>
+                        </div>
+                    </div>
+
+                    @if($this->enrollment->remarks)
+                        <div class="bg-slate-50 dark:bg-slate-800/40 p-3 rounded-lg border border-slate-100 dark:border-slate-800/50">
+                            <flux:text size="xs" class="text-slate-500 uppercase tracking-wider mb-1">Remarks</flux:text>
+                            <flux:text size="sm" class="line-clamp-3 italic text-slate-600 dark:text-slate-400">"{{ $this->enrollment->remarks }}"</flux:text>
+                        </div>
+                    @endif
+                </div>
+
+                <flux:separator class="my-4" />
+
                 <flux:heading size="sm" weight="bold" class="mb-3">Course Progress</flux:heading>
                 <div class="space-y-4">
                     <div class="flex items-center justify-between">

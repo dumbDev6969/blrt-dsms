@@ -196,6 +196,18 @@ new class extends Component {
         ]), navigate: true);
     }
 
+    public function loadExistingGrade($enrollmentId)
+    {
+        $this->selectedEnrollmentId = $enrollmentId;
+
+        $enrollment = Enrollment::find($enrollmentId);
+        if ($enrollment) {
+            $this->grades[$enrollmentId] = $enrollment->final_grade;
+            $this->results[$enrollmentId] = $enrollment->final_result;
+            $this->remarks[$enrollmentId] = $enrollment->remarks;
+        }
+    }
+
     public function submitGrade($enrollmentId)
     {
         // the instructor should be verified
@@ -203,39 +215,17 @@ new class extends Component {
             return;
         }
 
-        $enrollment = Enrollment::where('id', $enrollmentId)
-            ->where('instructor_id', Auth::user()->instructorProfile->id)
-            ->firstOrFail();
-
         $this->validate([
             "grades.$enrollmentId" => 'nullable|numeric|min:0|max:100',
             "results.$enrollmentId" => 'required|in:pass,fail',
             "remarks.$enrollmentId" => 'nullable|string',
         ]);
 
-        $now = now();
-
-        DB::transaction(function () use ($enrollment, $enrollmentId, $now) {
-            // Update the enrollment with final grade results
-            $enrollment->update([
-                'final_grade'  => $this->grades[$enrollmentId] ?? null,
-                'final_result' => $this->results[$enrollmentId],
-                'remarks'      => $this->remarks[$enrollmentId] ?? null,
-                'status'       => 'completed',
-            ]);
-
-            // If there's an active TDC session, mark it as completed
-            BookingSession::where('enrollment_id', $enrollmentId)
-                ->where('status', 'scheduled')
-                ->whereHas('enrollment.course', function($q) { $q->where('type', 'theoretical'); })
-                ->update(['status' => 'completed', 'end_time' => $now]);
-
-            // Metrics Update using Service
-            app(\App\Services\InstructorMetricService::class)->recordCourseCompletion(
-                $enrollment->instructor_id,
-                $this->results[$enrollmentId] === 'pass'
-            );
-        });
+        app(\App\Services\InstructorGradingService::class)->submitGrade($enrollmentId, [
+            'grade' => $this->grades[$enrollmentId],
+            'result' => $this->results[$enrollmentId],
+            'remarks' => $this->remarks[$enrollmentId],
+        ]);
 
         session()->flash('success', 'Student grade submitted successfully.');
         Flux::modal("score-{$enrollmentId}")->close();

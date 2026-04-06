@@ -2,12 +2,138 @@
 
 use Livewire\Component;
 use App\Models\Document;
+use App\Models\Enrollment;
+use App\Models\EnrollmentForm;
+use App\Models\InstructorProfile;
+use App\Services\InstructorPerformanceService;
 use Livewire\Attributes\Computed;
+use Carbon\Carbon;
+
 new class extends Component {
     #[Computed]
     public function pendingDocsCount()
     {
-        return Document::where('status', 'pending')->get()->count();
+        return Document::where('status', 'pending')->count();
+    }
+
+    #[Computed]
+    public function revenueData()
+    {
+        $now = Carbon::now();
+        $thisMonth = Enrollment::whereMonth('created_at', $now->month)
+            ->whereYear('created_at', $now->year)
+            ->sum('amount_paid');
+            
+        $lastMonth = Enrollment::whereMonth('created_at', $now->copy()->subMonth()->month)
+            ->whereYear('created_at', $now->copy()->subMonth()->year)
+            ->sum('amount_paid');
+
+        $difference = $thisMonth - $lastMonth;
+        $trend = $lastMonth > 0 ? ($difference / $lastMonth) * 100 : 0;
+
+        return [
+            'value' => $thisMonth,
+            'trend' => number_format($trend, 1) . '%',
+            'trend_color' => $trend >= 0 ? 'emerald' : 'rose',
+            'subtext' => 'vs last month: ₱' . number_format($lastMonth, 2)
+        ];
+    }
+
+    #[Computed]
+    public function enrollmentStats()
+    {
+        $active = Enrollment::where('status', 'active')->count();
+        $tdc = Enrollment::where('status', 'active')->whereHas('course', function ($q) {
+            $q->where('type', 'theoretical');
+        })->count();
+        $pdc = Enrollment::where('status', 'active')->whereHas('course', function ($q) {
+            $q->whereIn('type', ['practical', 'comprehensive']);
+        })->count();
+
+        return [
+            'total' => $active,
+            'tdc' => $tdc,
+            'pdc' => $pdc
+        ];
+    }
+
+    #[Computed]
+    public function pendingActions()
+    {
+        $forms = EnrollmentForm::where('status', 'submitted')->count();
+        $docs = $this->pendingDocsCount;
+        
+        return [
+            'total' => $forms + $docs,
+            'forms' => $forms,
+            'docs' => $docs
+        ];
+    }
+
+    #[Computed]
+    public function passedStudentsCount()
+    {
+        $tdc = Enrollment::where('final_result', 'pass')->whereHas('course', function ($query) {
+            $query->where('type', 'theoretical');
+        })->count();
+
+        $pdc = Enrollment::where('final_result', 'pass')->whereHas('course', function ($query) {
+            $query->whereIn('type', ['practical', 'comprehensive']);
+        })->count();
+
+        return [
+            'tdc' => $tdc,
+            'pdc' => $pdc,
+        ];
+    }
+
+    #[Computed]
+    public function instructorsPerformances()
+    {
+        $service = app(InstructorPerformanceService::class);
+        $allInstructors = InstructorProfile::with('user')
+            ->where('status', 'approved')
+            ->where('is_active', true)
+            ->get();
+
+        $preview = collect();
+
+        // 1. Find the best TDC instructor (theoretical)
+        $tdcInstructor = $allInstructors->first(function ($instructor) use ($service) {
+            $perf = $service->getPerformancesByCourse($instructor->id);
+            if ($perf->contains(fn($p) => $p->course->type === 'theoretical')) {
+                $instructor->coursePerformances = $perf->take(2);
+                return true;
+            }
+            return false;
+        });
+
+        if ($tdcInstructor) {
+            $preview->push($tdcInstructor);
+        }
+
+        // 2. Find a different PDC instructor (practical/comprehensive)
+        $pdcInstructor = $allInstructors->where('id', '!=', $tdcInstructor?->id)->first(function ($instructor) use ($service) {
+            $perf = $service->getPerformancesByCourse($instructor->id);
+            if ($perf->contains(fn($p) => in_array($p->course->type, ['practical', 'comprehensive']))) {
+                $instructor->coursePerformances = $perf->take(2);
+                return true;
+            }
+            return false;
+        });
+
+        // Fallback: If no different PDC instructor, check if the TDC instructor also has PDC courses
+        if (!$pdcInstructor && $tdcInstructor) {
+           $perf = $service->getPerformancesByCourse($tdcInstructor->id);
+           if ($perf->contains(fn($p) => in_array($p->course->type, ['practical', 'comprehensive']))) {
+                // If we already added them as TDC, we don't need to add them again, but we ensure their PDC performances are visible if possible
+                // For simplicity, if we only found one instructor, the list will just have one.
+           }
+        } elseif ($pdcInstructor) {
+            $preview->push($pdcInstructor);
+        }
+
+        return $preview;
     }
 };
 ?>
@@ -64,59 +190,59 @@ new class extends Component {
         {{-- KPI: Total Revenue (This Month) --}}
         <x-kpi-cards
             label="Monthly Revenue"
-            value="₱285,400"
-            trend="+12.5%"
-            trend-color="emerald"
+            value="₱{{ number_format($this->revenueData['value'], 2) }}"
+            trend="{{ $this->revenueData['trend'] }}"
+            trend-color="{{ $this->revenueData['trend_color'] }}"
             icon="banknotes"
             color="emerald"
-            subtext="vs last month: ₱253,200"
+            subtext="{{ $this->revenueData['subtext'] }}"
         />
 
         {{-- KPI: Active Enrollments --}}
         <x-kpi-cards
             label="Active Enrollments"
-            value="127"
+            value="{{ $this->enrollmentStats['total'] }}"
             trend="students"
             trend-color="zinc"
             icon="academic-cap"
             color="blue"
         >
             <div class="flex gap-2 mt-2">
-                <flux:text size="xs" class="text-slate-500">TDC: 52</flux:text>
+                <flux:text size="xs" class="text-slate-500">TDC: {{ $this->enrollmentStats['tdc'] }}</flux:text>
                 <flux:text size="xs" class="text-slate-300">|</flux:text>
-                <flux:text size="xs" class="text-slate-500">PDC: 75</flux:text>
+                <flux:text size="xs" class="text-slate-500">PDC: {{ $this->enrollmentStats['pdc'] }}</flux:text>
             </div>
         </x-kpi-cards>
 
         {{-- KPI: Pending Actions --}}
         <x-kpi-cards
             label="Pending Actions"
-            value="17"
+            value="{{ $this->pendingActions['total'] }}"
             trend="items"
             trend-color="zinc"
             icon="clock"
             color="amber"
         >
             <div class="flex gap-2 mt-2">
-                <flux:text size="xs" class="text-slate-500">Forms: 5</flux:text>
+                <flux:text size="xs" class="text-slate-500">Forms: {{ $this->pendingActions['forms'] }}</flux:text>
                 <flux:text size="xs" class="text-slate-300">|</flux:text>
-                <flux:text size="xs" class="text-slate-500">Docs: {{ $this->pendingDocsCount }}</flux:text>
+                <flux:text size="xs" class="text-slate-500">Docs: {{ $this->pendingActions['docs'] }}</flux:text>
             </div>
         </x-kpi-cards>
 
-        {{-- KPI: Fleet Utilization --}}
+        {{-- KPI: Passed Students --}}
         <x-kpi-cards
-            label="Fleet Status"
-            value="8/12"
-            trend="in use"
-            trend-color="zinc"
-            icon="truck"
-            color="purple"
+            label="Passed Students"
+            value="{{ $this->passedStudentsCount['tdc'] + $this->passedStudentsCount['pdc'] }}"
+            trend="Total"
+            trend-color="emerald"
+            icon="check-badge"
+            color="emerald"
         >
             <div class="flex gap-2 mt-2">
-                <flux:text color="emerald" size="xs">Available: 4</flux:text>
+                <flux:text color="emerald" size="xs">TDC: {{ $this->passedStudentsCount['tdc'] }}</flux:text>
                 <flux:text size="xs" class="text-slate-300">|</flux:text>
-                <flux:text color="red" size="xs">Maintenance: 0</flux:text>
+                <flux:text color="emerald" size="xs">PDC: {{ $this->passedStudentsCount['pdc'] }}</flux:text>
             </div>
         </x-kpi-cards>
     </div>
@@ -210,132 +336,58 @@ new class extends Component {
                 </div>
             </div>
 
-            {{-- TODAY'S SESSIONS OVERVIEW (BookingSession table) --}}
-            <div
-                class="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm overflow-hidden">
-                <div class="p-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+            {{-- INSTRUCTOR PERFORMANCE SNAPSHOT --}}
+            <div class="flex flex-col gap-6">
+                <div class="flex justify-between items-center">
                     <div>
-                        <flux:heading size="lg" weight="bold">Today's Sessions</flux:heading>
-                        <flux:text size="xs" class="text-slate-500 mt-1">Real-time session monitoring</flux:text>
+                        <flux:heading size="lg" weight="bold">Instructor Performance (Preview)</flux:heading>
+                        <flux:text size="xs" class="text-slate-500 mt-1">Snapshot of TDC & PDC performance leads</flux:text>
                     </div>
-                    <div class="flex gap-2">
-                        <flux:badge color="emerald" variant="subtle" size="sm">18 Completed</flux:badge>
-                        <flux:badge color="blue" variant="subtle" size="sm">5 In Progress</flux:badge>
-                        <flux:badge variant="subtle" size="sm">12 Scheduled</flux:badge>
-                    </div>
+                    <flux:button size="sm" variant="ghost" icon="arrow-right" :href="route('admin.instructor-performances')" wire:navigate>View All Analytics</flux:button>
                 </div>
 
-                <div class="p-5">
-                    {{-- Active Session Snapshot --}}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {{-- Session 1: In Progress --}}
-                        <div
-                            class="p-4 rounded-lg border-2 border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-900/10">
-                            <div class="flex items-center justify-between mb-3">
-                                <flux:badge color="blue" size="sm">IN PROGRESS</flux:badge>
-                                <flux:text size="xs" class="text-slate-500">Started 1:00 PM</flux:text>
-                            </div>
-                            <flux:heading size="sm" weight="semibold">Juan D. → Instructor: Alex Cruz</flux:heading>
-                            <flux:text size="xs" class="text-slate-500 mt-1">Vehicle: Toyota Vios (ABC-123)</flux:text>
-                            <div class="mt-3 flex items-center gap-2">
-                                <flux:icon icon="clock" class="size-3 text-blue-600" />
-                                <flux:text size="xs" color="blue">45 mins elapsed</flux:text>
-                            </div>
-                        </div>
-
-                        {{-- Session 2: In Progress --}}
-                        <div
-                            class="p-4 rounded-lg border-2 border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-900/10">
-                            <div class="flex items-center justify-between mb-3">
-                                <flux:badge color="blue" size="sm">IN PROGRESS</flux:badge>
-                                <flux:text size="xs" class="text-slate-500">Started 2:30 PM</flux:text>
-                            </div>
-                            <flux:heading size="sm" weight="semibold">Maria C. → Instructor: Beth Tan</flux:heading>
-                            <flux:text size="xs" class="text-slate-500 mt-1">Vehicle: Honda City (XYZ-789)</flux:text>
-                            <div class="mt-3 flex items-center gap-2">
-                                <flux:icon icon="clock" class="size-3 text-blue-600" />
-                                <flux:text size="xs" color="blue">15 mins elapsed</flux:text>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mt-4">
-                        <flux:button size="sm" variant="ghost" icon="arrow-right" class="w-full">View Full
-                            Schedule</flux:button>
-                    </div>
-                </div>
-            </div>
-
-            {{-- INSTRUCTOR PERFORMANCE SNAPSHOT (InstructorMetric table) --}}
-            <div
-                class="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm overflow-hidden">
-                <div class="p-5 border-b border-slate-200 dark:border-slate-800">
-                    <flux:heading size="lg" weight="bold">Instructor Performance (This Month)</flux:heading>
-                    <flux:text size="xs" class="text-slate-500 mt-1">Based on sessions, ratings, and pass rates</flux:text>
-                </div>
-                <div class="p-5">
-                    <div class="space-y-3">
-                        {{-- Top Instructor --}}
-                        <div
-                            class="flex items-center gap-4 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900">
-                            <div
-                                class="size-10 rounded-full bg-emerald-200 dark:bg-emerald-800 flex items-center justify-center text-sm font-bold text-emerald-700 dark:text-emerald-300">
-                                AC
-                            </div>
-                            <div class="flex-1">
-                                <flux:heading size="sm" weight="semibold">Alex Cruz</flux:heading>
-                                <flux:text size="xs" class="text-slate-500">42.5 hrs taught • 17 students</flux:text>
-                            </div>
-                            <div class="text-right">
-                                <div class="flex items-center justify-end gap-1 text-yellow-500 text-xs mb-1">
-                                    <flux:icon icon="star" variant="solid" class="size-3" />
-                                    <flux:heading size="xs" weight="bold">4.9</flux:heading>
+                @forelse ($this->instructorsPerformances as $instructor)
+                    <div class="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm overflow-hidden p-6">
+                        <div class="flex items-center justify-between gap-3 mb-6">
+                            <div class="flex items-center gap-3">
+                                <flux:avatar src="{{ $instructor->user->avatar_url ?? '' }}" :initials="$instructor->user->initials()" size="lg" />
+                                <div>
+                                    <flux:heading size="md" weight="bold">{{ $instructor->user->name }}</flux:heading>
+                                    <flux:text size="xs" variant="subtle">Instructor ID: {{ $instructor->id }}</flux:text>
                                 </div>
-                                <flux:text size="xs" color="emerald" weight="medium">96% Pass Rate</flux:text>
                             </div>
+                            <flux:button variant="ghost" size="xs" icon="eye" :href="route('admin.instructor.evaluations', $instructor->id)" wire:navigate>View Evaluations</flux:button>
                         </div>
 
-                        {{-- Instructor 2 --}}
-                        <div
-                            class="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                            <div
-                                class="size-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-bold text-slate-500 dark:text-slate-400">
-                                BT
-                            </div>
-                            <div class="flex-1">
-                                <flux:heading size="sm" weight="semibold">Beth Tan</flux:heading>
-                                <flux:text size="xs" class="text-slate-500">38 hrs taught • 14 students</flux:text>
-                            </div>
-                            <div class="text-right">
-                                <div class="flex items-center justify-end gap-1 text-yellow-500 text-xs mb-1">
-                                    <flux:icon icon="star" variant="solid" class="size-3" />
-                                    <flux:heading size="xs" weight="bold">4.8</flux:heading>
+                        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                            @forelse ($instructor->coursePerformances as $perf)
+                                <x-instructor-performance 
+                                    :courseTitle="$perf->course->title"
+                                    :courseCode="$perf->course->code"
+                                    :courseType="strtoupper($perf->course->type)"
+                                    :avgRating="$perf->avgRating"
+                                    :totalReviews="$perf->totalReviews"
+                                    :avgCriteria="$perf->avgCriteria"
+                                    :performances="$perf->performances"
+                                    :lastEvaluationDate="$perf->lastEvaluationDate"
+                                    :trend="$perf->trend"
+                                    :ratingDistribution="$perf->ratingDistribution"
+                                    :topStrengths="$perf->topStrengths"
+                                    :topImprovements="$perf->topImprovements"
+                                />
+                            @empty
+                                <div class="col-span-full py-8 text-center text-slate-500">
+                                    <flux:icon icon="star" class="size-8 mx-auto mb-2 opacity-50" />
+                                    <flux:text>No performance data available for this instructor yet.</flux:text>
                                 </div>
-                                <flux:text size="xs" color="blue" weight="medium">92% Pass Rate</flux:text>
-                            </div>
-                        </div>
-
-                        {{-- Instructor 3 --}}
-                        <div
-                            class="flex items-center gap-4 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                            <div
-                                class="size-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-sm font-bold text-slate-500 dark:text-slate-400">
-                                JR
-                            </div>
-                            <div class="flex-1">
-                                <flux:heading size="sm" weight="semibold">Jose Ramos</flux:heading>
-                                <flux:text size="xs" class="text-slate-500">35 hrs taught • 12 students</flux:text>
-                            </div>
-                            <div class="text-right">
-                                <div class="flex items-center justify-end gap-1 text-yellow-500 text-xs mb-1">
-                                    <flux:icon icon="star" variant="solid" class="size-3" />
-                                    <flux:heading size="xs" weight="bold">4.7</flux:heading>
-                                </div>
-                                <flux:text size="xs" weight="medium" class="opacity-70">89% Pass Rate</flux:text>
-                            </div>
+                            @endforelse
                         </div>
                     </div>
-                </div>
+                @empty
+                    <div class="p-8 text-center text-slate-500 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+                        <flux:text>No active instructors found.</flux:text>
+                    </div>
+                @endforelse
             </div>
 
         </div>

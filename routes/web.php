@@ -68,6 +68,13 @@ Route::middleware(['auth'])->group(function () {
         Route::livewire('document/{document}', 'pages::admin.document')
             ->name('admin.document.check');
 
+        // Instructor Performance Analytics
+        Route::livewire('instructor-performances', 'pages::admin.instructor-performances')
+            ->name('admin.instructor-performances');
+
+        Route::livewire('instructor/{instructor}/evaluations', 'pages::admin.instructor-evaluations')
+            ->name('admin.instructor.evaluations');
+
         // User management
         Route::livewire('manage-users', 'pages::admin.manage-users')
             ->name('admin.manage-users');

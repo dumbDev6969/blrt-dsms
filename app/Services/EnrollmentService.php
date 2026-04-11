@@ -47,7 +47,7 @@ class EnrollmentService
                 'student_id' => $form->student_id,
                 'course_id' => $form->course_id,
                 'instructor_id' => $instructor?->id,
-                'status' => 'active',
+                'status' => $instructor !== null ? 'active' : 'waiting_list',
                 'progress_percent' => 0,
                 'start_date' => now()->toDateString(),
                 'target_completion_date' => now()->addDays(2)->toDateString(),

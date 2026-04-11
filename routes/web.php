@@ -104,6 +104,9 @@ Route::middleware(['auth'])->group(function () {
 
         Route::livewire('approved-enrollment/{enrollment}', 'pages::staff.approved-enrollment')
             ->name('staff.approved-enrollment.show');
+
+        Route::livewire('waiting-list', 'pages::staff.waiting-list')
+            ->name('staff.waiting-list');
     });
 
     // Instructor routes

@@ -38,6 +38,10 @@
                             <flux:sidebar.item icon="check-badge" :href="route('staff.approved-enrollments')" :current="request()->routeIs('staff.approved-enrollments')" wire:navigate>
                                 {{ __('Approved enrollments') }}
                             </flux:sidebar.item>
+
+                            <flux:sidebar.item icon="clock" :href="route('staff.waiting-list')" :current="request()->routeIs('staff.waiting-list')" wire:navigate>
+                                {{ __('Waiting list') }}
+                            </flux:sidebar.item>
                         @endcan
 
                         {{-- Instructor Academic --}}

@@ -2,27 +2,30 @@
 
 use Livewire\Component;
 use App\Models\InstructorProfile;
+use App\Models\BookingSession;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use App\Models\InstructorMetric;
 use Livewire\Attributes\Computed;
 
 new class extends Component {
-    public $is_active;
+    public $accepting_sessions;
 
     public function mount()
     {
         $profile = Auth::user()->instructorProfile;
         if ($profile) {
-            $this->is_active = $profile->is_active;
+            $this->accepting_sessions = $profile->status === 'approved';
         }
     }
 
-    public function updatedIsActive($value)
+    public function updatedAcceptingSessions($value)
     {
         $profile = Auth::user()->instructorProfile;
-        if ($profile) {
-            $profile->update(['is_active' => $value]);
+        if ($profile && in_array($profile->status, ['approved', 'not_accepting', 'on_leave'])) {
+            $profile->update([
+                'status' => $value ? 'approved' : 'not_accepting',
+            ]);
         }
     }
 
@@ -64,6 +67,39 @@ new class extends Component {
         $service = app(\App\Services\InstructorPerformanceService::class);
         return $service->getPerformancesByCourse($profile->id, 2);
     }
+
+    #[Computed]
+    public function todaySessions()
+    {
+        $profile = Auth::user()->instructorProfile;
+        if (!$profile) return collect();
+
+        return BookingSession::where('instructor_id', $profile->id)
+            ->whereDate('start_time', today())
+            ->with(['enrollment.studentProfile.user', 'enrollment.course'])
+            ->orderBy('start_time')
+            ->get();
+    }
+
+    #[Computed]
+    public function licenseInfo()
+    {
+        $profile = Auth::user()->instructorProfile;
+        if (!$profile) return null;
+
+        $expiry = $profile->license_expiry;
+        $now = now();
+        $isExpired = $expiry ? $expiry->isPast() : false;
+        $daysRemaining = $expiry ? (int) $now->diffInDays($expiry, false) : null;
+
+        return (object) [
+            'number' => $profile->license_number,
+            'expiry' => $expiry,
+            'is_expired' => $isExpired,
+            'days_remaining' => $daysRemaining,
+            'is_expiring_soon' => $daysRemaining !== null && $daysRemaining <= 90 && $daysRemaining > 0,
+        ];
+    }
 };
 ?>
 
@@ -79,7 +115,7 @@ new class extends Component {
                 </flux:badge>
             </div>
             <flux:text>
-                {{ now()->format('l, F j, Y') }} • <flux:text color="{{ $is_active ? 'emerald' : 'rose' }}" weight="medium">{{ $is_active ? 'Accepting Sessions' : 'On Break' }}</flux:text>
+                {{ now()->format('l, F j, Y') }} • <flux:text color="{{ $accepting_sessions ? 'emerald' : 'rose' }}" weight="medium">{{ $accepting_sessions ? 'Accepting Sessions' : 'Not Accepting' }}</flux:text>
             </flux:text>
         </div>
         <div class="flex gap-3">
@@ -193,67 +229,81 @@ new class extends Component {
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800">
+                            @forelse ($this->todaySessions as $session)
+                                @php
+                                    $isUpcoming = $session->status === 'scheduled' && $session->start_time->isFuture();
+                                    $isCompleted = $session->status === 'completed';
+                                    $isActive = $session->status === 'active' || $session->status === 'in_progress';
+                                    $studentName = $session->enrollment?->studentProfile?->user?->name ?? 'Unknown';
+                                    $initials = collect(explode(' ', $studentName))->map(fn($w) => strtoupper(substr($w, 0, 1)))->take(2)->join('');
+                                    $courseTitle = $session->enrollment?->course?->title ?? 'N/A';
+                                    $courseType = $session->enrollment?->course?->type ?? '';
+                                @endphp
 
-                            {{-- Row 1: Completed --}}
-                            <tr class="group hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors cursor-default">
-                                <td class="px-6 py-4">
-                                    <flux:text size="xs" weight="bold" class="font-mono bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-md border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400">
-                                        08:00 AM
-                                    </flux:text>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-3">
-                                        <div
-                                            class="flex items-center justify-center size-8 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 border border-zinc-200 dark:border-zinc-700 text-[10px] font-bold">
-                                            JD
+                                <tr class="group transition-colors {{ $isUpcoming ? 'bg-blue-50/30 dark:bg-blue-900/10 hover:bg-blue-50/50 dark:hover:bg-blue-900/20' : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/40' }} cursor-default">
+                                    <td class="px-6 py-4">
+                                        @if($isUpcoming)
+                                            <flux:text color="blue" size="xs" weight="bold" class="font-mono bg-blue-100/50 dark:bg-blue-900/30 px-2 py-1 rounded-md border border-blue-200 dark:border-blue-800">
+                                                {{ $session->start_time->format('h:i A') }}
+                                            </flux:text>
+                                        @else
+                                            <flux:text size="xs" weight="bold" class="font-mono bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-md border border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400">
+                                                {{ $session->start_time->format('h:i A') }}
+                                            </flux:text>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="flex items-center justify-center size-8 rounded-full {{ $isUpcoming ? 'bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-800' : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500 border border-zinc-200 dark:border-zinc-700' }} text-[10px] font-bold">
+                                                {{ $initials }}
+                                            </div>
+                                            <flux:text weight="{{ $isUpcoming ? 'bold' : 'medium' }}">{{ $studentName }}</flux:text>
                                         </div>
-                                        <flux:text weight="medium">Juan Dela Cruz</flux:text>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 text-zinc-600 dark:text-zinc-400">
-                                    <flux:text size="sm">PDC - Manual <flux:text class="opacity-50 text-[10px] font-bold uppercase ml-1 tracking-tighter">(Toyota Vios)</flux:text></flux:text>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <flux:badge color="emerald" variant="subtle" size="sm" class="font-bold tracking-widest uppercase">Completed</flux:badge>
-                                </td>
-                                <td class="px-6 py-4 text-right">
-                                    <flux:button variant="ghost" size="xs" icon="document-text" inset="top bottom">View</flux:button>
-                                </td>
-                            </tr>
-
-                            {{-- Row 2: Up Next (Active) --}}
-                            <tr
-                                class="bg-blue-50/30 dark:bg-blue-900/10 group hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors">
-                                <td class="px-6 py-4">
-                                    <flux:text color="blue" size="xs" weight="bold" class="font-mono bg-blue-100/50 dark:bg-blue-900/30 px-2 py-1 rounded-md border border-blue-200 dark:border-blue-800">
-                                        01:00 PM
-                                    </flux:text>
-                                </td>
-                                <td class="px-6 py-4 text-blue-900 dark:text-blue-100">
-                                    <div class="flex items-center gap-3">
-                                        <div
-                                            class="flex items-center justify-center size-8 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-800 text-[10px] font-bold">
-                                            MC
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex flex-col">
+                                            <flux:text size="sm" weight="{{ $isUpcoming ? 'semibold' : 'medium' }}">{{ $courseTitle }}</flux:text>
+                                            @if($isUpcoming && $session->start_time->diffInMinutes(now()) <= 120)
+                                                <flux:text color="blue" size="xs" weight="black" class="mt-0.5 uppercase tracking-tighter animate-pulse text-[10px]">Starts in {{ $session->start_time->diffForHumans() }}</flux:text>
+                                            @else
+                                                <flux:text size="xs" class="text-zinc-400 mt-0.5 uppercase tracking-tighter text-[10px] font-bold">{{ ucfirst($courseType) }} • {{ ucfirst($session->type ?? 'session') }}</flux:text>
+                                            @endif
                                         </div>
-                                        <flux:text weight="bold">Maria Clara</flux:text>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex flex-col">
-                                        <flux:text size="sm" weight="semibold">PDC - Automatic (Honda City)</flux:text>
-                                        <flux:text color="blue" size="xs" weight="black" class="mt-0.5 uppercase tracking-tighter animate-pulse text-[10px]">Starts in 45 mins</flux:text>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <flux:badge color="blue" variant="subtle" size="sm" class="font-bold tracking-widest uppercase">
-                                        <div class="size-1.5 rounded-full bg-blue-500 animate-pulse mr-1.5"></div>
-                                        Up Next
-                                    </flux:badge>
-                                </td>
-                                <td class="px-6 py-4 text-right">
-                                    <flux:button size="sm" variant="primary" icon="play" class="shadow-sm shadow-blue-500/20">Start Session</flux:button>
-                                </td>
-                            </tr>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        @if($isCompleted)
+                                            <flux:badge color="emerald" variant="subtle" size="sm" class="font-bold tracking-widest uppercase">Completed</flux:badge>
+                                        @elseif($isActive)
+                                            <flux:badge color="amber" variant="subtle" size="sm" class="font-bold tracking-widest uppercase">
+                                                <div class="size-1.5 rounded-full bg-amber-500 animate-pulse mr-1.5"></div>
+                                                In Progress
+                                            </flux:badge>
+                                        @elseif($isUpcoming)
+                                            <flux:badge color="blue" variant="subtle" size="sm" class="font-bold tracking-widest uppercase">
+                                                <div class="size-1.5 rounded-full bg-blue-500 animate-pulse mr-1.5"></div>
+                                                Up Next
+                                            </flux:badge>
+                                        @else
+                                            <flux:badge color="zinc" variant="subtle" size="sm" class="font-bold tracking-widest uppercase">{{ ucfirst($session->status) }}</flux:badge>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        @if($isUpcoming)
+                                            <flux:button size="sm" variant="primary" icon="play" class="shadow-sm shadow-blue-500/20">Start Session</flux:button>
+                                        @else
+                                            <flux:button variant="ghost" size="xs" icon="document-text" inset="top bottom">View</flux:button>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @empty
+                                <x-empty-state 
+                                    variant="table" 
+                                    :colspan="5"
+                                    icon="calendar"
+                                    heading="No sessions scheduled for today"
+                                    message="Enjoy your free time or check upcoming sessions."
+                                />
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -295,11 +345,12 @@ new class extends Component {
                         @endforeach
                     </div>
                 @else
-                    <div class="p-10 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-center">
-                        <flux:icon icon="star" class="size-10 text-slate-300 mx-auto mb-4" />
-                        <flux:heading size="lg" class="text-slate-400 font-bold mb-2">No Performance Data Yet</flux:heading>
-                        <flux:text class="text-slate-500 max-w-xs mx-auto">Complete more sessions and receive student feedback to see your analytics here.</flux:text>
-                    </div>
+                    <x-empty-state 
+                        variant="card" 
+                        icon="star"
+                        heading="No Performance Data Yet"
+                        message="Complete more sessions and receive student feedback to see your analytics here."
+                    />
                 @endif
             </div>
         </div>
@@ -313,34 +364,61 @@ new class extends Component {
                         <div class="size-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-bold text-slate-500">
                             {{ substr(Auth::user()->name, 0, 2) }}
                         </div>
-                        <div class="absolute -bottom-1 -right-1 size-3.5 rounded-full border-2 border-white dark:border-slate-900 {{ $is_active ? 'bg-emerald-500' : 'bg-rose-500' }}"></div>
+                        <div class="absolute -bottom-1 -right-1 size-3.5 rounded-full border-2 border-white dark:border-slate-900 {{ $accepting_sessions ? 'bg-emerald-500' : 'bg-rose-500' }}"></div>
                     </div>
                     <div>
                         <flux:text size="sm" weight="bold">{{ Auth::user()->name }}</flux:text>
-                        <flux:text size="xs" class="text-slate-500">{{ $is_active ? 'Accepting Sessions' : 'On Leave' }}</flux:text>
+                        <flux:text size="xs" class="text-slate-500">{{ $accepting_sessions ? 'Accepting Sessions' : 'Not Accepting' }}</flux:text>
                     </div>
                 </div>
-                <flux:switch wire:model.live="is_active" size="sm" />
+                <flux:switch wire:model.live="accepting_sessions" size="sm" />
             </div>
 
             {{-- LICENSE EXPIRY WIDGET --}}
-            <div class="p-6 rounded-[2rem] border border-blue-100 bg-blue-50/50 dark:border-blue-900/30 dark:bg-blue-900/10 shadow-sm relative overflow-hidden group">
-                <div class="absolute -right-10 -top-10 size-32 bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/10 transition-colors duration-500"></div>
-                <div class="relative z-10">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="p-2 bg-blue-500 text-white rounded-xl shadow-lg shadow-blue-500/20">
-                            <flux:icon icon="identification" class="size-5" />
+            @if($this->licenseInfo)
+                @php
+                    $license = $this->licenseInfo;
+                    $isWarning = $license->is_expired || $license->is_expiring_soon;
+                    $borderColor = $license->is_expired ? 'border-red-100 dark:border-red-900/30' : ($license->is_expiring_soon ? 'border-amber-100 dark:border-amber-900/30' : 'border-blue-100 dark:border-blue-900/30');
+                    $bgColor = $license->is_expired ? 'bg-red-50/50 dark:bg-red-900/10' : ($license->is_expiring_soon ? 'bg-amber-50/50 dark:bg-amber-900/10' : 'bg-blue-50/50 dark:bg-blue-900/10');
+                    $iconBg = $license->is_expired ? 'bg-red-500' : ($license->is_expiring_soon ? 'bg-amber-500' : 'bg-blue-500');
+                    $headingColor = $license->is_expired ? 'text-red-900 dark:text-red-100' : ($license->is_expiring_soon ? 'text-amber-900 dark:text-amber-100' : 'text-blue-900 dark:text-blue-100');
+                    $textColor = $license->is_expired ? 'text-red-800/70 dark:text-red-300' : ($license->is_expiring_soon ? 'text-amber-800/70 dark:text-amber-300' : 'text-blue-800/70 dark:text-blue-300');
+                    $glowColor = $license->is_expired ? 'bg-red-500/5 group-hover:bg-red-500/10' : ($license->is_expiring_soon ? 'bg-amber-500/5 group-hover:bg-amber-500/10' : 'bg-blue-500/5 group-hover:bg-blue-500/10');
+                @endphp
+                <div class="p-6 rounded-[2rem] border {{ $borderColor }} {{ $bgColor }} shadow-sm relative overflow-hidden group">
+                    <div class="absolute -right-10 -top-10 size-32 {{ $glowColor }} rounded-full blur-2xl transition-colors duration-500"></div>
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="p-2 {{ $iconBg }} text-white rounded-xl shadow-lg shadow-{{ $license->is_expired ? 'red' : ($license->is_expiring_soon ? 'amber' : 'blue') }}-500/20">
+                                <flux:icon icon="identification" class="size-5" />
+                            </div>
+                            <flux:heading size="sm" weight="bold" class="{{ $headingColor }}">License Verification</flux:heading>
                         </div>
-                        <flux:heading size="sm" weight="bold" class="text-blue-900 dark:text-blue-100">License Verification</flux:heading>
-                    </div>
-                    <flux:text size="sm" class="text-blue-800/70 dark:text-blue-300 font-medium leading-relaxed">
-                        Your professional instructor license is verified and valid until <span class="font-bold text-blue-900 dark:text-white">October 2027</span>.
-                    </flux:text>
-                    <div class="mt-6">
-                        <flux:button variant="primary" size="sm" class="w-full rounded-xl shadow-sm">View Digital Badge</flux:button>
+
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2">
+                                <flux:text size="xs" class="{{ $textColor }} uppercase font-bold tracking-widest">License No.</flux:text>
+                                <flux:text size="sm" weight="bold" class="{{ $headingColor }}">{{ $license->number }}</flux:text>
+                            </div>
+
+                            @if($license->is_expired)
+                                <flux:text size="sm" class="{{ $textColor }} font-medium leading-relaxed">
+                                    Your license <span class="font-bold {{ $headingColor }}">expired on {{ $license->expiry->format('F j, Y') }}</span>. Please renew immediately to continue teaching.
+                                </flux:text>
+                            @elseif($license->is_expiring_soon)
+                                <flux:text size="sm" class="{{ $textColor }} font-medium leading-relaxed">
+                                    Your license expires on <span class="font-bold {{ $headingColor }}">{{ $license->expiry->format('F j, Y') }}</span> — <span class="font-bold">{{ $license->days_remaining }} days remaining</span>. Consider renewing soon.
+                                </flux:text>
+                            @else
+                                <flux:text size="sm" class="{{ $textColor }} font-medium leading-relaxed">
+                                    Your professional instructor license is verified and valid until <span class="font-bold {{ $headingColor }}">{{ $license->expiry->format('F j, Y') }}</span>.
+                                </flux:text>
+                            @endif
+                        </div>
                     </div>
                 </div>
-            </div>
+            @endif
 
             {{-- MAINTENANCE WIDGET --}}
             <div class="p-5 rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm">

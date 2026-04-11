@@ -276,29 +276,22 @@ new class extends Component
                     @endforeach
                 </div>
             @else
-                <div class="py-20 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center text-center bg-slate-50/50 dark:bg-slate-900/50">
-                    <div class="p-5 bg-white dark:bg-slate-900 rounded-2xl shadow-sm mb-6 border border-slate-200 dark:border-slate-800">
-                        <flux:icon icon="calendar-days" class="size-12 text-blue-400 dark:text-blue-500" />
-                    </div>
-                    <flux:heading size="xl" weight="bold">Your schedule is clear</flux:heading>
-                    <flux:text size="sm" class="mt-3 text-slate-500 max-w-sm mx-auto">
-                        There are no sessions scheduled at the moment. As you progress, your instructor will assign TDC and PDC schedules which will appear right here.
-                    </flux:text>
-                </div>
+                <x-empty-state 
+                    variant="card" 
+                    icon="calendar-days"
+                    heading="Your schedule is clear"
+                    message="There are no sessions scheduled at the moment. As you progress, your instructor will assign TDC and PDC schedules which will appear right here."
+                />
             @endif
         </div>
     @else
-        <div class="flex flex-col items-center justify-center h-[70vh] text-center px-4">
-            <div class="size-24 rounded-[2rem] bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 flex items-center justify-center mb-8 border border-blue-100 dark:border-blue-800/50 shadow-sm">
-                <flux:icon icon="academic-cap" class="size-12 text-blue-600 dark:text-blue-400" />
-            </div>
-            <flux:heading size="2xl" class="font-bold tracking-tight mb-2">No Active Enrollment Found</flux:heading>
-            <flux:text class="text-slate-500 max-w-md mx-auto leading-relaxed">
-                It looks like you don't have an active course enrollment right now. Head over to the dashboard to view available courses or check your application status.
-            </flux:text>
-            <div class="mt-10">
-                <flux:button href="{{ route('dashboard') }}" variant="primary" class="rounded-full px-8 shadow-md shadow-blue-500/20">Return to Dashboard</flux:button>
-            </div>
-        </div>
+        <x-empty-state 
+            variant="page" 
+            icon="academic-cap"
+            heading="No Active Enrollment Found"
+            message="It looks like you don't have an active course enrollment right now. Head over to the dashboard to view available courses or check your application status."
+            action-url="{{ route('dashboard') }}"
+            action-label="Return to Dashboard"
+        />
     @endif
 </div>

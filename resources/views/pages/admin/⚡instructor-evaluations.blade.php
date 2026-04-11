@@ -106,8 +106,13 @@ new class extends Component {
                     :topImprovements="$perf->topImprovements"
                 />
             @empty
-                <div class="col-span-full p-10 text-center opacity-50 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl">
-                    No course summaries available.
+                <div class="col-span-full">
+                    <x-empty-state 
+                        variant="card" 
+                        icon="chart-bar"
+                        heading="No Course Summaries"
+                        message="No course performance data available yet."
+                    />
                 </div>
             @endforelse
         </div>
@@ -192,8 +197,13 @@ new class extends Component {
                     </div>
                 </div>
             @empty
-                <div class="py-20 text-center">
-                    <flux:text>No individual evaluations found for this instructor.</flux:text>
+                <div class="col-span-full">
+                    <x-empty-state 
+                        variant="card" 
+                        icon="chat-bubble-bottom-center-text"
+                        heading="No evaluations found"
+                        message="There are no individual student evaluations for this instructor yet."
+                    />
                 </div>
             @endforelse
 

@@ -323,22 +323,13 @@ new class extends Component {
                                 </td>
                             </tr>
                         @empty
-                            <tr>
-                                <td colspan="4"
-                                    class="py-12 text-center animate-in fade-in zoom-in-95 duration-300">
-                                    <div class="flex flex-col items-center justify-center max-w-sm mx-auto">
-                                        <div
-                                            class="flex items-center justify-center size-10 rounded-full bg-zinc-100/50 dark:bg-zinc-800/50 border border-zinc-200/50 dark:border-zinc-700/50 mb-3 shadow-sm">
-                                            <flux:icon name="users"
-                                                class="size-5 text-zinc-400 dark:text-zinc-500" />
-                                        </div>
-                                        <flux:heading>No users found</flux:heading>
-                                        <flux:text class="mt-1 text-xs max-w-xs mx-auto">
-                                            No users match the current filters or search criteria.
-                                        </flux:text>
-                                    </div>
-                                </td>
-                            </tr>
+                            <x-empty-state 
+                                variant="table" 
+                                :colspan="4"
+                                icon="users"
+                                heading="No users found"
+                                message="No users match the current filters or search criteria."
+                            />
                         @endforelse
                     </tbody>
                 </table>

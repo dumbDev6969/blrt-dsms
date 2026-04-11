@@ -211,21 +211,13 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr>
-                                <td colspan="7" class="py-12 text-center">
-                                    <div class="flex flex-col items-center justify-center max-w-sm mx-auto">
-                                        <div
-                                            class="flex items-center justify-center size-10 rounded-full bg-zinc-100/50 dark:bg-zinc-800/50 border border-zinc-200/50 dark:border-zinc-700/50 mb-3 shadow-sm">
-                                            <flux:icon name="document-text"
-                                                class="size-5 text-zinc-400 dark:text-zinc-500" />
-                                        </div>
-                                        <flux:heading>No enrollments found</flux:heading>
-                                        <flux:text class="mt-1 text-xs max-w-xs mx-auto">
-                                            Try adjusting your filters or search criteria.
-                                        </flux:text>
-                                    </div>
-                                </td>
-                            </tr>
+                            <x-empty-state 
+                                variant="table" 
+                                :colspan="7"
+                                icon="document-text"
+                                heading="No enrollments found"
+                                message="Try adjusting your filters or search criteria."
+                            />
                         @endforelse
                     </tbody>
                 </table>

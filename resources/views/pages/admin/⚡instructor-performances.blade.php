@@ -73,23 +73,26 @@ new class extends Component {
                             :topImprovements="$perf->topImprovements"
                         />
                     @empty
-                        <div class="col-span-full py-12 text-center rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800 text-slate-500">
-                            <flux:icon icon="star" class="size-12 mx-auto mb-4 opacity-20" />
-                            <flux:heading size="lg" class="opacity-50">No evaluations recorded yet</flux:heading>
-                            <flux:text>This instructor hasn't received any student performance reviews for their assigned courses.</flux:text>
+                        <div class="col-span-full">
+                            <x-empty-state 
+                                variant="card" 
+                                icon="star"
+                                heading="No evaluations recorded yet"
+                                message="This instructor hasn't received any student performance reviews for their assigned courses."
+                            />
                         </div>
                     @endforelse
                 </div>
             </div>
         @empty
-            <div class="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-full mb-4">
-                    <flux:icon icon="users" class="size-10 text-slate-400" />
-                </div>
-                <flux:heading size="lg">No Approved Instructors</flux:heading>
-                <flux:text class="text-center max-w-xs mt-2">There are currently no instructors with an 'Approved' status in the system.</flux:text>
-                <flux:button variant="primary" class="mt-6" :href="route('admin.pending-registrations')" wire:navigate>Manage Registrations</flux:button>
-            </div>
+            <x-empty-state 
+                variant="card" 
+                icon="users"
+                heading="No Approved Instructors"
+                message="There are currently no instructors with an 'Approved' status in the system."
+                action-url="{{ route('admin.pending-registrations') }}"
+                action-label="Manage Registrations"
+            />
         @endforelse
     </div>
 </div>

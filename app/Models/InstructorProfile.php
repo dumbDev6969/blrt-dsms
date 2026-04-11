@@ -67,7 +67,20 @@ class InstructorProfile extends Model
         return $this->status === 'pending';
     }
 
+    /**
+     * Whether the instructor can perform actions (view students, manage schedule, etc.).
+     * True for any admin-approved instructor, even if they've paused session acceptance.
+     */
     public function canPerformActions(): bool
+    {
+        return in_array($this->status, ['approved', 'not_accepting', 'on_leave']) && $this->is_active;
+    }
+
+    /**
+     * Whether the instructor is actively accepting new sessions/enrollments.
+     * Used by the automated matching system and the waiting list.
+     */
+    public function isAccepting(): bool
     {
         return $this->status === 'approved' && $this->is_active;
     }

@@ -299,28 +299,14 @@ new class extends Component {
                                     </td>
                                 </tr>
                             @empty
-                                <tr>
-                                    <td colspan="5"
-                                        class="py-12 text-center animate-in fade-in zoom-in-95 duration-300">
-                                        <div class="flex flex-col items-center justify-center max-w-sm mx-auto">
-                                            <div
-                                                class="flex items-center justify-center size-10 rounded-full bg-zinc-100/50 dark:bg-zinc-800/50 border border-zinc-200/50 dark:border-zinc-700/50 mb-3 shadow-sm">
-                                                <flux:icon name="magnifying-glass"
-                                                    class="size-5 text-zinc-400 dark:text-zinc-500" />
-                                            </div>
-
-                                            <flux:heading>
-                                                No courses found
-                                            </flux:heading>
-
-                                            <div class="mt-4">
-                                                <flux:button size="sm" icon="plus">
-                                                    <a href="#create-course-form">Create Course</a>
-                                                </flux:button>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
+                                <x-empty-state 
+                                    variant="table" 
+                                    :colspan="5"
+                                    icon="magnifying-glass"
+                                    heading="No courses found"
+                                    action-url="#create-course-form"
+                                    action-label="Create Course"
+                                />
                             @endforelse
                         </tbody>
                     </table>

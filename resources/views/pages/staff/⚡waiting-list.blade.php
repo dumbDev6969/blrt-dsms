@@ -266,14 +266,12 @@ new class extends Component
                                 </td>
                             </tr>
                         @empty
-                            <tr>
-                                <td colspan="5" class="py-12 text-center text-zinc-500">
-                                    <div class="flex flex-col items-center">
-                                        <flux:icon icon="check-circle" class="size-10 text-emerald-500/50 mb-2" />
-                                        <flux:text>All set! No students on the waiting list.</flux:text>
-                                    </div>
-                                </td>
-                            </tr>
+                            <x-empty-state 
+                                variant="table" 
+                                :colspan="5"
+                                icon="check-circle"
+                                heading="All set! No students on the waiting list."
+                            />
                         @endforelse
                     </tbody>
                 </table>
@@ -426,14 +424,14 @@ new class extends Component
                         </div>
                     </div>
                 @empty
-                    <div class="flex flex-col items-center justify-center py-20 bg-zinc-50 dark:bg-zinc-900/30 rounded-[2rem] border-2 border-dashed border-zinc-200 dark:border-zinc-800">
-                        <div class="p-6 bg-white dark:bg-zinc-900 rounded-3xl shadow-xl mb-6">
-                            <flux:icon icon="magnifying-glass" class="size-12 text-zinc-300" />
-                        </div>
-                        <flux:heading size="lg" weight="bold">No instructors found</flux:heading>
-                        <flux:text class="mt-2 text-zinc-500">Try adjusting your search filters or skill requirements.</flux:text>
-                        <flux:button variant="ghost" class="mt-4" wire:click="$set('modalSearch', '')">Clear Search</flux:button>
-                    </div>
+                    <x-empty-state 
+                        variant="card" 
+                        icon="magnifying-glass"
+                        heading="No instructors found"
+                        message="Try adjusting your search filters or skill requirements."
+                        wire-action="$set('modalSearch', '')"
+                        wire-label="Clear Search"
+                    />
                 @endforelse
             </div>
             

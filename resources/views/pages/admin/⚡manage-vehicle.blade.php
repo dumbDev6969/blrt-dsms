@@ -292,19 +292,14 @@ new class extends Component {
                                     </td>
                                 </tr>
                             @empty
-                                <tr>
-                                    <td colspan="6" class="py-12 text-center">
-                                        <div class="flex flex-col items-center justify-center max-w-sm mx-auto">
-                                            <flux:icon name="truck" class="size-10 text-zinc-300 mb-3" />
-                                            <flux:heading>No vehicles registered</flux:heading>
-                                            <div class="mt-4">
-                                                <flux:button size="sm" icon="plus"
-                                                    href="#create-vehicle-form">
-                                                    Add Vehicle</flux:button>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
+                                <x-empty-state 
+                                    variant="table" 
+                                    :colspan="6"
+                                    icon="truck"
+                                    heading="No vehicles registered"
+                                    action-url="#create-vehicle-form"
+                                    action-label="Add Vehicle"
+                                />
                             @endforelse
                         </tbody>
                     </table>

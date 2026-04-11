@@ -249,13 +249,13 @@
                     
 
                 @empty
-                    <div
-                        class="col-span-full py-12 flex flex-col items-center justify-center bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-300 dark:border-slate-700">
-                        <div class="p-4 bg-slate-50 dark:bg-slate-800 rounded-full mb-4">
-                            <flux:icon icon="calendar" class="size-10 text-slate-400" />
-                        </div>
-                        <flux:heading size="lg">No sessions found</flux:heading>
-                        <flux:text class="mt-1">Try adjusting your filters or search terms.</flux:text>
+                    <div class="col-span-full">
+                        <x-empty-state 
+                            variant="card" 
+                            icon="calendar"
+                            heading="No sessions found"
+                            message="Try adjusting your filters or search terms."
+                        />
                     </div>
                 @endforelse
             </div>

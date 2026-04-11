@@ -161,19 +161,14 @@ new class extends Component
             @endforeach
         </div>
     @else
-        <div class="flex flex-col items-center justify-center h-[70vh] text-center px-4">
-            <div class="size-24 rounded-[2rem] bg-gradient-to-br from-slate-50 to-emerald-50 dark:from-slate-900/20 dark:to-emerald-900/20 flex items-center justify-center mb-8 border border-slate-100 dark:border-slate-800/50 shadow-sm relative overflow-hidden group">
-                <div class="absolute inset-0 bg-emerald-500/5 dark:bg-emerald-500/10 scale-0 group-hover:scale-100 transition-transform duration-700 rounded-full"></div>
-                <flux:icon icon="magnifying-glass" class="size-12 text-slate-400 dark:text-slate-500 relative z-10 group-hover:text-emerald-500 transition-colors duration-300" />
-            </div>
-            <flux:heading size="2xl" class="font-bold tracking-tight mb-2">No Records Found</flux:heading>
-            <flux:text class="text-slate-500 max-w-md mx-auto leading-relaxed">
-                You haven't completed any courses yet. Once you finish your enrolled training programs, your certificates and records will appear here for you to access.
-            </flux:text>
-            <div class="mt-10">
-                <flux:button href="{{ route('dashboard') }}" variant="primary" class="rounded-full px-8 shadow-md shadow-blue-500/20">Return to Dashboard</flux:button>
-            </div>
-        </div>
+        <x-empty-state 
+            variant="page" 
+            icon="magnifying-glass"
+            heading="No Records Found"
+            message="You haven't completed any courses yet. Once you finish your enrolled training programs, your certificates and records will appear here for you to access."
+            action-url="{{ route('dashboard') }}"
+            action-label="Return to Dashboard"
+        />
     @endif
 
     {{-- Instructor Evaluation Modal --}}

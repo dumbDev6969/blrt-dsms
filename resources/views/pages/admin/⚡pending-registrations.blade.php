@@ -294,22 +294,13 @@ new class extends Component {
                             </tr>
                         @empty
                             {{-- Empty State --}}
-                            <tr>
-                                <td colspan="5"
-                                    class="py-12 text-center animate-in fade-in zoom-in-95 duration-300">
-                                    <div class="flex flex-col items-center justify-center max-w-sm mx-auto">
-                                        <div
-                                            class="flex items-center justify-center size-10 rounded-full bg-zinc-100/50 dark:bg-zinc-800/50 border border-zinc-200/50 dark:border-zinc-700/50 mb-3 shadow-sm">
-                                            <flux:icon name="check-circle"
-                                                class="size-5 text-zinc-400 dark:text-zinc-500" />
-                                        </div>
-                                        <flux:heading>Queue Cleared</flux:heading>
-                                        <div class="mt-1 text-xs text-zinc-500 max-w-xs mx-auto">
-                                            {{ $status === 'pending' ? 'All instructor applications have been processed. New requests will appear here.' : 'No verified instructors found matching your criteria.' }}
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
+                            <x-empty-state 
+                                variant="table" 
+                                :colspan="5"
+                                icon="check-circle"
+                                heading="Queue Cleared"
+                                :message="$status === 'pending' ? 'All instructor applications have been processed. New requests will appear here.' : 'No verified instructors found matching your criteria.'"
+                            />
                         @endforelse
                     </tbody>
                 </table>

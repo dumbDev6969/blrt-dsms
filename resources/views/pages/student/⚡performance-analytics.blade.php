@@ -87,14 +87,11 @@ new class extends Component
     @if($this->assessmentAnalytics)
         <x-assessment-analytics :analytics="$this->assessmentAnalytics" />
     @else
-        <div class="py-20 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center text-center bg-slate-50/50 dark:bg-slate-900/50">
-            <div class="size-20 bg-white dark:bg-slate-900 rounded-2xl shadow-sm mb-6 border border-slate-200 dark:border-slate-800 flex items-center justify-center">
-                <flux:icon icon="chart-bar-square" class="size-10 text-slate-300 dark:text-slate-600" />
-            </div>
-            <flux:heading size="xl" weight="bold">No detailed analytics found</flux:heading>
-            <flux:text size="sm" class="mt-3 text-slate-500 max-w-sm mx-auto">
-                Simplified completion records are available above, but detailed practical assessment data was not recorded for this specific course.
-            </flux:text>
-        </div>
+        <x-empty-state 
+            variant="card" 
+            icon="chart-bar-square"
+            heading="No detailed analytics found"
+            message="Simplified completion records are available above, but detailed practical assessment data was not recorded for this specific course."
+        />
     @endif
 </div>

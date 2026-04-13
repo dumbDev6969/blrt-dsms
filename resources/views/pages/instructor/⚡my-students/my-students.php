@@ -215,6 +215,16 @@ new class extends Component {
             return;
         }
 
+        // Ensure the student has reached the minimum progress threshold
+        $enrollment = Enrollment::where('id', $enrollmentId)
+            ->where('instructor_id', Auth::user()->instructorProfile->id)
+            ->firstOrFail();
+
+        if ($enrollment->progress_percent < 80) {
+            session()->flash('error', 'Cannot grade student — progress must be at least 80%.');
+            return;
+        }
+
         $this->validate([
             "grades.$enrollmentId" => 'nullable|numeric|min:0|max:100',
             "results.$enrollmentId" => 'required|in:pass,fail',

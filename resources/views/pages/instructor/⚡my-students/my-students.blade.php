@@ -151,11 +151,21 @@
                             
                             {{-- TDC Grading Action --}}
                             @if ($enrollment->course->type === 'theoretical' && in_array($enrollment->status, ['active', 'completed']))
-                                <flux:modal.trigger name="score-{{ $enrollment->id }}">
-                                    <flux:button variant="ghost" size="sm" icon="academic-cap" class="w-full sm:flex-1 justify-center" wire:click="loadExistingGrade({{ $enrollment->id }})">
-                                        {{ $enrollment->status === 'completed' ? 'Update grade' : 'Grade student' }}
-                                    </flux:button>
-                                </flux:modal.trigger>
+                                @if ($enrollment->progress_percent >= 80)
+                                    <flux:modal.trigger name="score-{{ $enrollment->id }}">
+                                        <flux:button variant="ghost" size="sm" icon="academic-cap" class="w-full sm:flex-1 justify-center" wire:click="loadExistingGrade({{ $enrollment->id }})">
+                                            {{ $enrollment->status === 'completed' ? 'Update grade' : 'Grade student' }}
+                                        </flux:button>
+                                    </flux:modal.trigger>
+                                @else
+                                    <flux:tooltip content="Requires above 80% progress (currently {{ $enrollment->progress_percent ?? 0 }}%)" class="w-full sm:flex-1">
+                                        <div class="w-full cursor-not-allowed">
+                                            <flux:button variant="ghost" size="sm" icon="academic-cap" class="w-full justify-center pointer-events-none" disabled>
+                                                {{ $enrollment->status === 'completed' ? 'Update grade' : 'Grade student' }}
+                                            </flux:button>
+                                        </div>
+                                    </flux:tooltip>
+                                @endif
                             @endif
                         </x-slot>
                     </x-enrollment-card>

@@ -5,10 +5,13 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Validate;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Enrollment;
 use App\Models\EnrollmentForm;
 use App\Models\StudentProfile;
 use App\Models\Course;
 new class extends Component {
+    protected array $blockingEnrollmentStatuses = ['active', 'pending', 'waiting_list'];
+
     #[Validate('required')]
     public $course_id = '';
 
@@ -37,6 +40,20 @@ new class extends Component {
 
     public function mount(Course $course)
     {
+        $studentId = $this->getStudentId();
+
+        if (!$studentId || $this->isEnrollmentBlocked($studentId)) {
+            session()->flash('status', 'You already have an ongoing enrollment or a submitted enrollment form under review.');
+            $this->redirectRoute('dashboard', navigate: true);
+            return;
+        }
+
+        if ($course->type === 'practical' && !$this->hasCompletedTdc($studentId)) {
+            session()->flash('status', 'You must complete a Theoretical Driving Course (TDC) before enrolling in a Practical course.');
+            $this->redirectRoute('dashboard', navigate: true);
+            return;
+        }
+
         // Get the course id
         $this->course_id = $course->id;
 
@@ -78,14 +95,19 @@ new class extends Component {
 
     public function save()
     {
-        $this->validate();
+        $studentId = $this->getStudentId();
 
-        // Get the student id
-        $student_id = StudentProfile::where('user_id', Auth::user()->id)->first()->id;
+        if (!$studentId || $this->isEnrollmentBlocked($studentId)) {
+            session()->flash('status', 'You cannot submit a new enrollment while another enrollment is ongoing or under review.');
+            $this->redirectRoute('dashboard', navigate: true);
+            return;
+        }
+
+        $this->validate();
 
         // Save to db
         EnrollmentForm::create([
-            'student_id' => $student_id,
+            'student_id' => $studentId,
             'course_id' => $this->course_id,
             'control_number' => $this->control_number,
             'package_type' => $this->is_refresher ? 'Refresher' : $this->course_type,
@@ -105,6 +127,33 @@ new class extends Component {
         ]);
         session()->flash('status', 'Enrollment form submitted successfully.');
         return $this->redirect(route('dashboard'), navigate: true);
+    }
+
+    protected function getStudentId(): ?int
+    {
+        return StudentProfile::where('user_id', Auth::id())->value('id');
+    }
+
+    protected function isEnrollmentBlocked(int $studentId): bool
+    {
+        $hasBlockingEnrollment = Enrollment::where('student_id', $studentId)
+            ->whereIn('status', $this->blockingEnrollmentStatuses)
+            ->exists();
+
+        if ($hasBlockingEnrollment) {
+            return true;
+        }
+
+        return EnrollmentForm::where('student_id', $studentId)
+            ->where('status', 'submitted')
+            ->exists();
+    }
+
+    protected function hasCompletedTdc(int $studentId): bool
+    {
+        return Enrollment::where('student_id', $studentId)
+            ->where('tdc_status', 'completed')
+            ->exists();
     }
 };
 ?>

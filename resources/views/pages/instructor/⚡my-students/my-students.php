@@ -134,6 +134,7 @@ new class extends Component {
         });
 
         session()->flash('success', 'TDC Session started.');
+        return $this->redirect(route('instructor.my-schedule'), navigate: true);
     }
     
     public function beginPDC(int $enrollmentId)

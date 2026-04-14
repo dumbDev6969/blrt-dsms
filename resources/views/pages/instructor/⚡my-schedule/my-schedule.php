@@ -158,5 +158,6 @@ new class extends Component {
         });
 
         session()->flash('status', "TDC Session ended for {$affectedCount} records. Progress updated.");
+        return $this->redirect(route('instructor.my-students'), navigate: true);
     }
 };

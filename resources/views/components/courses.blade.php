@@ -1,4 +1,9 @@
-@props(['isComplete' => false])
+@props([
+    'isComplete' => false,
+    'isEnrollBlocked' => false,
+    'enrollBlockReason' => null,
+    'hasCompletedTdc' => false,
+])
 
 {{-- Be present above all else. - Naval Ravikant --}}
 <div class="mb-6">
@@ -7,6 +12,10 @@
 
     @if (!$isComplete)
         <flux:text color="red" class="mt-2 font-semibold italic">Submit your documents before you can enroll.
+        </flux:text>
+    @elseif ($isEnrollBlocked)
+        <flux:text color="amber" class="mt-2 font-semibold italic">
+            {{ $enrollBlockReason ?? 'You cannot enroll right now because you already have an ongoing or pending enrollment.' }}
         </flux:text>
     @endif
 </div>
@@ -30,15 +39,49 @@
 
                 <div class="mt-6 flex items-center justify-between">
                     <flux:text size="lg" weight="bold" class="text-slate-900 dark:text-slate-100">{{ $course->price }}</flux:text>
-                    <flux:button 
-                        variant="primary" 
-                        size="sm" 
-                        icon-trailing="arrow-right" 
-                        :disabled="!$isComplete" 
-                        :href="$isComplete ? route('enrollment.create', $course->id) : null"
-                    >
-                        Enroll
-                    </flux:button>
+                    
+                    @php
+                        // Determine if this is a practical course and the user hasn't completed TDC yet
+                        $isPdcBlock = $course->type === 'practical' && !$hasCompletedTdc;
+                    @endphp
+
+                    @if ($isEnrollBlocked)
+                        <flux:tooltip :content="$enrollBlockReason ?? 'Your enrollment is currently locked.'">
+                            <span>
+                                <flux:button
+                                    variant="primary"
+                                    size="sm"
+                                    icon-trailing="arrow-right"
+                                    disabled
+                                >
+                                    Enroll
+                                </flux:button>
+                            </span>
+                        </flux:tooltip>
+                    @elseif ($isPdcBlock)
+                        <flux:tooltip content="You must complete a Theoretical Driving Course (TDC) before enrolling in a Practical course.">
+                            <span>
+                                <flux:button
+                                    variant="primary"
+                                    size="sm"
+                                    icon-trailing="arrow-right"
+                                    disabled
+                                >
+                                    Enroll
+                                </flux:button>
+                            </span>
+                        </flux:tooltip>
+                    @else
+                        <flux:button
+                            variant="primary"
+                            size="sm"
+                            icon-trailing="arrow-right"
+                            :disabled="!$isComplete"
+                            :href="$isComplete ? route('enrollment.create', $course->id) : null"
+                        >
+                            Enroll
+                        </flux:button>
+                    @endif
                 </div>
             </div>
         </div>

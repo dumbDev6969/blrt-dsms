@@ -17,7 +17,14 @@ class CourseFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'code' => 'COURSE-' . \Illuminate\Support\Arr::first(explode('-', (string) \Illuminate\Support\Str::uuid())),
+            'title' => $this->faker->sentence(3),
+            'description' => $this->faker->paragraph(),
+            'price' => $this->faker->randomFloat(2, 1000, 5000),
+            'duration_hours' => $this->faker->numberBetween(8, 40),
+            'type' => $this->faker->randomElement(['theoretical', 'practical']),
+            'prerequisites' => [],
+            'is_active' => true,
         ];
     }
 }

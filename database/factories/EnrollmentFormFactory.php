@@ -17,7 +17,21 @@ class EnrollmentFormFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'student_id' => \App\Models\StudentProfile::factory(),
+            'course_id' => \App\Models\Course::factory(),
+            'control_number' => 'BLRT-' . \Illuminate\Support\Str::upper(\Illuminate\Support\Str::random(8)),
+            'package_type' => 'TDC',
+            'status' => 'draft',
+            'personal_info' => [
+                'emergency_contact' => [
+                    'name' => $this->faker->name(),
+                    'number' => $this->faker->phoneNumber(),
+                ],
+            ],
+            'course_preferences' => [
+                'schedule_pref' => ['Monday', 'Wednesday', 'Friday'],
+                'instructor_pref' => null,
+            ],
         ];
     }
 }

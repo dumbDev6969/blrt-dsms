@@ -17,7 +17,16 @@ class EnrollmentFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'code' => 'ENR-' . \Illuminate\Support\Arr::first(explode('-', (string) \Illuminate\Support\Str::uuid())),
+            'student_id' => \App\Models\StudentProfile::factory(),
+            'course_id' => \App\Models\Course::factory(),
+            'status' => 'pending',
+            'progress_percent' => 0,
+            'total_amount' => 1000,
+            'amount_paid' => 0,
+            'balance' => 1000,
+            'tdc_status' => 'not_started',
+            'pdc_status' => 'not_started',
         ];
     }
 }

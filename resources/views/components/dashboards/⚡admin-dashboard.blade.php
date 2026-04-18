@@ -5,6 +5,7 @@ use App\Models\Document;
 use App\Models\Enrollment;
 use App\Models\EnrollmentForm;
 use App\Models\InstructorProfile;
+use App\Models\SystemMetric;
 use App\Services\InstructorPerformanceService;
 use Livewire\Attributes\Computed;
 use Carbon\Carbon;
@@ -134,6 +135,18 @@ new class extends Component {
         }
 
         return $preview;
+    }
+
+    #[Computed]
+    public function latestMetrics()
+    {
+        return SystemMetric::latest('metric_date')->first() ?? new SystemMetric([
+            'new_students' => 0,
+            'active_enrollments' => 0,
+            'completed_courses' => 0,
+            'total_bookings' => 0,
+            'revenue' => 0,
+        ]);
     }
 };
 ?>
@@ -483,14 +496,22 @@ new class extends Component {
 
                 <div class="space-y-3">
                     <div class="flex justify-between items-center">
-                        <flux:text size="sm" class="text-slate-600 dark:text-slate-400">Total Students</flux:text>
-                        <flux:heading size="sm" weight="bold">342</flux:heading>
+                        <flux:text size="sm" class="text-slate-600 dark:text-slate-400">New Students (Today)</flux:text>
+                        <flux:heading size="sm" weight="bold">{{ $this->latestMetrics->new_students }}</flux:heading>
                     </div>
                     <div class="flex justify-between items-center">
-                        <flux:text size="sm" class="text-slate-600 dark:text-slate-400">Active Instructors</flux:text>
-                        <flux:heading size="sm" weight="bold">8</flux:heading>
+                        <flux:text size="sm" class="text-slate-600 dark:text-slate-400">Active Enrollments</flux:text>
+                        <flux:heading size="sm" weight="bold">{{ $this->latestMetrics->active_enrollments }}</flux:heading>
                     </div>
                     <div class="flex justify-between items-center">
+                        <flux:text size="sm" class="text-slate-600 dark:text-slate-400">Completed Courses</flux:text>
+                        <flux:heading size="sm" weight="bold">{{ $this->latestMetrics->completed_courses }}</flux:heading>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <flux:text size="sm" class="text-slate-600 dark:text-slate-400">Total Bookings</flux:text>
+                        <flux:heading size="sm" weight="bold">{{ $this->latestMetrics->total_bookings }}</flux:heading>
+                    </div>
+                    <div class="flex justify-between items-center pt-2 border-t border-slate-100 dark:border-slate-800">
                         <flux:text size="sm" class="text-slate-600 dark:text-slate-400">Completion Rate</flux:text>
                         <flux:text size="sm" weight="bold" color="emerald">87%</flux:text>
                     </div>

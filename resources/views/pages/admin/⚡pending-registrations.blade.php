@@ -2,58 +2,102 @@
 
 use Livewire\Component;
 use App\Models\InstructorProfile;
-// use App\Models\StudentProfile; // Unused
+use App\Models\User;
 use Livewire\Attributes\Computed;
 use Livewire\WithPagination;
+
 new class extends Component {
     use WithPagination;
 
     public $status = 'pending';
+    public $registrationType = 'instructor'; // 'instructor' or 'staff'
     public $search = '';
+
+    public function updatedRegistrationType()
+    {
+        $this->resetPage();
+        $this->status = 'pending';
+        $this->search = '';
+        unset($this->statusCount, $this->filteredRegistrations);
+    }
+
     #[Computed]
     public function statusCount()
     {
+        if ($this->registrationType === 'instructor') {
+            return [
+                'pending' => InstructorProfile::where('status', 'pending')->count(),
+                'verified' => InstructorProfile::where('status', 'verified')->count(),
+                'rejected' => InstructorProfile::where('status', 'rejected')->count(),
+                'today' => InstructorProfile::whereDate('created_at', today())->count(),
+                'verifiedToday' => InstructorProfile::whereDate('updated_at', today())->where('status', 'verified')->count(),
+                'rejectedToday' => InstructorProfile::whereDate('updated_at', today())->where('status', 'rejected')->count(),
+            ];
+        }
+
         return [
-            'pending' => InstructorProfile::where('status', 'pending')->count(),
-            'verified' => InstructorProfile::where('status', 'verified')->count(),
-            'rejected' => InstructorProfile::where('status', 'rejected')->count(),
-            'today' => InstructorProfile::whereDate('created_at', today())->count(),
-            'verifiedToday' => InstructorProfile::whereDate('updated_at', today())->where('status', 'verified')->count(),
-            'rejectedToday' => InstructorProfile::whereDate('updated_at', today())->where('status', 'rejected')->count(),
+            'pending' => User::role('Staff')->where('status', 'pending')->count(),
+            'verified' => User::role('Staff')->where('status', 'active')->count(),
+            'rejected' => User::role('Staff')->where('status', 'rejected')->count(),
+            'today' => User::role('Staff')->whereDate('created_at', today())->count(),
+            'verifiedToday' => User::role('Staff')->whereDate('updated_at', today())->where('status', 'active')->count(),
+            'rejectedToday' => User::role('Staff')->whereDate('updated_at', today())->where('status', 'rejected')->count(),
         ];
     }
 
     #[Computed]
     public function filteredRegistrations()
     {
-        return InstructorProfile::with('user:id,name,email')
-            ->whereHas('user', function ($query) {
+        if ($this->registrationType === 'instructor') {
+            return InstructorProfile::with('user:id,name,email')
+                ->whereHas('user', function ($query) {
+                    $query->where('name', 'like', '%' . $this->search . '%')->orWhere('email', 'like', '%' . $this->search . '%');
+                })
+                ->where('status', $this->status)
+                ->latest()
+                ->paginate(10);
+        }
+
+        $staffStatus = $this->status === 'verified' ? 'active' : $this->status;
+        return User::role('Staff')
+            ->where(function ($query) {
                 $query->where('name', 'like', '%' . $this->search . '%')->orWhere('email', 'like', '%' . $this->search . '%');
             })
-            ->where('status', $this->status)
+            ->where('status', $staffStatus)
             ->latest()
             ->paginate(10);
     }
 
-    // Verify Instructor
-    public function verify(InstructorProfile $instructor)
+    public function verify($id)
     {
-        $instructor->update(['status' => 'approved', 'is_active' => 1]);
-        session()->flash('status', 'Instructor verified successfully.');
+        if ($this->registrationType === 'instructor') {
+            // Note: The previous view's stats used 'verified' but verify() method did 'approved'.
+            // Consistency: set to 'verified'.
+            InstructorProfile::findOrFail($id)->update(['status' => 'verified', 'is_active' => 1]);
+        } else {
+            User::findOrFail($id)->update(['status' => 'active']);
+        }
+        session()->flash('status', ucfirst($this->registrationType) . ' verified successfully.');
     }
 
-    // Unverify / Back to Pending
-    public function unverify(InstructorProfile $instructor)
+    public function unverify($id)
     {
-        $instructor->update(['status' => 'pending', 'is_active' => 0]);
-        session()->flash('status', 'Instructor moved back to pending.');
+        if ($this->registrationType === 'instructor') {
+            InstructorProfile::findOrFail($id)->update(['status' => 'pending', 'is_active' => 0]);
+        } else {
+            User::findOrFail($id)->update(['status' => 'pending']);
+        }
+        session()->flash('status', ucfirst($this->registrationType) . ' moved back to pending.');
     }
 
-    // Reject Instructor
-    public function reject(InstructorProfile $instructor)
+    public function reject($id)
     {
-        $instructor->update(['status' => 'rejected', 'is_active' => 0]);
-        session()->flash('status', 'Instructor application rejected.');
+        if ($this->registrationType === 'instructor') {
+            InstructorProfile::findOrFail($id)->update(['status' => 'rejected', 'is_active' => 0]);
+        } else {
+            User::findOrFail($id)->update(['status' => 'rejected']);
+        }
+        session()->flash('status', ucfirst($this->registrationType) . ' application rejected.');
     }
 };
 ?>
@@ -67,12 +111,17 @@ new class extends Component {
     {{-- HEADER --}}
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-            <flux:heading size="xl" class="text-2xl font-bold tracking-tight">Pending Instructor Registrations
+            <flux:heading size="xl" class="text-2xl font-bold tracking-tight">Pending Registrations
             </flux:heading>
             <flux:text>
-                {{ now()->format('l, F j, Y') }} • Review and manage instructor applications
+                {{ now()->format('l, F j, Y') }} • Review and manage applications
             </flux:text>
         </div>
+        
+        <flux:radio.group wire:model.live="registrationType" variant="segmented">
+            <flux:radio label="Instructors" value="instructor" />
+            <flux:radio label="Staff" value="staff" />
+        </flux:radio.group>
     </div>
 
     {{-- STATS OVERVIEW --}}
@@ -168,10 +217,18 @@ new class extends Component {
                 class="p-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900">
                 <div>
                     <flux:heading size="xl" level="2">
-                        {{ $status === 'pending' ? 'Applicants Queue' : ($status === 'verified' ? 'Verified Instructors' : 'Rejected Applications') }}
+                        @if($registrationType === 'instructor')
+                            {{ $status === 'pending' ? 'Instructor Queue' : ($status === 'verified' ? 'Verified Instructors' : 'Rejected Instructor Applications') }}
+                        @else
+                            {{ $status === 'pending' ? 'Staff Queue' : ($status === 'verified' ? 'Verified Staff' : 'Rejected Staff Applications') }}
+                        @endif
                     </flux:heading>
                     <flux:text size="sm" class="mt-1">
-                        {{ $status === 'pending' ? 'Manage new instructor registrations and verification requests.' : ($status === 'verified' ? 'View and manage active instructor profiles.' : 'View rejected instructor applications.') }}
+                        @if($registrationType === 'instructor')
+                            {{ $status === 'pending' ? 'Manage new instructor registrations and verification requests.' : ($status === 'verified' ? 'View and manage active instructor profiles.' : 'View rejected instructor applications.') }}
+                        @else
+                            {{ $status === 'pending' ? 'Manage new staff registrations and verification requests.' : ($status === 'verified' ? 'View and manage active staff members.' : 'View rejected staff applications.') }}
+                        @endif
                     </flux:text>
                 </div>
                 <flux:badge color="blue" variant="subtle" size="sm">
@@ -184,8 +241,10 @@ new class extends Component {
                     {{-- Header --}}
                     <thead class="bg-zinc-50/50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800">
                         <tr>
-                            <th class="px-6 py-4 font-semibold text-zinc-900 dark:text-white">Instructor</th>
+                            <th class="px-6 py-4 font-semibold text-zinc-900 dark:text-white">Applicant</th>
+                            @if($registrationType === 'instructor')
                             <th class="px-6 py-4 font-semibold text-zinc-900 dark:text-white">License Number</th>
+                            @endif
                             <th class="px-6 py-4 font-semibold text-zinc-900 dark:text-white">Registration Date</th>
                             <th class="px-6 py-4 font-semibold text-zinc-900 dark:text-white">Status</th>
                             <th class="px-6 py-4 font-semibold text-zinc-900 dark:text-white text-right"></th>
@@ -198,31 +257,37 @@ new class extends Component {
                             <tr :key="$pending->id"
                                 class="group hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-colors">
 
-                                {{-- Instructor --}}
+                                {{-- Applicant --}}
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
                                         <div
                                             class="flex items-center justify-center size-8 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 border border-zinc-200 dark:border-zinc-700 text-xs font-bold">
-                                            {{ $pending->user?->initials() }}
+                                            @if($registrationType === 'instructor')
+                                                {{ $pending->user?->initials() }}
+                                            @else
+                                                {{ $pending->initials() }}
+                                            @endif
                                         </div>
                                         <div class="flex flex-col">
                                             <span class="font-medium text-zinc-900 dark:text-white">
-                                                {{ $pending->user->name }}
+                                                {{ $registrationType === 'instructor' ? $pending->user->name : $pending->name }}
                                             </span>
                                             <span class="text-xs text-zinc-500 dark:text-zinc-400">
-                                                {{ $pending->user->email }}
+                                                {{ $registrationType === 'instructor' ? $pending->user->email : $pending->email }}
                                             </span>
                                         </div>
                                     </div>
                                 </td>
 
-                                {{-- License ( styled as Code ) --}}
+                                {{-- License ( styled as Code ) (Instructors only) --}}
+                                @if($registrationType === 'instructor')
                                 <td class="px-6 py-4">
                                     <span
                                         class="font-mono text-xs text-zinc-500 bg-zinc-100 dark:bg-zinc-800 px-2 py-1 rounded-md border border-zinc-200 dark:border-zinc-700">
                                         {{ $pending->license_number }}
                                     </span>
                                 </td>
+                                @endif
 
                                 {{-- Date --}}
                                 <td class="px-6 py-4">
@@ -238,13 +303,18 @@ new class extends Component {
 
                                 {{-- Status --}}
                                 <td class="px-6 py-4">
-                                    @if ($pending->status === 'pending')
+                                    @php
+                                        // $pending->status is 'active' for verified staff
+                                        $displayStatus = $status === 'verified' ? 'verified' : $status;
+                                    @endphp
+
+                                    @if ($displayStatus === 'pending')
                                         <div
                                             class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/50">
                                             <div class="size-1.5 rounded-full bg-amber-500 animate-pulse"></div>
                                             Pending Review
                                         </div>
-                                    @elseif ($pending->status === 'verified')
+                                    @elseif ($displayStatus === 'verified')
                                         <div
                                             class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/50">
                                             <flux:icon icon="check-circle" class="size-3" />
@@ -265,17 +335,20 @@ new class extends Component {
                                         <flux:button variant="ghost" size="sm" icon="ellipsis-horizontal"
                                             inset="top bottom" />
                                         <flux:menu>
-                                            <flux:menu.item icon="eye"
-                                                href="{{ route('admin.registration-data', $pending) }}" wire:navigate>
-                                                View Details
-                                            </flux:menu.item>
-                                            <flux:menu.separator />
-                                            @if ($pending->status === 'pending')
+                                            @if($registrationType === 'instructor')
+                                                <flux:menu.item icon="eye"
+                                                    href="{{ route('admin.registration-data', $pending) }}" wire:navigate>
+                                                    View Details
+                                                </flux:menu.item>
+                                                <flux:menu.separator />
+                                            @endif
+                                            
+                                            @if ($displayStatus === 'pending')
                                                 <flux:menu.item icon="check-circle"
                                                     wire:click="verify({{ $pending->id }})">Approve</flux:menu.item>
                                                 <flux:menu.item icon="x-circle" variant="danger"
                                                     wire:click="reject({{ $pending->id }})">Reject</flux:menu.item>
-                                            @elseif ($pending->status === 'verified')
+                                            @elseif ($displayStatus === 'verified')
                                                 <flux:menu.item icon="arrow-uturn-left"
                                                     wire:click="unverify({{ $pending->id }})">Move to Pending
                                                 </flux:menu.item>
@@ -296,10 +369,10 @@ new class extends Component {
                             {{-- Empty State --}}
                             <x-empty-state 
                                 variant="table" 
-                                :colspan="5"
+                                :colspan="$registrationType === 'instructor' ? 5 : 4"
                                 icon="check-circle"
                                 heading="Queue Cleared"
-                                :message="$status === 'pending' ? 'All instructor applications have been processed. New requests will appear here.' : 'No verified instructors found matching your criteria.'"
+                                :message="$status === 'pending' ? 'All applications have been processed. New requests will appear here.' : 'No verified applicants found matching your criteria.'"
                             />
                         @endforelse
                     </tbody>

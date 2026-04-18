@@ -52,6 +52,12 @@ class EnsureProfileIsComplete
             if (! $profileExists && ! $request->routeIs($allowedRoutes)) {
                 return redirect()->route('instructor_profile.create');
             }
+        } elseif ($user->hasRole('Staff')) {
+            // Staff members don't have a profile model, so they are always considered "complete".
+            // However, we restrict access to staff-specific pages if they are not verified yet.
+            if ($user->status !== 'active' && ! $request->routeIs('dashboard') && ! $request->routeIs($allowedRoutes)) {
+                return redirect()->route('dashboard');
+            }
         }
 
         return $next($request);

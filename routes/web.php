@@ -91,7 +91,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Staff routes
-    Route::middleware(['can:student.view_any'])->group(function () {
+    Route::middleware(['profile_completed', 'can:student.view_any'])->group(function () {
         // Enrollment management
         Route::livewire('manage-enrollments', 'pages::staff.enrollments')
             ->name('staff.manage-enrollments');

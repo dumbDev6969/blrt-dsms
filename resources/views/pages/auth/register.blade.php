@@ -56,6 +56,7 @@
             <flux:radio.group name="role" variant="segmented" :label="__('Choose a role')">
                 <flux:radio label="Instructor" value="Instructor"  icon="book-open"/>
                 <flux:radio label="Student"  value="Student" icon="user"/>
+                <flux:radio label="Staff"  value="Staff" icon="briefcase"/>
             </flux:radio.group>
 
             <div class="flex items-center justify-end">

@@ -18,9 +18,12 @@ new class extends Component {
     }
 
     #[Computed]
-    public function courseSummaries()
+    public function courses()
     {
-        return app(InstructorPerformanceService::class)->getPerformancesByCourse($this->instructor->id);
+        return \App\Models\Course::whereHas('enrollments', function($q) {
+            $q->where('instructor_id', $this->instructor->id)
+              ->whereHas('instructorPerformances');
+        })->get();
     }
 
     #[Computed]
@@ -35,8 +38,9 @@ new class extends Component {
     #[Computed]
     public function overallStats()
     {
-        $summaries = $this->courseSummaries;
-        if ($summaries->isEmpty()) {
+        $summary = app(InstructorPerformanceService::class)->getSummary($this->instructor->id);
+        
+        if (!$summary) {
             return [
                 'avgRating' => 0,
                 'totalReviews' => 0,
@@ -44,8 +48,8 @@ new class extends Component {
         }
 
         return [
-            'avgRating' => round($summaries->avg('avgRating'), 1),
-            'totalReviews' => $summaries->sum('totalReviews'),
+            'avgRating' => $summary->avgRating,
+            'totalReviews' => $summary->totalReviews,
         ];
     }
 };
@@ -90,20 +94,15 @@ new class extends Component {
         </div>
 
         <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
-            @forelse ($this->courseSummaries as $perf)
-                <x-instructor-performance 
-                    :courseTitle="$perf->course->title"
-                    :courseCode="$perf->course->code"
-                    :courseType="strtoupper($perf->course->type)"
-                    :avgRating="$perf->avgRating"
-                    :totalReviews="$perf->totalReviews"
-                    :avgCriteria="$perf->avgCriteria"
-                    :performances="$perf->performances"
-                    :lastEvaluationDate="$perf->lastEvaluationDate"
-                    :trend="$perf->trend"
-                    :ratingDistribution="$perf->ratingDistribution"
-                    :topStrengths="$perf->topStrengths"
-                    :topImprovements="$perf->topImprovements"
+            @forelse ($this->courses as $course)
+                <livewire:instructor-performance-card 
+                    :instructor="$instructor"
+                    :courseId="$course->id"
+                    :courseTitle="$course->title"
+                    :courseCode="$course->code"
+                    :courseType="strtoupper($course->type)"
+                    :profileUrl="null"
+                    :key="'instructor-' . $instructor->id . '-course-' . $course->id"
                 />
             @empty
                 <div class="col-span-full">

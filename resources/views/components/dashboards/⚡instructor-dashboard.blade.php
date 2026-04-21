@@ -58,14 +58,16 @@ new class extends Component {
     }
 
     #[Computed]
-    public function performancesByCourse()
+    public function courses()
     {
         $profile = Auth::user()->instructorProfile;
         if (!$profile) {
             return collect();
         }
-        $service = app(\App\Services\InstructorPerformanceService::class);
-        return $service->getPerformancesByCourse($profile->id, 2);
+        return \App\Models\Course::whereHas('enrollments', function($q) use ($profile) {
+            $q->where('instructor_id', $profile->id)
+              ->whereHas('instructorPerformances');
+        })->take(2)->get();
     }
 
     #[Computed]
@@ -318,29 +320,23 @@ new class extends Component {
                         </div>
                         <flux:heading size="lg" weight="bold">Course Performance</flux:heading>
                     </div>
-                    @if($this->performancesByCourse->count() > 0)
+                    @if($this->courses->count() > 0)
                         <flux:button href="{{ route('instructor.performance-reviews') }}" variant="subtle" size="xs" icon-trailing="arrow-right" wire:navigate>
                             View All Reviews
                         </flux:button>
                     @endif
                 </div>
 
-                @if ($this->performancesByCourse->count() > 0)
+                @if ($this->courses->count() > 0)
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        @foreach ($this->performancesByCourse as $group)
-                            <x-instructor-performance 
-                                :courseTitle="$group->course->title"
-                                :courseCode="$group->course->code"
-                                :courseType="$group->course->type"
-                                :avgRating="$group->avgRating"
-                                :totalReviews="$group->totalReviews"
-                                :avgCriteria="$group->avgCriteria"
-                                :performances="$group->performances"
-                                :lastEvaluationDate="$group->lastEvaluationDate"
-                                :trend="$group->trend"
-                                :ratingDistribution="$group->ratingDistribution"
-                                :topStrengths="$group->topStrengths"
-                                :topImprovements="$group->topImprovements"
+                        @foreach ($this->courses as $course)
+                            <livewire:instructor-performance-card 
+                                :instructor="Auth::user()->instructorProfile"
+                                :courseId="$course->id"
+                                :courseTitle="$course->title"
+                                :courseCode="$course->code"
+                                :courseType="$course->type"
+                                :key="'course-perf-' . $course->id"
                             />
                         @endforeach
                     </div>

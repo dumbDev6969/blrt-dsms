@@ -10,16 +10,17 @@ new class extends Component {
     #[Computed]
     public function instructorsPerformances()
     {
-        $service = app(InstructorPerformanceService::class);
-        $instructors = InstructorProfile::with('user')
+        return InstructorProfile::with('user')
             ->where('status', 'approved')
             ->where('is_active', true)
-            ->get();
-
-        return $instructors->map(function ($instructor) use ($service) {
-            $instructor->coursePerformances = $service->getPerformancesByCourse($instructor->id);
-            return $instructor;
-        });
+            ->get()
+            ->map(function ($instructor) {
+                $instructor->courses = \App\Models\Course::whereHas('enrollments', function($q) use ($instructor) {
+                    $q->where('instructor_id', $instructor->id)
+                      ->whereHas('instructorPerformances');
+                })->get();
+                return $instructor;
+            });
     }
 };
 ?>
@@ -57,20 +58,14 @@ new class extends Component {
                 </div>
 
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                    @forelse ($instructor->coursePerformances as $perf)
-                        <x-instructor-performance 
-                            :courseTitle="$perf->course->title"
-                            :courseCode="$perf->course->code"
-                            :courseType="strtoupper($perf->course->type)"
-                            :avgRating="$perf->avgRating"
-                            :totalReviews="$perf->totalReviews"
-                            :avgCriteria="$perf->avgCriteria"
-                            :performances="$perf->performances"
-                            :lastEvaluationDate="$perf->lastEvaluationDate"
-                            :trend="$perf->trend"
-                            :ratingDistribution="$perf->ratingDistribution"
-                            :topStrengths="$perf->topStrengths"
-                            :topImprovements="$perf->topImprovements"
+                    @forelse ($instructor->courses as $course)
+                        <livewire:instructor-performance-card 
+                            :instructor="$instructor"
+                            :courseId="$course->id"
+                            :courseTitle="$course->title"
+                            :courseCode="$course->code"
+                            :courseType="strtoupper($course->type)"
+                            :key="'instructor-' . $instructor->id . '-course-' . $course->id"
                         />
                     @empty
                         <div class="col-span-full">

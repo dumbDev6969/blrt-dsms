@@ -11,6 +11,8 @@ use Livewire\Attributes\Computed;
 use Carbon\Carbon;
 
 new class extends Component {
+    public $searchInstructor = '';
+
     #[Computed]
     public function pendingDocsCount()
     {
@@ -98,18 +100,20 @@ new class extends Component {
     public function instructorsPerformances()
     {
         $service = app(InstructorPerformanceService::class);
-        $allInstructors = InstructorProfile::with('user')->where('status', 'approved')->where('is_active', true)->get();
+        $query = InstructorProfile::with('user')->where('status', 'approved')->where('is_active', true);
 
+        if (!empty($this->searchInstructor)) {
+            return $query->whereHas('user', function($q) {
+                $q->where('name', 'like', '%' . $this->searchInstructor . '%');
+            })->take(4)->get();
+        }
+
+        $allInstructors = $query->get();
         $preview = collect();
 
         // 1. Find the best TDC instructor (theoretical)
-        $tdcInstructor = $allInstructors->first(function ($instructor) use ($service) {
-            $perf = $service->getPerformancesByCourse($instructor->id);
-            if ($perf->contains(fn($p) => $p->course->type === 'theoretical')) {
-                $instructor->coursePerformances = $perf->take(2);
-                return true;
-            }
-            return false;
+        $tdcInstructor = $allInstructors->first(function ($instructor) {
+            return $instructor->enrollments()->whereHas('course', fn($q) => $q->where('type', 'theoretical'))->exists();
         });
 
         if ($tdcInstructor) {
@@ -117,23 +121,11 @@ new class extends Component {
         }
 
         // 2. Find a different PDC instructor (practical/comprehensive)
-        $pdcInstructor = $allInstructors->where('id', '!=', $tdcInstructor?->id)->first(function ($instructor) use ($service) {
-            $perf = $service->getPerformancesByCourse($instructor->id);
-            if ($perf->contains(fn($p) => in_array($p->course->type, ['practical', 'comprehensive']))) {
-                $instructor->coursePerformances = $perf->take(2);
-                return true;
-            }
-            return false;
+        $pdcInstructor = $allInstructors->where('id', '!=', $tdcInstructor?->id)->first(function ($instructor) {
+            return $instructor->enrollments()->whereHas('course', fn($q) => $q->whereIn('type', ['practical', 'comprehensive']))->exists();
         });
 
-        // Fallback: If no different PDC instructor, check if the TDC instructor also has PDC courses
-        if (!$pdcInstructor && $tdcInstructor) {
-            $perf = $service->getPerformancesByCourse($tdcInstructor->id);
-            if ($perf->contains(fn($p) => in_array($p->course->type, ['practical', 'comprehensive']))) {
-                // If we already added them as TDC, we don't need to add them again, but we ensure their PDC performances are visible if possible
-                // For simplicity, if we only found one instructor, the list will just have one.
-            }
-        } elseif ($pdcInstructor) {
+        if ($pdcInstructor) {
             $preview->push($pdcInstructor);
         }
 
@@ -246,129 +238,28 @@ new class extends Component {
                 <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-blue-500/10 dark:bg-blue-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
                 <div class="relative flex flex-col gap-6">
-                    <div class="flex justify-between items-center">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
                             <flux:heading size="lg" weight="bold">Instructor Performance</flux:heading>
-                            <flux:text size="xs" class="text-slate-500 mt-1">Top instructor performance overview</flux:text>
+                            <flux:text size="xs" class="text-slate-500 mt-1">Search and view instructor performance metrics</flux:text>
                         </div>
-                        <flux:button size="sm" variant="ghost" icon="arrow-right" :href="route('admin.instructor-performances')" wire:navigate>All</flux:button>
+                        <div class="flex items-center gap-3 w-full md:w-auto">
+                            <x-live-search model="searchInstructor" placeholder="Search instructor..." class="w-full md:w-64" />
+                            <flux:button size="sm" variant="ghost" icon="arrow-right" :href="route('admin.instructor-performances')" wire:navigate>All</flux:button>
+                        </div>
                     </div>
 
-                    @forelse ($this->instructorsPerformances as $instructor)
-                        @php
-                            $perfs = $instructor->coursePerformances;
-                            $totalReviews = $perfs->sum('totalReviews');
-                            $coursesTaught = $perfs->count();
-                            $avgRating = $totalReviews > 0 ? $perfs->sum(fn($p) => $p->avgRating * $p->totalReviews) / $totalReviews : 0;
-                            
-                            $criteriaAvg = ['teaching_quality' => 0, 'communication' => 0, 'punctuality' => 0, 'professionalism' => 0];
-                            foreach($perfs as $p) {
-                                foreach(['teaching_quality', 'communication', 'punctuality', 'professionalism'] as $k) {
-                                    $criteriaAvg[$k] += ($p->avgCriteria[$k] ?? 0) * $p->totalReviews;
-                                }
-                            }
-                            if($totalReviews > 0) {
-                                foreach($criteriaAvg as $k => $v) { $criteriaAvg[$k] = round($v / $totalReviews, 1); }
-                            }
-                            
-                            $trend = $totalReviews > 0 ? $perfs->sum(fn($p) => $p->trend * $p->totalReviews) / $totalReviews : 0;
-                            $topStrength = $perfs->pluck('topStrengths')->flatten()->first();
-                            $lastEval = $perfs->max('lastEvaluationDate');
-                        @endphp
-                        
-                        <div class="relative rounded-xl border border-slate-200 bg-white/80 dark:border-slate-800 dark:bg-slate-900/80 backdrop-blur-sm shadow-sm overflow-hidden p-5 hover:border-emerald-500/30 transition-colors group">
-                            <div class="flex items-center justify-between gap-3 mb-4">
-                                <div class="flex items-center gap-3">
-                                    <flux:avatar src="{{ $instructor->user->avatar_url ?? '' }}" :initials="$instructor->user->initials()" size="sm" />
-                                    <div>
-                                        <flux:heading size="sm" weight="bold">{{ $instructor->user->name }}</flux:heading>
-                                        <flux:text size="xs" variant="subtle">ID: {{ $instructor->id }}</flux:text>
-                                    </div>
-                                </div>
-                                <flux:button variant="ghost" size="xs" icon="arrow-top-right-on-square" :href="route('admin.instructor.evaluations', $instructor->id)" wire:navigate class="opacity-0 group-hover:opacity-100 transition-opacity">View</flux:button>
-                            </div>
-
-                            @if($totalReviews > 0)
-                                <div class="space-y-4">
-                                    {{-- KPI Strip --}}
-                                    <div class="flex items-center justify-between bg-white dark:bg-slate-800/50 rounded-lg p-3 border border-slate-100 dark:border-slate-800">
-                                        <div class="flex flex-col">
-                                            <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500">Avg Rating</span>
-                                            <div class="flex items-end gap-1">
-                                                <span class="text-xl font-black text-amber-500 leading-none">{{ number_format($avgRating, 1) }}</span>
-                                                <flux:icon icon="star" variant="solid" class="size-4 text-amber-500 mb-0.5" />
-                                                @if($trend != 0)
-                                                    <span class="ml-1 text-xs font-bold leading-none mb-1 {{ $trend > 0 ? 'text-emerald-500' : 'text-rose-500' }} flex items-center">
-                                                        <flux:icon icon="{{ $trend > 0 ? 'arrow-small-up' : 'arrow-small-down' }}" class="size-3" stroke-width="3" />
-                                                        {{ number_format(abs($trend), 1) }}
-                                                    </span>
-                                                @endif
-                                            </div>
-                                        </div>
-                                        <div class="w-px h-8 bg-slate-200 dark:bg-slate-700"></div>
-                                        <div class="flex flex-col text-center">
-                                            <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500">Reviews</span>
-                                            <span class="text-lg font-bold text-slate-700 dark:text-slate-300">{{ $totalReviews }}</span>
-                                        </div>
-                                        <div class="w-px h-8 bg-slate-200 dark:bg-slate-700"></div>
-                                        <div class="flex flex-col text-center">
-                                            <span class="text-[10px] uppercase font-bold tracking-wider text-slate-500">Courses</span>
-                                            <span class="text-lg font-bold text-slate-700 dark:text-slate-300">{{ $coursesTaught }}</span>
-                                        </div>
-                                    </div>
-
-                                    {{-- Course Pills & Criteria Wrapper --}}
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        {{-- Compact Criteria Bars --}}
-                                        <div class="flex flex-col gap-2">
-                                            @foreach(['teaching_quality' => 'Teaching', 'communication' => 'Comms', 'punctuality' => 'Punctual', 'professionalism' => 'Prof.'] as $key => $label)
-                                                <div class="flex flex-col gap-1">
-                                                    <div class="flex justify-between items-end leading-none">
-                                                        <span class="text-[10px] font-bold text-slate-500 uppercase">{{ $label }}</span>
-                                                        <span class="text-[10px] font-bold text-slate-700 dark:text-slate-300">{{ number_format($criteriaAvg[$key], 1) }}</span>
-                                                    </div>
-                                                    <div class="h-1 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                                        <div class="h-full bg-emerald-500 rounded-full" style="width: {{ ($criteriaAvg[$key] / 5) * 100 }}%"></div>
-                                                    </div>
-                                                </div>
-                                            @endforeach
-                                        </div>
-
-                                        {{-- Course Badges --}}
-                                        <div class="flex flex-col items-start gap-2">
-                                            <span class="text-[10px] font-bold text-slate-500 uppercase">Courses</span>
-                                            <div class="flex sm:flex-col flex-wrap gap-2">
-                                                @foreach($perfs as $p)
-                                                    <div class="px-2 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md flex items-center gap-2 shadow-sm w-full max-w-[140px]">
-                                                        <flux:badge size="sm" color="zinc" class="text-[9px] px-1 py-0!">{{ strtoupper($p->course->type) }}</flux:badge>
-                                                        <span class="text-xs font-bold text-amber-600 dark:text-amber-400 ml-auto">{{ number_format($p->avgRating, 1) }}★</span>
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    {{-- Footer Info --}}
-                                    <div class="flex items-center justify-between pt-3 border-t border-slate-100 dark:border-slate-800">
-                                        <div class="flex items-center gap-1.5">
-                                            <flux:icon icon="clock" class="size-3 text-slate-400" />
-                                            <span class="text-[10px] uppercase font-bold text-slate-400">Eval: {{ $lastEval ? $lastEval->format('M j, Y') : 'N/A' }}</span>
-                                        </div>
-                                        @if($topStrength)
-                                            <div class="flex items-center gap-1">
-                                                <flux:icon icon="hand-thumb-up" class="size-3 text-emerald-500" />
-                                                <span class="text-[10px] font-bold text-emerald-600 uppercase tracking-wide">{{ ucwords($topStrength) }}</span>
-                                            </div>
-                                        @endif
-                                    </div>
-                                </div>
-                            @else
-                                <flux:text size="sm" class="text-center py-4 text-slate-500">No evaluations available yet.</flux:text>
-                            @endif
-                        </div>
-                    @empty
-                        <flux:text size="sm" class="text-center py-4">No active instructors found.</flux:text>
-                    @endforelse
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        @forelse ($this->instructorsPerformances as $instructor)
+                            <livewire:instructor-performance-card 
+                                :instructor="$instructor"
+                                :profileUrl="route('admin.instructor.evaluations', $instructor->id)"
+                                :key="'instructor-perf-' . $instructor->id"
+                            />
+                        @empty
+                            <flux:text size="sm" class="text-center py-4 w-full">No active instructors found matching your search.</flux:text>
+                        @endforelse
+                    </div>
                 </div>
             </div>
             </div>

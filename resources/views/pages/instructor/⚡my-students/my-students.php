@@ -110,30 +110,39 @@ new class extends Component {
         // Get the TDC Course ID
         $courseId = Course::where('type', 'theoretical')->value('id');
 
-        // Fetch active enrollments for this instructor/course
-        $enrollments = Enrollment::where('instructor_id', $instructorId)->where('status', 'active')->where('course_id', $courseId)->get();
+        if (!$courseId) {
+            session()->flash('error', 'TDC course configuration missing.');
+            return;
+        }
+
+        // Fetch active enrollments for this instructor/course that don't already have an active session
+        $enrollments = Enrollment::where('instructor_id', $instructorId)
+            ->where('status', 'active')
+            ->where('course_id', $courseId)
+            ->whereDoesntHave('bookingSessions', function ($query) {
+                $query->whereIn('status', ['scheduled'])
+                    ->whereNull('end_time');
+            })
+            ->get();
+
+        if ($enrollments->isEmpty()) {
+            session()->flash('warning', 'No active students found without an existing session.');
+            return;
+        }
 
         DB::transaction(function () use ($enrollments, $instructorId, $now) {
             foreach ($enrollments as $enrollment) {
-                // Get the ssession that is not yet completed or cancelled
-                $hasActiveSession = BookingSession::where('enrollment_id', $enrollment->id)
-                    ->whereIn('status', ['scheduled']) 
-                    ->whereNull('end_time')
-                    ->exists();
-
-                if (!$hasActiveSession) {
-                    BookingSession::create([
-                        'enrollment_id' => $enrollment->id,
-                        'instructor_id' => $instructorId,
-                        'start_time' => $now,
-                        'type' => 'lecture',
-                        'status' => 'scheduled',
-                    ]);
-                }
+                BookingSession::create([
+                    'enrollment_id' => $enrollment->id,
+                    'instructor_id' => $instructorId,
+                    'start_time' => $now,
+                    'type' => 'lecture',
+                    'status' => 'scheduled',
+                ]);
             }
         });
 
-        session()->flash('success', 'TDC Session started.');
+        session()->flash('success', "TDC Session started for {$enrollments->count()} student(s).");
         return $this->redirect(route('instructor.my-schedule'), navigate: true);
     }
     
@@ -177,7 +186,7 @@ new class extends Component {
             'status'        => 'scheduled',
         ]);
 
-        // [NEW] Find or create the single assessment for this enrollment
+        //Find or create the single assessment for this enrollment
         $assessment = Assessment::firstOrCreate(
             ['enrollment_id' => $enrollment->id, 'assessment_type' => 'practical'],
             [

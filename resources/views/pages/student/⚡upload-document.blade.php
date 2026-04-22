@@ -2,11 +2,12 @@
 
 use Livewire\Component;
 use Livewire\Attributes\Validate;
+use Livewire\Attributes\Computed;
 use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Document;
 new class extends Component {
 
-    // TODO: Remove the document in the select tag if the user already uploaded it
 
     use WithFileUploads;
     #[Validate('required')]
@@ -26,6 +27,7 @@ new class extends Component {
         // Path where the document will be stored
         $path = $this->attachments->store('private_documents', 'local');
 
+
         // Save to db
         Document::create([
             'user_id' => Auth::user()->id,
@@ -42,6 +44,39 @@ new class extends Component {
         
         // Redirect to student dashboard
         return $this->redirect(route('dashboard'), navigate: true);
+    }
+
+    #[Computed]
+    public function availableDocumentTypes()
+    {
+        $profile = Auth::user()->studentProfile;
+        
+        $requiredTypes = ['medical', 'adl_form', 'valid_id'];
+        
+        if ($profile) {
+            if ($profile->nationality === 'foreigner') {
+                $requiredTypes[] = 'passport';
+            } else {
+                $requiredTypes[] = 'birth_cert';
+            }
+        } else {
+            $requiredTypes[] = 'birth_cert'; // Default
+        }
+
+        $allAllowedTypes = array_merge($requiredTypes, ['tin_id']);
+        $uploadedTypes = Document::where('user_id', Auth::user()->id)->pluck('type')->toArray();
+        $availableTypes = array_diff($allAllowedTypes, $uploadedTypes);
+
+        $typeLabels = [
+            'birth_cert' => 'Birth Certificate',
+            'medical' => 'Medical Certificate',
+            'adl_form' => 'ADL Form',
+            'valid_id' => 'Valid ID',
+            'tin_id' => 'TIN ID',
+            'passport' => 'Passport',
+        ];
+
+        return array_intersect_key($typeLabels, array_flip($availableTypes));
     }
 };
 ?>
@@ -64,21 +99,16 @@ new class extends Component {
                     <div class="col-span-1 md:col-span-2">
                         <flux:select wire:model.live="type" label="Document Type" placeholder="Select document type..."
                             required>
-                            <flux:select.option value="birth_cert">Birth Certificate</flux:select.option>
-                            <flux:select.option value="medical">Medical Certificate</flux:select.option>
-                            <flux:select.option value="adl_form">ADL Form</flux:select.option>
-                            <flux:select.option value="valid_id">Valid ID</flux:select.option>
-                            <flux:select.option value="marriage_contract">Marriage Contract</flux:select.option>
-                            <flux:select.option value="tdc_certificate">TDC Certificate</flux:select.option>
-                            <flux:select.option value="tin_id">TIN ID</flux:select.option>
-                            <flux:select.option value="passport">Passport</flux:select.option>
+                            @foreach ($this->availableDocumentTypes as $value => $label)
+                                <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
+                            @endforeach
                         </flux:select>
                     </div>
 
                     {{-- DYNAMIC METADATA SECTION --}}
 
                     {{-- 1. Certificate / ID Number (Relevant for IDs, Licenses, Certs) --}}
-                    @if (in_array($type, ['valid_id', 'tin_id', 'passport', 'tdc_certificate', 'medical', 'marriage_contract']))
+                    @if (in_array($type, ['valid_id', 'tin_id', 'passport', 'medical']))
                         <flux:input wire:model="metadata.cert_number" label="ID / Certificate Number"
                             placeholder="e.g. 123-456-789" />
                     @endif
@@ -92,12 +122,12 @@ new class extends Component {
                     @endif
 
                     
-                    @if (in_array($type, ['passport', 'valid_id', 'medical', 'tdc_certificate']))
+                    @if (in_array($type, ['passport', 'valid_id', 'medical']))
                         <flux:input wire:model="metadata.expiry" type="date" label="Expiry Date" />
                     @endif
 
                     
-                    @if (in_array($type, ['birth_cert', 'marriage_contract', 'medical', 'passport', 'valid_id']))
+                    @if (in_array($type, ['birth_cert', 'medical', 'passport', 'valid_id']))
                         <flux:input wire:model="metadata.issue_date" type="date" label="Date Issued" />
                     @endif
 
@@ -133,9 +163,6 @@ new class extends Component {
         <p class="mt-6 text-center text-xs text-zinc-400">
             Your data is processed securely. Need help? <a href="#" class="text-accent hover:underline">Contact
                 Support</a>
-        </p>
-    </div>
-</div>
         </p>
     </div>
 </div>

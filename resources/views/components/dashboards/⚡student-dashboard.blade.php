@@ -12,21 +12,46 @@ new class extends Component {
     #[Computed]
     public function hasDocument()
     {
-        if (Document::where('user_id', Auth::user()->id)->exists()) {
-            return true;
+        return Document::where('user_id', Auth::user()->id)->exists();
+    }
+
+    #[Computed]
+    public function requiredDocumentTypes()
+    {
+        $profile = Auth::user()->studentProfile;
+        
+        $types = ['medical', 'adl_form', 'valid_id'];
+        
+        if ($profile) {
+            if ($profile->nationality === 'foreigner') {
+                $types[] = 'passport';
+            } else {
+                $types[] = 'birth_cert';
+            }
+        } else {
+            $types[] = 'birth_cert'; // Default
         }
+        
+        return $types;
+    }
+
+    #[Computed]
+    public function uploadedDocumentsCount()
+    {
+        $requiredTypes = $this->requiredDocumentTypes;
+        
+        return Document::where('user_id', Auth::user()->id)
+            ->whereIn('type', $requiredTypes)
+            ->distinct('type')
+            ->count('type');
     }
 
     #[Computed]
     public function isComplete()
     {
-        if (
-            Document::where('user_id', Auth::user()->id)
-                ->where('status', 'approved')
-                ->exists()
-        ) {
-            return true;
-        }
+        return Document::where('user_id', Auth::user()->id)
+            ->where('status', 'verified')
+            ->exists();
     }
 
     #[Computed]
@@ -178,20 +203,6 @@ new class extends Component {
         ];
     }
 
-    #[Computed]
-    public function completedEnrollments()
-    {
-        $studentProfile = Auth::user()->studentProfile;
-
-        if (!$studentProfile) {
-            return collect();
-        }
-
-        return $studentProfile->enrollments()
-            ->where('status', 'completed')
-            ->with('course')
-            ->get();
-    }
 };
 ?>
 
@@ -245,17 +256,27 @@ new class extends Component {
         >
             <div class="space-y-3">
                 <div class="flex items-center justify-between text-sm">
-                    <flux:text size="sm">Profile Completion</flux:text>
-                    <flux:badge color="emerald" variant="subtle" size="sm">100% Complete</flux:badge>
+                    <flux:text size="sm">Account Status</flux:text>
+                    @if ($this->isComplete)
+                        <flux:badge color="emerald" variant="subtle" size="sm">Verified</flux:badge>
+                    @elseif ($this->hasDocument)
+                        <flux:badge color="amber" variant="subtle" size="sm">Pending Verification</flux:badge>
+                    @else
+                        <flux:badge color="red" variant="subtle" size="sm">Unverified</flux:badge>
+                    @endif
                 </div>
                 <div class="flex items-center justify-between text-sm">
                     <flux:text size="sm">Documents</flux:text>
-                    @if ($this->isComplete)
-                        <flux:badge variant="subtle" size="sm">Under review</flux:badge>
-                    @elseif ($this->hasDocument)
-                        <flux:badge color="amber" variant="subtle" size="sm">Incomplete</flux:badge>
+                    @php
+                        $uploadedCount = $this->uploadedDocumentsCount;
+                        $requiredCount = count($this->requiredDocumentTypes);
+                    @endphp
+                    @if ($uploadedCount >= $requiredCount)
+                        <flux:badge color="emerald" variant="subtle" size="sm">{{ $uploadedCount }} out of {{ $requiredCount }}</flux:badge>
+                    @elseif ($uploadedCount > 0)
+                        <flux:badge color="amber" variant="subtle" size="sm">{{ $uploadedCount }} out of {{ $requiredCount }}</flux:badge>
                     @else
-                        <flux:badge color="red" variant="subtle" size="sm">No documents yet</flux:badge>
+                        <flux:badge color="red" variant="subtle" size="sm">0 out of {{ $requiredCount }}</flux:badge>
                     @endif
                 </div>
             </div>
@@ -344,104 +365,6 @@ new class extends Component {
         class="relative h-full flex-1 overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-8 shadow-sm">
         <x-courses :is-complete="$this->isComplete" :is-enroll-blocked="$this->isEnrollmentBlocked" :enroll-block-reason="$this->enrollmentBlockReason" :has-completed-tdc="$this->hasCompletedTdc" />
 
-        <div class="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800">
-            <div class="mb-6">
-                <flux:heading size="lg" class="font-bold text-slate-900 dark:text-slate-100">Your Roadmap to a Driver's License</flux:heading>
-                <flux:text size="sm" class="text-slate-500 dark:text-slate-400">Track your progress from student permit to non-professional license.</flux:text>
-            </div>
-
-            {{-- Roadmap Container --}}
-            <div class="relative">
-                {{-- Connecting Line --}}
-                <div
-                    class="absolute top-1/2 left-0 w-full h-1 bg-slate-100 dark:bg-slate-800 -translate-y-1/2 rounded-full hidden md:block">
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
-
-                    @php
-                        $tdcCompleted = $this->completedEnrollments->firstWhere(fn ($e) => $e->course->type === 'theoretical');
-                        $isTdcActive = optional($this->currentEnrollment)->course?->type === 'theoretical';
-                        $tdcOpacity = ($tdcCompleted || $isTdcActive) ? 'opacity-100' : 'opacity-60';
-                    @endphp
-                    {{-- Step 1: TDC --}}
-                    <div class="relative group {{ $tdcOpacity }}">
-                        <div
-                            class="flex flex-col items-center text-center p-4 bg-white dark:bg-slate-900 rounded-xl border-2 {{ $isTdcActive ? 'border-[var(--color-accent)]' : 'border-slate-100 dark:border-slate-800' }} shadow-sm z-10 relative">
-                            <div
-                                class="flex items-center justify-center size-10 rounded-full {{ $tdcCompleted ? 'bg-green-50 text-green-600' : 'bg-blue-50 text-[var(--color-accent)]' }} mb-3">
-                                <flux:icon icon="{{ $tdcCompleted ? 'check-circle' : 'book-open' }}" class="size-5" />
-                            </div>
-                            <flux:heading size="sm" class="font-bold text-slate-900 dark:text-slate-100">1. Theoretical (TDC)</flux:heading>
-                            <flux:text size="xs" class="text-slate-500 mt-1">15-hr Seminar</flux:text>
-                            
-                            @if ($tdcCompleted)
-                                <flux:badge color="{{ strtolower($tdcCompleted->final_result) === 'passed' ? 'green' : 'red' }}" size="sm" class="mt-2">
-                                    {{ $tdcCompleted->final_result }} - {{ (int)$tdcCompleted->final_grade }}%
-                                </flux:badge>
-                            @elseif ($isTdcActive)
-                                <flux:badge color="blue" size="sm" class="mt-2">
-                                    You are here
-                                </flux:badge>
-                            @endif
-                        </div>
-                    </div>
-
-                    {{-- Step 2: Student Permit --}}
-                    <div class="relative group opacity-60">
-                        <div
-                            class="flex flex-col items-center text-center p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 z-10 relative">
-                            <div
-                                class="flex items-center justify-center size-10 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-400 mb-3">
-                                <flux:icon icon="identification" class="size-5" />
-                            </div>
-                            <flux:heading size="sm" class="font-semibold text-slate-700 dark:text-slate-300">2. Student Permit</flux:heading>
-                            <flux:text size="xs" class="text-slate-500 mt-1">Apply at LTO</flux:text>
-                        </div>
-                    </div>
-
-                    @php
-                        $pdcCompleted = $this->completedEnrollments->firstWhere(fn ($e) => $e->course->type === 'practical');
-                        $isPdcActive = optional($this->currentEnrollment)->course?->type === 'practical';
-                        $pdcOpacity = ($pdcCompleted || $isPdcActive) ? 'opacity-100' : 'opacity-60';
-                    @endphp
-                    {{-- Step 3: PDC --}}
-                    <div class="relative group {{ $pdcOpacity }}">
-                        <div
-                            class="flex flex-col items-center text-center p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 {{ $isPdcActive ? 'border-2 border-[var(--color-accent)]' : '' }} z-10 relative">
-                            <div
-                                class="flex items-center justify-center size-10 rounded-full {{ $pdcCompleted ? 'bg-green-50 text-green-600' : 'bg-slate-100 dark:bg-slate-700 text-slate-400' }} mb-3">
-                                <flux:icon icon="{{ $pdcCompleted ? 'check-circle' : 'truck' }}" class="size-5" />
-                            </div>
-                            <flux:heading size="sm" class="font-semibold text-slate-700 dark:text-slate-300">3. Practical (PDC)</flux:heading>
-                            <flux:text size="xs" class="text-slate-500 mt-1">8-hr Driving</flux:text>
-
-                            @if ($pdcCompleted)
-                                <flux:badge color="{{ strtolower($pdcCompleted->final_result) === 'passed' ? 'green' : 'red' }}" size="sm" class="mt-2">
-                                    {{ $pdcCompleted->final_result }} - {{ (int)$pdcCompleted->final_grade }}%
-                                </flux:badge>
-                            @elseif ($isPdcActive)
-                                <flux:badge color="blue" size="sm" class="mt-2">
-                                    You are here
-                                </flux:badge>
-                            @endif
-                        </div>
-                    </div>
-
-                    {{-- Step 4: License --}}
-                    <div class="relative group opacity-60">
-                        <div
-                            class="flex flex-col items-center text-center p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 z-10 relative">
-                            <div
-                                class="flex items-center justify-center size-10 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-400 mb-3">
-                                <flux:icon icon="star" class="size-5" />
-                            </div>
-                            <flux:heading size="sm" class="font-semibold text-slate-700 dark:text-slate-300">4. Driver's License</flux:heading>
-                            <flux:text size="xs" class="text-slate-500 mt-1">Final Exam</flux:text>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <livewire:student-roadmap />
     </div>
 </div>

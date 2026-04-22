@@ -21,8 +21,6 @@ return new class extends Migration
                 'medical',
                 'adl_form',
                 'valid_id',
-                'marriage_contract',
-                'tdc_certificate',
                 'tin_id',
                 'passport'
             ]);

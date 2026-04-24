@@ -6,6 +6,8 @@ use Livewire\Attributes\Computed;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Document;
+use App\Models\LtoClinic;
+
 new class extends Component {
 
 
@@ -23,6 +25,14 @@ new class extends Component {
     {
         // Get the validated date
         $validated = $this->validate();
+
+        // If it's a medical document, fetch the clinic name from the selected ID for the metadata
+        if ($validated['type'] === 'medical' && isset($validated['metadata']['clinic_id'])) {
+            $clinic = LtoClinic::find($validated['metadata']['clinic_id']);
+            if ($clinic) {
+                $validated['metadata']['clinic_name'] = $clinic->clinic_name;
+            }
+        }
 
         // Path where the document will be stored
         $path = $this->attachments->store('private_documents', 'local');
@@ -78,6 +88,13 @@ new class extends Component {
 
         return array_intersect_key($typeLabels, array_flip($availableTypes));
     }
+
+    #[Computed]
+    public function clinics()
+    {
+        return LtoClinic::where('is_active', true)->get();
+    }
+
 };
 ?>
 
@@ -116,8 +133,13 @@ new class extends Component {
                     
                     @if ($type === 'medical')
                         <div class="col-span-1 md:col-span-2">
-                            <flux:input wire:model="metadata.clinic_name" label="Clinic Name"
-                                placeholder="Name of clinic or hospital" />
+                            <flux:select wire:model="metadata.clinic_id" label="Accredited Clinic" placeholder="Select a clinic..." required>
+                                @foreach ($this->clinics as $clinic)
+                                    <flux:select.option value="{{ $clinic->id }}">
+                                        {{ $clinic->clinic_name }} ({{ $clinic->accreditation_number }})
+                                    </flux:select.option>
+                                @endforeach
+                            </flux:select>
                         </div>
                     @endif
 

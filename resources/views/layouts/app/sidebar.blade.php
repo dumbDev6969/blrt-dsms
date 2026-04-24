@@ -90,6 +90,10 @@
                         <flux:sidebar.item icon="user-group" :href="route('admin.manage-users')" :current="request()->routeIs('admin.manage-users')" wire:navigate>
                             {{ __('Manage users') }}
                         </flux:sidebar.item>
+
+                        <flux:sidebar.item icon="building-office-2" :href="route('admin.accredited-clinics')" :current="request()->routeIs('admin.accredited-clinics')" wire:navigate>
+                            {{ __('Accredited Clinics') }}
+                        </flux:sidebar.item>
                     </flux:sidebar.group>
                 @endcan
             </flux:sidebar.nav>

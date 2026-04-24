@@ -107,6 +107,9 @@ Route::middleware(['auth'])->group(function () {
 
         Route::livewire('waiting-list', 'pages::staff.waiting-list')
             ->name('staff.waiting-list');
+
+        Route::livewire('accredited-clinics', 'pages::admin.accredited-clinics')
+            ->name('admin.accredited-clinics');
     });
 
     // Instructor routes

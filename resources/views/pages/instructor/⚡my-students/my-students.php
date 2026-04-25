@@ -9,6 +9,7 @@ use App\Models\BookingSession;
 use App\Models\Course;
 use App\Models\Assessment;
 use App\Models\InstructorMetric;
+use App\Models\Vehicle;
 use Illuminate\Support\Facades\DB;
 use Flux\Flux;
 new class extends Component {
@@ -23,6 +24,9 @@ new class extends Component {
     public $grades = [];
     public $results = [];
     public $remarks = [];
+
+    public $pdcEnrollmentId = null;
+    public $selectedVehicleId = '';
 
     public function updatingSearch()
     {
@@ -145,13 +149,38 @@ new class extends Component {
         session()->flash('success', "TDC Session started for {$enrollments->count()} student(s).");
         return $this->redirect(route('instructor.my-schedule'), navigate: true);
     }
-    
-    public function beginPDC(int $enrollmentId)
+
+    #[Computed]
+    public function availableVehicles()
+    {
+        return Vehicle::where('status', 'available')->get();
+    }
+
+    public function openPDCModal(int $enrollmentId)
     {
         if (Auth::user()->instructorProfile->isPending()) {
             return;
         }
 
+        $this->pdcEnrollmentId = $enrollmentId;
+        $this->selectedVehicleId = '';
+        
+        $this->dispatch('modal-opened', name: 'start-pdc-modal');
+    }
+
+    public function confirmBeginPDC()
+    {
+        if (Auth::user()->instructorProfile->isPending()) {
+            return;
+        }
+
+        $this->validate([
+            'selectedVehicleId' => 'required|exists:vehicles,id',
+        ], [
+            'selectedVehicleId.required' => 'Please select a vehicle for this session.',
+        ]);
+
+        $enrollmentId = $this->pdcEnrollmentId;
         $instructorId = Auth::user()->instructorProfile->id;
 
         $enrollment = Enrollment::where('id', $enrollmentId)
@@ -181,10 +210,14 @@ new class extends Component {
         $session = BookingSession::create([
             'enrollment_id' => $enrollment->id,
             'instructor_id' => $instructorId,
+            'vehicle_id'    => $this->selectedVehicleId,
             'start_time'    => now(),
             'type'          => 'driving',
             'status'        => 'scheduled',
         ]);
+
+        // Mark vehicle as in-use
+        Vehicle::where('id', $this->selectedVehicleId)->update(['status' => 'in-use']);
 
         //Find or create the single assessment for this enrollment
         $assessment = Assessment::firstOrCreate(

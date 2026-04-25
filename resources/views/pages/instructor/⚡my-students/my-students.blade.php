@@ -141,9 +141,9 @@
                             @if($enrollment->course->type === 'practical' && $enrollment->status === 'active')
                             <flux:button variant="subtle" size="sm" class="w-full sm:flex-1 justify-center"
                                 icon="play"
-                                wire:click="beginPDC({{ $enrollment->id }})"
+                                wire:click="openPDCModal({{ $enrollment->id }})"
                                 wire:loading.attr="disabled"
-                                wire:target="beginPDC({{ $enrollment->id }})"
+                                wire:target="openPDCModal({{ $enrollment->id }})"
                                 :disabled="$enrollment->pdc_hours_required <= 0 || $enrollment->pdc_status === 'completed' || Auth::user()->instructorProfile->isPending()">
                                 Start PDC session
                             </flux:button>
@@ -195,4 +195,28 @@
             @endif
         </div>
     </div>
+
+    <flux:modal name="start-pdc-modal" class="md:w-96">
+        <form wire:submit.prevent="confirmBeginPDC" class="space-y-6">
+            <div>
+                <flux:heading size="lg">Start Practical Session</flux:heading>
+                <flux:text size="sm" class="mt-1">Please select the vehicle you will be using for this session.</flux:text>
+            </div>
+
+            <flux:select wire:model="selectedVehicleId" label="Vehicle" placeholder="Choose a vehicle...">
+                @foreach($this->availableVehicles as $vehicle)
+                    <flux:select.option value="{{ $vehicle->id }}">
+                        {{ $vehicle->plate_number }} - {{ $vehicle->model }} ({{ ucfirst($vehicle->transmission) }})
+                    </flux:select.option>
+                @endforeach
+            </flux:select>
+
+            <div class="flex justify-end gap-2">
+                <flux:modal.close>
+                    <flux:button variant="ghost">Cancel</flux:button>
+                </flux:modal.close>
+                <flux:button variant="primary" type="submit">Start Session</flux:button>
+            </div>
+        </form>
+    </flux:modal>
 </div>

@@ -23,10 +23,10 @@ new class extends Component {
                 {{-- Brand & Newsletter --}}
                 <div class="lg:col-span-5 space-y-8">
                     <div>
-                        <flux:heading size="xl" class="mb-4 text-white">Master the Road</flux:heading>
+                        <flux:heading size="xl" class="mb-4 text-white">Brotherly Love Relief & Truth</flux:heading>
                         <flux:text class="max-w-sm text-base leading-relaxed text-white/80">
-                            The region's premier driving academy, dedicated to producing safety-conscious and
-                            technically proficient drivers since 2012.
+                            San Carlos City's most successful driving academy, dedicated to producing safety-conscious and
+                            technically proficient drivers since 2021.
                         </flux:text>
                     </div>
 

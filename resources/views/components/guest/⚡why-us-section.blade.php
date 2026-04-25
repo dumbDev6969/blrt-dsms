@@ -35,10 +35,9 @@ new class extends Component {
                         <flux:icon name="truck" variant="outline" class="size-8" />
                     </div>
                     <div>
-                        <flux:heading size="lg" class="mb-3">Premium Fleet</flux:heading>
+                        <flux:heading size="lg" class="mb-3">Versatile Fleet</flux:heading>
                         <flux:text variant="subtle" class="leading-relaxed">
-                            Learn using the latest vehicle models, featuring both manual and automatic transmissions
-                            equipped with dual-control safety systems.
+                            Train on Sedans (Manual & Automatic), Tricycles, or Motorcycles. All vehicles are modern and maintained for safety.
                         </flux:text>
                     </div>
                 </div>
@@ -67,8 +66,7 @@ new class extends Component {
                     <div>
                         <flux:heading size="lg" class="mb-3">Expert Mentorship</flux:heading>
                         <flux:text variant="subtle" class="leading-relaxed">
-                            Our instructors aren't just drivers; they are certified educators trained to remain calm,
-                            patient, and thorough with every student.
+                            Our instructors are DOTR-LTO accredited professionals dedicated to teaching road discipline and safe driving practices.
                         </flux:text>
                     </div>
                 </div>
@@ -92,7 +90,7 @@ new class extends Component {
 
             {{-- Bottom CTA Context --}}
             <div
-                class="mt-20 bg-gradient-to-r from-accent to-transparent flex flex-col md:flex-row items-center justify-between gap-8 border-t border-zinc-100 dark:border-zinc-800 p-12 rounded-lg">
+                class="mt-20 bg-gradient-to-br from-accent/10 to-transparent dark:from-accent/20 flex flex-col md:flex-row items-center justify-between gap-8 border border-zinc-100 dark:border-zinc-800 p-12 rounded-3xl">
                 <div class="max-w-xl">
                     <flux:heading size="xl" class="mb-2">Ready to start your journey?</flux:heading>
                     <flux:text variant="subtle">Join over 15,000+ successful drivers who started their journey with BLRT

@@ -20,20 +20,21 @@
                 </flux:navbar.item>
             @endauth
 
-            {{-- Guest Menu (Home, Services, About) --}}
+            {{-- Guest Menu (Home) --}}
             @guest
-                <flux:navbar.item icon="home" href="/" :current="request()->is('/')" wire:navigate>
-                    {{ __('Home') }}
+                <flux:navbar.item class="hidden xl:flex !bg-transparent !hover:bg-transparent mr-4 pointer-events-none">
+                    <div class="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-blue-500/20 bg-blue-500/5 dark:bg-blue-400/10 shadow-sm">
+                        <div class="relative flex h-1.5 w-1.5">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-500"></span>
+                        </div>
+                        <span class="text-[11px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-[0.15em]">
+                            Calm Learning, Calm Driving.
+                        </span>
+                    </div>
                 </flux:navbar.item>
 
-                <flux:navbar.item icon="briefcase" href="/services" :current="request()->is('services')" wire:navigate>
-                    {{ __('Services') }}
-                </flux:navbar.item>
-
-                <flux:navbar.item icon="information-circle" href="/about-us" :current="request()->is('about-us')"
-                    wire:navigate>
-                    {{ __('About Us') }}
-                </flux:navbar.item>
+            
             @endguest
         </flux:navbar>
 
@@ -80,18 +81,36 @@
 
             {{-- Guest Mobile Menu --}}
             @guest
+                <div class="px-2 py-4 mb-2">
+                    <div class="flex items-center gap-2.5 px-3.5 py-2 rounded-xl border border-blue-500/20 bg-blue-500/5 dark:bg-blue-400/10">
+                        <div class="relative flex h-1.5 w-1.5">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-500"></span>
+                        </div>
+                        <span class="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase tracking-[0.15em]">
+                            Calm Learning, Calm Driving.
+                        </span>
+                    </div>
+                </div>
+
                 <flux:sidebar.group :heading="__('Menu')">
-                    <flux:sidebar.item icon="home" href="/" :current="request()->is('/')" wire:navigate>
+                    <flux:sidebar.item icon="home" href="{{ route('home') }}" :current="request()->is('/')" wire:navigate>
                         {{ __('Home') }}
                     </flux:sidebar.item>
 
-                    <flux:sidebar.item icon="briefcase" href="/services" :current="request()->is('services')"
-                        wire:navigate>
+                    <flux:sidebar.item icon="sparkles" href="/#courses" wire:navigate>
+                        {{ __('Explore Courses') }}
+                    </flux:sidebar.item>
+
+                    <flux:sidebar.item icon="map" href="/#process" wire:navigate>
+                        {{ __('How it Works') }}
+                    </flux:sidebar.item>
+
+                    <flux:sidebar.item icon="briefcase" href="{{ route('guest.services') }}" :current="request()->routeIs('guest.services')" wire:navigate>
                         {{ __('Services') }}
                     </flux:sidebar.item>
 
-                    <flux:sidebar.item icon="information-circle" href="/about-us" :current="request()->is('about-us')"
-                        wire:navigate>
+                    <flux:sidebar.item icon="information-circle" href="{{ route('guest.about') }}" :current="request()->routeIs('guest.about')" wire:navigate>
                         {{ __('About Us') }}
                     </flux:sidebar.item>
                 </flux:sidebar.group>

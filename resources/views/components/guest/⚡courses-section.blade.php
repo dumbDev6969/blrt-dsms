@@ -89,23 +89,22 @@ new class extends Component {
                         <div class="space-y-3 mb-10">
                             <div class="flex items-center gap-3">
                                 <flux:icon name="check" variant="mini" class="text-accent" />
-                                <flux:text size="sm">Manual & Automatic Transmissions</flux:text>
+                                <flux:text size="sm">Sedan (Manual & Automatic)</flux:text>
                             </div>
                             <div class="flex items-center gap-3">
                                 <flux:icon name="check" variant="mini" class="text-accent" />
-                                <flux:text size="sm">1-on-1 Personalized Coaching</flux:text>
+                                <flux:text size="sm">Motorcycle Riding Course (MRC)</flux:text>
                             </div>
                             <div class="flex items-center gap-3">
                                 <flux:icon name="check" variant="mini" class="text-accent" />
-                                <flux:text size="sm">Dual-Control Safety Vehicles</flux:text>
+                                <flux:text size="sm">Tricycle Training</flux:text>
                             </div>
                         </div>
                     </div>
 
                     <flux:button variant="primary" icon-trailing="chevron-right"
                         class="w-full shadow-lg shadow-blue-500/10">
-                        <a href="{{ route('login') }}"></a>
-                        Enroll in PDC
+                        <a href="{{ route('login') }}">Enroll in PDC</a>
                     </flux:button>
                 </div>
 

@@ -29,11 +29,11 @@ new class extends Component
 
                 <div class="space-y-6">
                     <flux:text variant="subtle" class="text-lg md:text-xl leading-relaxed text-zinc-600 dark:text-zinc-400">
-                        Established in 2008, BLRT Driving Academy was born out of a simple mission: to transform the way Filipinos learn to drive. We believe that a driver's license isn't just a permit—it's a responsibility.
+                        Established in March 2021, BLRT Driving School Inc. (Brotherly Love Relief & Truth) began its journey with a commitment to teaching the safest way to drive. Located in San Carlos City, Pangasinan, we are the only and most successful driving academy in the region.
                     </flux:text>
 
                     <flux:text variant="subtle" class="text-lg md:text-xl leading-relaxed text-zinc-600 dark:text-zinc-400">
-                        Our academy stands at the forefront of road safety education in the region. By combining LTO-standard curriculum with modern defensive driving techniques, we ensure our students don't just pass the exam—they become masters of the road.
+                        Our academy provides comprehensive training courses for various vehicle categories. With a relentless dedication to road safety, we transform students into disciplined and responsible drivers, ensuring they master road traffic rules, defensive driving, and safety measures.
                     </flux:text>
                 </div>
 
@@ -55,7 +55,7 @@ new class extends Component
                         </div>
                         <div>
                             <flux:text class="font-bold text-zinc-900 dark:text-white">Expert Led</flux:text>
-                            <flux:text size="sm" variant="subtle">Certified instructors with over 10+ years of road experience.</flux:text>
+                            <flux:text size="sm" variant="subtle">5 highly-trained professional instructors accredited by DOTR-LTO.</flux:text>
                         </div>
                     </div>
                 </div>
@@ -71,7 +71,7 @@ new class extends Component
                         <flux:heading size="xl" class="mb-6">Our Mission</flux:heading>
                         
                         <flux:text class="text-lg italic mb-10 text-zinc-500 dark:text-zinc-400">
-                            "To produce the next generation of disciplined, skilled, and safety-conscious drivers through innovative education and personalized mentorship."
+                            "We strive to improve & enhance safety on road by providing motor driving training service that complies with the highest standards & best practice."
                         </flux:text>
 
                         <div class="space-y-8">

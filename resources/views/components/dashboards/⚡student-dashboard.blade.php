@@ -225,7 +225,7 @@ new class extends Component {
                 Your documents are incomplete
             </flux:callout.heading>
             <flux:callout.text>
-                Please upload the remaining documents to proceed with your driving journey.
+                Please upload the remaining documents to unlock Practical Driving Courses (PDC).
             </flux:callout.text>
         @else
             {{-- STATE 3: EMPTY (User hasn't started) --}}
@@ -233,7 +233,7 @@ new class extends Component {
                 You haven't uploaded documents yet
             </flux:callout.heading>
             <flux:callout.text>
-                Upload your documents to start your driving journey.
+                Upload your documents to unlock Practical Driving Courses (PDC). You can still enroll in Theoretical courses (TDC) while waiting.
             </flux:callout.text>
         @endif
 

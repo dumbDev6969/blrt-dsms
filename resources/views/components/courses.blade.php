@@ -11,7 +11,7 @@
     <flux:text>Select a program to start your driving journey.</flux:text>
 
     @if (!$isComplete)
-        <flux:text color="red" class="mt-2 font-semibold italic">Submit your documents before you can enroll.
+        <flux:text color="red" class="mt-2 font-semibold italic">Submit your documents before you can enroll in Practical Driving Courses (PDC).
         </flux:text>
     @elseif ($isEnrollBlocked)
         <flux:text color="amber" class="mt-2 font-semibold italic">
@@ -43,6 +43,8 @@
                     @php
                         // Determine if this is a practical course and the user hasn't completed TDC yet
                         $isPdcBlock = $course->type === 'practical' && !$hasCompletedTdc;
+                        // Determine if this is a practical course and documents are incomplete
+                        $isDocBlock = $course->type === 'practical' && !$isComplete;
                     @endphp
 
                     @if ($isEnrollBlocked)
@@ -71,13 +73,25 @@
                                 </flux:button>
                             </span>
                         </flux:tooltip>
+                    @elseif ($isDocBlock)
+                        <flux:tooltip content="You must complete your documents before enrolling in a Practical course.">
+                            <span>
+                                <flux:button
+                                    variant="primary"
+                                    size="sm"
+                                    icon-trailing="arrow-right"
+                                    disabled
+                                >
+                                    Enroll
+                                </flux:button>
+                            </span>
+                        </flux:tooltip>
                     @else
                         <flux:button
                             variant="primary"
                             size="sm"
                             icon-trailing="arrow-right"
-                            :disabled="!$isComplete"
-                            :href="$isComplete ? route('enrollment.create', $course->id) : null"
+                            :href="route('enrollment.create', $course->id)"
                         >
                             Enroll
                         </flux:button>

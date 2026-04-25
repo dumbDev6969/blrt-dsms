@@ -69,11 +69,15 @@ new class extends Component {
             } else {
                 $requiredTypes[] = 'birth_cert';
             }
+
+            if (strtolower($profile->civil_status) === 'married' && strtolower($profile->sex) === 'female') {
+                $requiredTypes[] = 'marriage_contract';
+            }
         } else {
             $requiredTypes[] = 'birth_cert'; // Default
         }
 
-        $allAllowedTypes = array_merge($requiredTypes, ['tin_id']);
+        $allAllowedTypes = array_unique(array_merge($requiredTypes, ['tin_id', 'tdc_certificate', 'marriage_contract']));
         $uploadedTypes = Document::where('user_id', Auth::user()->id)->pluck('type')->toArray();
         $availableTypes = array_diff($allAllowedTypes, $uploadedTypes);
 
@@ -82,6 +86,8 @@ new class extends Component {
             'medical' => 'Medical Certificate',
             'adl_form' => 'ADL Form',
             'valid_id' => 'Valid ID',
+            'marriage_contract' => 'Marriage Contract',
+            'tdc_certificate' => 'TDC Certificate',
             'tin_id' => 'TIN ID',
             'passport' => 'Passport',
         ];
@@ -125,7 +131,7 @@ new class extends Component {
                     {{-- DYNAMIC METADATA SECTION --}}
 
                     {{-- 1. Certificate / ID Number (Relevant for IDs, Licenses, Certs) --}}
-                    @if (in_array($type, ['valid_id', 'tin_id', 'passport', 'medical']))
+                    @if (in_array($type, ['valid_id', 'tin_id', 'passport', 'medical', 'tdc_certificate', 'marriage_contract']))
                         <flux:input wire:model="metadata.cert_number" label="ID / Certificate Number"
                             placeholder="e.g. 123-456-789" />
                     @endif
@@ -148,8 +154,7 @@ new class extends Component {
                         <flux:input wire:model="metadata.expiry" type="date" label="Expiry Date" />
                     @endif
 
-                    
-                    @if (in_array($type, ['birth_cert', 'medical', 'passport', 'valid_id']))
+                    @if (in_array($type, ['birth_cert', 'medical', 'passport', 'valid_id', 'tdc_certificate', 'marriage_contract']))
                         <flux:input wire:model="metadata.issue_date" type="date" label="Date Issued" />
                     @endif
 

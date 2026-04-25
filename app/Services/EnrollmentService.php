@@ -171,7 +171,7 @@ class EnrollmentService
     protected function generateEnrollmentCode(): string
     {
         do {
-            $code = 'ENR-' . Str::upper(Str::random(8));
+            $code = 'BLRT-' . Str::upper(Str::random(8));
         } while (Enrollment::where('code', $code)->exists());
 
         return $code;

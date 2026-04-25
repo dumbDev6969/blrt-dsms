@@ -9,6 +9,7 @@ use App\Models\Enrollment;
 use App\Models\EnrollmentForm;
 use App\Models\StudentProfile;
 use App\Models\Course;
+use App\Models\Document;
 new class extends Component {
     protected array $blockingEnrollmentStatuses = ['active', 'pending', 'waiting_list'];
 
@@ -50,6 +51,12 @@ new class extends Component {
 
         if ($course->type === 'practical' && !$this->hasCompletedTdc($studentId)) {
             session()->flash('status', 'You must complete a Theoretical Driving Course (TDC) before enrolling in a Practical course.');
+            $this->redirectRoute('dashboard', navigate: true);
+            return;
+        }
+
+        if ($course->type === 'practical' && !$this->isDocumentVerified()) {
+            session()->flash('status', 'You must complete your documents before enrolling in a Practical course.');
             $this->redirectRoute('dashboard', navigate: true);
             return;
         }
@@ -153,6 +160,13 @@ new class extends Component {
     {
         return Enrollment::where('student_id', $studentId)
             ->where('tdc_status', 'completed')
+            ->exists();
+    }
+
+    protected function isDocumentVerified(): bool
+    {
+        return Document::where('user_id', Auth::id())
+            ->where('status', 'verified')
             ->exists();
     }
 };

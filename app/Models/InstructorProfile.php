@@ -73,7 +73,7 @@ class InstructorProfile extends Model
      */
     public function canPerformActions(): bool
     {
-        return in_array($this->status, ['approved', 'not_accepting', 'on_leave']) && $this->is_active;
+        return in_array($this->status, ['verified', 'not_accepting', 'on_leave']) && $this->is_active;
     }
 
     /**
@@ -82,6 +82,6 @@ class InstructorProfile extends Model
      */
     public function isAccepting(): bool
     {
-        return $this->status === 'approved' && $this->is_active;
+        return $this->status === 'verified' && $this->is_active;
     }
 }

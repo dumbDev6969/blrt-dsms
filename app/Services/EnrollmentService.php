@@ -73,7 +73,7 @@ class EnrollmentService
         $form->loadMissing('course');
 
         $query = InstructorProfile::where('is_active', true)
-            ->where('status', 'approved');
+            ->where('status', 'verified');
 
         // Get all candidates and filter in PHP (JSON columns)
         $candidates = $query->get();

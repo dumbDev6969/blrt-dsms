@@ -1,7 +1,7 @@
 @php
-    $message = session('status') ?? session('success') ?? session('error');
-    $variant = session('error') ? 'danger' : 'success';
-    $icon = session('error') ? 'exclamation-circle' : 'check-circle';
+    $message = session('status') ?? session('success') ?? session('error') ?? session('warning');
+    $variant = session('error') ? 'danger' : (session('warning') ? 'warning' : 'success');
+    $icon = session('error') ? 'exclamation-circle' : (session('warning') ? 'exclamation-triangle' : 'check-circle');
 @endphp
 
 @if ($message)

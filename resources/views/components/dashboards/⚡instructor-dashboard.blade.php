@@ -15,16 +15,17 @@ new class extends Component {
     {
         $profile = Auth::user()->instructorProfile;
         if ($profile) {
-            $this->accepting_sessions = $profile->status === 'approved';
+            $this->accepting_sessions = $profile->status === 'verified';
         }
     }
 
     public function updatedAcceptingSessions($value)
     {
+
         $profile = Auth::user()->instructorProfile;
-        if ($profile && in_array($profile->status, ['approved', 'not_accepting', 'on_leave'])) {
+        if ($profile && in_array($profile->status, ['verified', 'not_accepting', 'on_leave'])) {
             $profile->update([
-                'status' => $value ? 'approved' : 'not_accepting',
+                'status' => $value ? 'verified' : 'not_accepting',
             ]);
         }
     }

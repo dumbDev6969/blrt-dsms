@@ -1,6 +1,18 @@
 <div class="flex h-full w-full flex-1 flex-col gap-4 sm:gap-6 rounded-xl font-sans text-slate-900 dark:text-slate-100">
 
     <x-callout />
+    
+    {{-- Persistent warning for unpaid students --}}
+    @if ($this->unpaidStudents->isNotEmpty())
+        <flux:callout variant="warning" icon="exclamation-triangle" class="shadow-sm">
+            <flux:callout.heading>
+                {{ $this->unpaidStudents->count() }} student(s) have not fully paid
+            </flux:callout.heading>
+            <flux:callout.text>
+                Sessions cannot be started until all active students are fully paid. Please coordinate with the staff for payment follow-up.
+            </flux:callout.text>
+        </flux:callout>
+    @endif
 
     {{-- HEADER --}}
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">

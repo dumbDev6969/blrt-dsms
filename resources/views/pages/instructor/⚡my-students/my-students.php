@@ -59,6 +59,16 @@ new class extends Component {
     }
 
     #[Computed]
+    public function unpaidStudents()
+    {
+        return Enrollment::where('instructor_id', Auth::user()->instructorProfile->id)
+            ->where('status', 'active')
+            ->where('balance', '>', 0)
+            ->with('studentProfile.user')
+            ->get();
+    }
+
+    #[Computed]
     public function enrollmentCounts()
     {
         $instructorId = Auth::user()->instructorProfile->id;
@@ -134,6 +144,12 @@ new class extends Component {
             return;
         }
 
+        // Check if there are any students who haven't fully paid yet
+        if ($this->unpaidStudents->isNotEmpty()) {
+            session()->flash('warning', 'Cannot start TDC sessions — ' . $this->unpaidStudents->count() . ' student(s) have an outstanding balance.');
+            return;
+        }
+
         DB::transaction(function () use ($enrollments, $instructorId, $now) {
             foreach ($enrollments as $enrollment) {
                 BookingSession::create([
@@ -189,6 +205,12 @@ new class extends Component {
             ->where('pdc_hours_required', '>', 0)
             ->whereNot('pdc_status', 'completed')
             ->firstOrFail();
+
+        // Check if student has fully paid
+        if ($enrollment->balance > 0) {
+            session()->flash('warning', 'Cannot start PDC session — this student has an outstanding balance of ₱' . number_format($enrollment->balance, 2) . '.');
+            return;
+        }
 
         // Prevent duplicate active PDC sessions
         $hasActiveSession = BookingSession::where('enrollment_id', $enrollment->id)

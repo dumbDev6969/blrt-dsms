@@ -327,6 +327,65 @@ new class extends Component {
                     </div>
                 </flux:fieldset>
 
+                <flux:separator />
+
+                {{-- Section 5: Rules & Regulations --}}
+                <flux:fieldset>
+                    <div class="flex items-center gap-4 mb-8">
+                        <div
+                            class="flex items-center justify-center w-10 h-10 rounded-xl bg-amber-500 shadow-lg shadow-amber-200 dark:shadow-amber-950/50">
+                            <flux:icon icon="shield-check" class="text-white size-5" />
+                        </div>
+                        <div>
+                            <flux:legend class="!text-lg font-bold text-slate-900 dark:text-slate-100">
+                                Rules and Regulations for Students
+                            </flux:legend>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Please read and acknowledge the following terms</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 dark:bg-slate-800/50 p-6 lg:p-8 rounded-2xl border border-slate-200 dark:border-slate-700/50 space-y-6">
+                        <div class="grid grid-cols-1 gap-4">
+                            @php
+                                $regulations = [
+                                    "Tuition Fee shall be fully Paid on the first day of driving lesson.",
+                                    "Tuition Fees for TDC/PDC are Non-Refundable once paid.",
+                                    "Students who withdraw or wish to withdraw from the school, for any reason, are not entitled to a refund of any fees paid.",
+                                    "Enrollment Fees is non Transferable.",
+                                    "No food, smoking or cellphone during lesson proper.",
+                                    "Cancellation of Practical Driving shall be within 1 day before schedule, penalty of 150 pesos if no notice of cancellation.",
+                                    "Student under influence of liquor/drugs will not be given driving lesson.",
+                                    "Strictly NO WEARING OF SHORT PANTS, SANDOS, SLIPPERS.",
+                                    "Students on Practical Driving Lesson shall bring always S.P. or D.L. and must wear rubber shoes.",
+                                    "BLRT has the right to cancel lesson of non-observance of safety features and health protocols.",
+                                    "Practical Driving Course Certificate shall be available on specified release date."
+                                ];
+                            @endphp
+
+                            @foreach($regulations as $index => $rule)
+                                <div class="flex gap-4 group">
+                                    <div class="flex-shrink-0 flex items-center justify-center size-6 rounded-full bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 text-[10px] font-black border border-amber-100 dark:border-amber-900/50 shadow-sm transition-transform group-hover:scale-110">
+                                        {{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}
+                                    </div>
+                                    <flux:text size="sm" class="leading-relaxed text-slate-600 dark:text-slate-400">
+                                        {{ $rule }}
+                                    </flux:text>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <div class="pt-6 mt-2 border-t border-slate-200 dark:border-slate-700/50">
+                            <div class="flex items-center justify-center gap-3 py-3 px-4 bg-amber-50/50 dark:bg-amber-950/20 rounded-xl border border-amber-100/50 dark:border-amber-900/30">
+                                <flux:icon icon="information-circle" class="size-5 text-amber-600 dark:text-amber-400" />
+                                <flux:text size="xs" weight="bold" class="text-amber-800 dark:text-amber-300 uppercase tracking-wider text-center">
+                                    THIS IS TO CERTIFY THAT I HAVE READ AND FULLY UNDERSTAND THE FOREGOING RULES STATED ABOVE
+                                </flux:text>
+                            </div>
+                        </div>
+                    </div>
+                </flux:fieldset>
+
+
                 {{-- Actions --}}
                 <div class="flex items-center justify-between pt-8 border-t border-slate-200 dark:border-slate-800">
                     <flux:button variant="ghost" class="text-slate-600 dark:text-slate-400">

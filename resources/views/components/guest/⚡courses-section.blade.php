@@ -1,15 +1,20 @@
 <?php
 
 use Livewire\Component;
+use App\Models\Course;
+use Livewire\Attributes\Computed;
 
 new class extends Component {
-    //
+    #[Computed]
+    public function courses()
+    {
+        return Course::where('is_active', true)->get();
+    }
 };
 ?>
 
 <div>
-    {{-- Live as if you were to die tomorrow. Learn as if you were to live forever. - Mahatma Gandhi --}}
-    <section class="relative  py-24 lg:py-32">
+    <section class="relative py-24 lg:py-32">
         <flux:container>
             {{-- Section Header: Matching Hero Alignment --}}
             <div class="max-w-3xl mb-16 lg:mb-20">
@@ -30,84 +35,49 @@ new class extends Component {
             </div>
 
             {{-- Courses Grid --}}
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12  ">
-
-                {{-- Course 1: TDC --}}
-                <div class="flex flex-col p-8 lg:p-10 hover:border-blue-500/50 transition-colors duration-300 border rounded-lg">
-                    <div class="flex justify-between items-start mb-8">
-                        <div class="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-xl text-accent">
-                            <flux:icon name="book-open" variant="outline" class="size-8" />
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
+                @foreach($this->courses as $course)
+                    <div class="flex flex-col p-8 lg:p-10 hover:border-blue-500/50 transition-colors duration-300 border rounded-2xl bg-white dark:bg-zinc-900/50 shadow-sm">
+                        <div class="flex justify-between items-start mb-8">
+                            <div class="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-xl text-accent">
+                                <flux:icon name="{{ $course->type === 'theoretical' ? 'book-open' : 'identification' }}" variant="outline" class="size-8" />
+                            </div>
+                            <flux:badge variant="pill" color="zinc" size="sm" class="font-mono">{{ $course->duration_hours }} Hours</flux:badge>
                         </div>
-                        <flux:badge variant="pill">15 Hours</flux:badge>
-                    </div>
 
-                    <div class="flex-1">
-                        <flux:heading size="xl" class="mb-4">Theoretical Driving Course (TDC)</flux:heading>
-                        <flux:text class="mb-8 leading-relaxed">
-                            The foundation of your driving journey. This mandatory classroom-based course covers traffic
-                            rules, road safety, and defensive driving techniques required for your Student Permit.
-                        </flux:text>
+                        <div class="flex-1">
+                            <flux:heading size="xl" class="mb-2">{{ $course->title }}</flux:heading>
+                            <flux:text size="sm" class="text-accent font-medium mb-4 uppercase tracking-widest">{{ $course->code }}</flux:text>
+                            
+                            <flux:text class="mb-8 leading-relaxed text-zinc-600 dark:text-zinc-400">
+                                {{ $course->description }}
+                            </flux:text>
 
-                        <div class="space-y-3 mb-10">
-                            <div class="flex items-center gap-3">
-                                <flux:icon name="check" variant="mini" class="text-accent" />
-                                <flux:text size="sm">LTO-Compliant Curriculum</flux:text>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <flux:icon name="check" variant="mini" class="text-accent" />
-                                <flux:text size="sm">Smart Classroom Environment</flux:text>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <flux:icon name="check" variant="mini" class="text-accent" />
-                                <flux:text size="sm">Certificate of Completion provided</flux:text>
-                            </div>
+                            @if($course->prerequisites && count($course->prerequisites) > 0)
+                                <div class="space-y-3 mb-10">
+                                    @foreach($course->prerequisites as $prereq)
+                                        <div class="flex items-center gap-3">
+                                            <flux:icon name="check" variant="mini" class="text-accent" />
+                                            <flux:text size="sm">{{ $prereq }}</flux:text>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
                         </div>
-                    </div>
 
-                    <flux:button variant="primary" icon-trailing="chevron-right"
-                        class="w-full shadow-lg shadow-blue-500/10">
-                        <a href="{{ route('login') }}">Enroll in TDC</a>
-                    </flux:button>
-                </div>
-
-                {{-- Course 2: PDC --}}
-                <div class="flex flex-col p-8 lg:p-10 hover:border-blue-500/50 transition-colors duration-300 border rounded-lg">
-                    <div class="flex justify-between items-start mb-8">
-                        <div class="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-xl text-accent">
-                            <flux:icon name="identification" variant="outline" class="size-8" />
-                        </div>
-                        <flux:badge variant="pill">8+ Hours</flux:badge>
-                    </div>
-
-                    <div class="flex-1">
-                        <flux:heading size="xl" class="mb-4">Practical Driving Course (PDC)</flux:heading>
-                        <flux:text class="mb-8 leading-relaxed">
-                            Hands-on training with our expert instructors. Master the art of driving in real-world
-                            conditions. Required for converting your permit to a Non-Professional License.
-                        </flux:text>
-
-                        <div class="space-y-3 mb-10">
-                            <div class="flex items-center gap-3">
-                                <flux:icon name="check" variant="mini" class="text-accent" />
-                                <flux:text size="sm">Sedan (Manual & Automatic)</flux:text>
+                        <div class="mt-auto pt-8 border-t border-zinc-100 dark:border-zinc-800">
+                            <div class="flex items-center justify-between mb-6">
+                                <flux:text size="xs" class="uppercase tracking-widest font-bold text-zinc-400">Course Fee</flux:text>
+                                <flux:text size="lg" weight="bold" class="text-accent">₱{{ number_format($course->price, 2) }}</flux:text>
                             </div>
-                            <div class="flex items-center gap-3">
-                                <flux:icon name="check" variant="mini" class="text-accent" />
-                                <flux:text size="sm">Motorcycle Riding Course (MRC)</flux:text>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <flux:icon name="check" variant="mini" class="text-accent" />
-                                <flux:text size="sm">Tricycle Training</flux:text>
-                            </div>
+                            
+                            <flux:button href="{{ route('login') }}" variant="primary" icon-trailing="chevron-right"
+                                class="w-full shadow-lg shadow-blue-500/10">
+                                Enroll Now
+                            </flux:button>
                         </div>
                     </div>
-
-                    <flux:button variant="primary" icon-trailing="chevron-right"
-                        class="w-full shadow-lg shadow-blue-500/10">
-                        <a href="{{ route('login') }}">Enroll in PDC</a>
-                    </flux:button>
-                </div>
-
+                @endforeach
             </div>
 
             {{-- Footer Note --}}

@@ -181,15 +181,12 @@ new class extends Component {
             </flux:callout>
         @endif
     </div>
-
     {{-- SECTION 1: KEY PERFORMANCE INDICATORS --}}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-
         {{-- KPI: Total Revenue (This Month) --}}
         <x-kpi-cards label="Monthly Revenue" value="₱{{ number_format($this->revenueData['value'], 2) }}"
             trend="{{ $this->revenueData['trend'] }}" trend-color="{{ $this->revenueData['trend_color'] }}"
             icon="banknotes" color="emerald" subtext="{{ $this->revenueData['subtext'] }}" />
-
         {{-- KPI: Active Enrollments --}}
         <x-kpi-cards label="Active Enrollments" value="{{ $this->enrollmentStats['total'] }}" trend="students"
             trend-color="zinc" icon="academic-cap" color="blue">
@@ -199,7 +196,6 @@ new class extends Component {
                 <flux:text size="xs" class="text-slate-500">PDC: {{ $this->enrollmentStats['pdc'] }}</flux:text>
             </div>
         </x-kpi-cards>
-
         {{-- KPI: Pending Actions --}}
         <x-kpi-cards label="Pending Actions" value="{{ $this->pendingActions['total'] }}" trend="items"
             trend-color="zinc" icon="clock" color="amber">
@@ -210,7 +206,6 @@ new class extends Component {
                 <flux:text size="xs" class="text-slate-500">Docs: {{ $this->pendingActions['docs'] }}</flux:text>
             </div>
         </x-kpi-cards>
-
         {{-- KPI: Passed Students --}}
         <x-kpi-cards label="Passed Students"
             value="{{ $this->passedStudentsCount['tdc'] + $this->passedStudentsCount['pdc'] }}" trend="Total"
@@ -223,20 +218,16 @@ new class extends Component {
         </x-kpi-cards>
     </div>
 
-    {{-- SECTION 2: OPERATIONAL DASHBOARD (Split View) --}}
+    {{-- OPERATIONAL DASHBOARD --}}
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-        {{-- LEFT COLUMN (2/3 width): Trends & Charts --}}
+        {{--  Trends & Charts --}}
         <div class="lg:col-span-2 space-y-6">
-            
             <livewire:system-metrics />
-
             {{-- INSTRUCTOR PERFORMANCE SNAPSHOT --}}
             <div class="relative overflow-hidden rounded-2xl p-6 border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
                 {{-- Decorative Glow --}}
                 <div class="absolute -top-24 -right-24 w-64 h-64 bg-emerald-500/10 dark:bg-emerald-500/5 rounded-full blur-3xl pointer-events-none"></div>
                 <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-blue-500/10 dark:bg-blue-500/5 rounded-full blur-3xl pointer-events-none"></div>
-
                 <div class="relative flex flex-col gap-6">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
@@ -248,7 +239,6 @@ new class extends Component {
                             <flux:button size="sm" variant="ghost" icon="arrow-right" :href="route('admin.instructor-performances')" wire:navigate>All</flux:button>
                         </div>
                     </div>
-
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         @forelse ($this->instructorsPerformances as $instructor)
                             <livewire:instructor-performance-card 
@@ -263,10 +253,8 @@ new class extends Component {
                 </div>
             </div>
             </div>
-
         {{-- RIGHT COLUMN (1/3 width): Performance & Queue --}}
         <div class="space-y-6">
-
             {{-- DOCUMENT VERIFICATION QUEUE --}}
             <div
                 class="p-5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm">
@@ -275,7 +263,6 @@ new class extends Component {
                     <flux:badge color="amber" variant="subtle" size="sm">{{ $this->pendingDocsCount }} Pending
                     </flux:badge>
                 </div>
-
                 <div class="space-y-3">
                     {{-- Doc 1 --}}
                     <div
@@ -289,7 +276,6 @@ new class extends Component {
                         </div>
                         <flux:button size="xs" variant="ghost">View</flux:button>
                     </div>
-
                     {{-- Doc 2 --}}
                     <div
                         class="flex items-start gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
@@ -303,30 +289,13 @@ new class extends Component {
                         <flux:button size="xs" variant="ghost">View</flux:button>
                     </div>
                 </div>
-
                 <div class="mt-4">
                     <flux:button size="sm" variant="ghost" icon="arrow-right" class="w-full" href="">
                         All Docs</flux:button>
                 </div>
             </div>
-
-            {{-- VEHICLE MAINTENANCE ALERTS --}}
-            <div
-                class="p-5 rounded-xl border border-amber-100 bg-amber-50 dark:border-amber-900 dark:bg-amber-900/10 shadow-sm">
-                <div class="flex items-start gap-3">
-                    <flux:icon icon="wrench-screwdriver" class="size-5 text-amber-600 dark:text-amber-400" />
-                    <div>
-                        <flux:heading size="sm" weight="bold" class="text-amber-900 dark:text-amber-100">
-                            Maintenance Due</flux:heading>
-                        <div class="mt-2 space-y-2 text-xs">
-                            <flux:text class="text-amber-800 dark:text-amber-200 font-medium">Toyota Vios (ABC-123)
-                            </flux:text>
-                            <flux:text class="text-amber-800 dark:text-amber-200 font-medium">Honda City (XYZ-789)
-                            </flux:text>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {{-- VEHICLES --}}
+            <livewire:vehicles />
         </div>
     </div>
 </div>

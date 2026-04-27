@@ -2,6 +2,7 @@
 
 use Livewire\Component;
 use App\Models\Vehicle;
+use App\Models\BookingSession;
 use Livewire\Attributes\Validate;
 use Livewire\Attributes\Computed;
 use Livewire\WithPagination;
@@ -25,7 +26,7 @@ new class extends Component {
     #[Validate('required|in:auto,manual')]
     public $transmission = '';
 
-    #[Validate('required|in:2-wheel,4-wheel')]
+    #[Validate('required|in:motorcycle,automobile,tricycle')]
     public $type = '';
 
     #[Validate('required|in:available,maintenance,in-use')]
@@ -45,11 +46,36 @@ new class extends Component {
 
     public function mount()
     {
-        // Auto-set status to 'maintenance' for any vehicle whose date has arrived
+        // 1. Auto-set status to 'maintenance' for any vehicle whose date has arrived
         Vehicle::whereIn('status', ['available', 'in-use'])
             ->whereNotNull('next_maintenance_date')
             ->whereDate('next_maintenance_date', '<=', now())
             ->update(['status' => 'maintenance']);
+
+        // 2. Auto-set status for vehicles currently in use based on booking sessions
+        $inUseVehicleIds = BookingSession::where(function ($query) {
+            $query->where('status', 'in_progress')
+                ->orWhere(function ($q) {
+                    $q->where('start_time', '<=', now())
+                        ->where('end_time', '>=', now())
+                        ->whereNotIn('status', ['completed', 'cancelled']);
+                });
+        })
+            ->pluck('vehicle_id')
+            ->filter()
+            ->unique();
+
+        // Mark as 'in-use' if not in maintenance
+        if ($inUseVehicleIds->isNotEmpty()) {
+            Vehicle::whereIn('id', $inUseVehicleIds)
+                ->where('status', 'available')
+                ->update(['status' => 'in-use']);
+        }
+
+        // Revert 'in-use' to 'available' if no active session and not maintenance
+        Vehicle::where('status', 'in-use')
+            ->whereNotIn('id', $inUseVehicleIds)
+            ->update(['status' => 'available']);
     }
 
     public function edit(Vehicle $vehicle)
@@ -66,11 +92,13 @@ new class extends Component {
 
     public function update()
     {
+        $this->edit_plate_number = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $this->edit_plate_number));
+
         $this->validate([
             'edit_model' => 'required|string|max:50',
             'edit_plate_number' => 'required|string|max:20|unique:vehicles,plate_number,' . $this->editingVehicle?->id,
             'edit_transmission' => 'required|in:auto,manual',
-            'edit_type' => 'required|in:2-wheel,4-wheel',
+            'edit_type' => 'required|in:motorcycle,automobile,tricycle',
             'edit_next_maintenance_date' => 'nullable|date',
         ]);
 
@@ -115,11 +143,12 @@ new class extends Component {
                 $query->where('model', 'like', '%' . $this->search . '%')->orWhere('plate_number', 'like', '%' . $this->search . '%');
             })
             ->latest()
-            ->paginate(2);
+            ->paginate(5);
     }
 
     public function save()
     {
+        $this->plate_number = strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $this->plate_number));
         $validated = $this->validate();
 
         Vehicle::create([
@@ -177,8 +206,9 @@ new class extends Component {
                             </flux:select>
                             <flux:select label="Vehicle Type" wire:model.blur="type" placeholder="Select..."
                                 icon="tag">
-                                <flux:select.option value="2-wheel">2-Wheel (Motorcycle)</flux:select.option>
-                                <flux:select.option value="4-wheel">4-Wheel (Car/Van)</flux:select.option>
+                                <flux:select.option value="motorcycle">Motorcycle</flux:select.option>
+                                <flux:select.option value="automobile">Automobile</flux:select.option>
+                                <flux:select.option value="tricycle">Tricycle</flux:select.option>
                             </flux:select>
                         </div>
                         {{-- Footer Actions --}}
@@ -251,12 +281,12 @@ new class extends Component {
                                             @endphp
                                             <button @if ($isMaintenanceDue) disabled @endif
                                                 wire:click="updateStatus({{ $vehicle->id }}, 'available')"
-                                                class="px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200 {{ $vehicle->status === 'available' ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400 shadow-[0_1px_2px_rgba(0,0,0,0.05)]' : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50' }}">
+                                                class="px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200 {{ $vehicle->status === 'available' && !$isMaintenanceDue ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400 shadow-[0_1px_2px_rgba(0,0,0,0.05)]' : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50' }}">
                                                 Available
                                             </button>
                                             <button @if ($isMaintenanceDue) disabled @endif
                                                 wire:click="updateStatus({{ $vehicle->id }}, 'in-use')"
-                                                class="px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200 {{ $vehicle->status === 'in-use' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400 shadow-[0_1px_2px_rgba(0,0,0,0.05)]' : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50' }}">
+                                                class="px-2.5 py-1 rounded-full text-xs font-medium transition-all duration-200 {{ $vehicle->status === 'in-use' && !$isMaintenanceDue ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400 shadow-[0_1px_2px_rgba(0,0,0,0.05)]' : 'text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50' }}">
                                                 In Use
                                             </button>
 
@@ -338,8 +368,9 @@ new class extends Component {
                 <flux:input wire:model="edit_plate_number" label="Plate Number" placeholder="ABC 1234" required />
 
                 <flux:select wire:model="edit_type" label="Vehicle Type" placeholder="Select..." required>
-                    <flux:select.option value="2-wheel">2-Wheel (Motorcycle)</flux:select.option>
-                    <flux:select.option value="4-wheel">4-Wheel (Car/Van)</flux:select.option>
+                    <flux:select.option value="motorcycle">Motorcycle</flux:select.option>
+                    <flux:select.option value="automobile">Automobile</flux:select.option>
+                    <flux:select.option value="tricycle">Tricycle</flux:select.option>
                 </flux:select>
 
                 <flux:select wire:model="edit_transmission" label="Transmission" placeholder="Select..." required>

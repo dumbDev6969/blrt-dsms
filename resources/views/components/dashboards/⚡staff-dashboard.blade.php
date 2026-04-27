@@ -29,8 +29,16 @@ new class extends Component {
             </flux:text>
         </div>
 
-        {{-- SECTION 2: MASTER SCHEDULE OVERSIGHT --}}
-        <livewire:master-schedule />
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2">
+                {{-- SECTION 2: MASTER SCHEDULE OVERSIGHT --}}
+                <livewire:master-schedule />
+            </div>
+            <div>
+                {{-- SECTION 3: VEHICLE MONITORING --}}
+                <livewire:vehicles />
+            </div>
+        </div>
     @elseif(auth()->user()->status === 'pending')
         <div class="flex flex-col items-center justify-center h-full py-12 px-6 text-center bg-amber-50/50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/50 rounded-2xl">
             <div class="p-4 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-full mb-6">

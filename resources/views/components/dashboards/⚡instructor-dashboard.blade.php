@@ -128,7 +128,6 @@ new class extends Component {
 
     {{-- SECTION 1: KEY METRICS (Derived from INSTRUCTOR_METRIC table) --}}
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-
         {{-- Metric: Sessions --}}
         <x-kpi-cards
             label="Total Sessions"
@@ -137,7 +136,6 @@ new class extends Component {
             color="blue"
             :subtext="'Goal: ' . round($this->metrics->total_sessions * 1.2) . ' next month'"
         />
-
         {{-- Metric: Completed Sessions --}}
         <x-kpi-cards
             label="Completed"
@@ -146,7 +144,6 @@ new class extends Component {
             color="emerald"
             :sublabel="$this->metrics->total_sessions > 0 ? round(($this->metrics->completed_sessions / $this->metrics->total_sessions) * 100) . '% completion' : '0% completion'"
         />
-
         {{-- Metric: Teaching Hours --}}
         <x-kpi-cards
             label="Hours Taught"
@@ -155,7 +152,6 @@ new class extends Component {
             color="orange"
             subtext="Productivity this month"
         />
-
         {{-- Metric: Rating --}}
         <x-kpi-cards
             label="Avg. Rating"
@@ -166,7 +162,6 @@ new class extends Component {
             color="yellow"
             subtext="Student feedback"
         />
-
         {{-- Metric: Students Taught --}}
         <x-kpi-cards
             label="Students Taught"
@@ -175,7 +170,6 @@ new class extends Component {
             color="blue"
             subtext="Unique enrollees"
         />
-
         {{-- Metric: Students Passed --}}
         <x-kpi-cards
             label="Students Passed"
@@ -184,7 +178,6 @@ new class extends Component {
             color="emerald"
             subtext="Certification ready"
         />
-
         {{-- Metric: Student Pass Rate --}}
         <x-kpi-cards
             label="Student Pass Rate"
@@ -193,7 +186,6 @@ new class extends Component {
             color="purple"
             :subtext="'Top ' . (100 - round($this->metrics->pass_rate)) . '% of instructors'"
         />
-
         {{-- Metric: Efficiency (Custom) --}}
         <x-kpi-cards
             label="Session Density"
@@ -417,19 +409,8 @@ new class extends Component {
                 </div>
             @endif
 
-            {{-- MAINTENANCE WIDGET --}}
-            <div class="p-5 rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm">
-                <flux:heading size="xs" weight="bold" class="text-slate-400 uppercase tracking-widest mb-4">Upcoming Log</flux:heading>
-                <div class="flex items-center gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700/50">
-                    <div class="p-2 bg-orange-50 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-lg">
-                        <flux:icon icon="wrench" class="size-4" />
-                    </div>
-                    <div>
-                        <flux:text size="xs" weight="bold" class="text-slate-800 dark:text-white">Toyota Vios (ABC-123)</flux:text>
-                        <flux:text size="xs" class="text-slate-500">PMS Due: Feb 15, 2026</flux:text>
-                    </div>
-                </div>
-            </div>
+            {{-- VEHICLES --}}
+            <livewire:vehicles />
         </div>
     </div>
 </div>

@@ -70,61 +70,66 @@ new class extends Component
 
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
                     
-                    {{-- Stat 1 --}}
+                    {{-- Item 1: Expert Instruction --}}
+                    <div class="flex flex-col gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-accent dark:text-blue-400">
+                                <flux:icon name="academic-cap" variant="mini" class="size-6" />
+                            </div>
+                            <span class="font-semibold text-zinc-900 dark:text-white">Expert Instruction</span>
+                        </div>
+                        <div>
+                            <p class="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                                Premium TDC and PDC courses.
+                            </p>
+                        </div>
+                    </div>
+
+                    {{-- Item 2: Safety Standards --}}
+                    <div class="flex flex-col gap-3">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-accent dark:text-blue-400">
+                                <flux:icon name="shield-check" variant="mini" class="size-6" />
+                            </div>
+                            <span class="font-semibold text-zinc-900 dark:text-white">Safety Standards</span>
+                        </div>
+                        <div>
+                            <p class="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                                Enhance road safety standards.
+                            </p>
+                        </div>
+                    </div>
+
+                    {{-- Item 3: Proven Results --}}
                     <div class="flex flex-col gap-3">
                         <div class="flex items-center gap-3">
                             <div class="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-accent dark:text-blue-400">
                                 <flux:icon name="trophy" variant="mini" class="size-6" />
                             </div>
-                            <span class="text-2xl font-bold text-zinc-900 dark:text-white">98%</span>
+                            <span class="font-semibold text-zinc-900 dark:text-white">Proven Results</span>
                         </div>
                         <div>
-                            <p class="font-semibold text-zinc-900 dark:text-zinc-100">Passing Rate</p>
-                            <p class="text-sm text-zinc-500 dark:text-zinc-400">First-time success</p>
+                            <p class="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                                Leading driver training organization.
+                            </p>
                         </div>
                     </div>
 
-                    {{-- Stat 2 --}}
-                    <div class="flex flex-col gap-3">
-                        <div class="flex items-center gap-3">
-                            <div class="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-accent dark:text-blue-400">
-                                <flux:icon name="calendar-days" variant="mini" class="size-6" />
-                            </div>
-                            <span class="text-2xl font-bold text-zinc-900 dark:text-white">Flex</span>
-                        </div>
-                        <div>
-                            <p class="font-semibold text-zinc-900 dark:text-zinc-100">Schedule</p>
-                            <p class="text-sm text-zinc-500 dark:text-zinc-400">Nights & Weekends</p>
-                        </div>
-                    </div>
-
-                    {{-- Stat 3 --}}
-                    <div class="flex flex-col gap-3">
-                        <div class="flex items-center gap-3">
-                            <div class="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-accent dark:text-blue-400">
-                                <flux:icon name="truck" variant="mini" class="size-6" />
-                            </div>
-                            <span class="text-2xl font-bold text-zinc-900 dark:text-white">Fleet</span>
-                        </div>
-                        <div>
-                            <p class="font-semibold text-zinc-900 dark:text-zinc-100">Modern Cars</p>
-                            <p class="text-sm text-zinc-500 dark:text-zinc-400">Manual & Automatic</p>
-                        </div>
-                    </div>
-
-                    {{-- Stat 4 --}}
+                    {{-- Item 4: LTO Licensed --}}
                     <div class="flex flex-col gap-3">
                         <div class="flex items-center gap-3">
                             <div class="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-accent dark:text-blue-400">
                                 <flux:icon name="document-check" variant="mini" class="size-6" />
                             </div>
-                            <span class="text-2xl font-bold text-zinc-900 dark:text-white">LTO</span>
+                            <span class="font-semibold text-zinc-900 dark:text-white">LTO Licensed</span>
                         </div>
                         <div>
-                            <p class="font-semibold text-zinc-900 dark:text-zinc-100">Accredited</p>
-                            <p class="text-sm text-zinc-500 dark:text-zinc-400">TDC & PDC Certs</p>
+                            <p class="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                                LTO-guided safe driver training.
+                            </p>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>

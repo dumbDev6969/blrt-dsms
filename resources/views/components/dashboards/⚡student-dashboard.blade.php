@@ -210,39 +210,7 @@ new class extends Component {
 {{-- People find pleasure in different ways. I find it in keeping my mind clear. - Marcus Aurelius --}}
 
 <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl">
-    <flux:callout icon="exclamation-triangle" variant="warning" class="w-full">
-        @if ($this->isComplete)
-            {{-- STATE 1: COMPLETE --}}
-            <flux:callout.heading class="text-green-600">
-                Documents Complete
-            </flux:callout.heading>
-            <flux:callout.text>
-                You have submitted all required documents. We are now verifying your application.
-            </flux:callout.text>
-        @elseif ($this->hasDocument())
-            {{-- STATE 2: INCOMPLETE (User has started, but not finished) --}}
-            <flux:callout.heading class="text-yellow-600">
-                Your documents are incomplete
-            </flux:callout.heading>
-            <flux:callout.text>
-                Please upload the remaining documents to unlock Practical Driving Courses (PDC).
-            </flux:callout.text>
-        @else
-            {{-- STATE 3: EMPTY (User hasn't started) --}}
-            <flux:callout.heading>
-                You haven't uploaded documents yet
-            </flux:callout.heading>
-            <flux:callout.text>
-                Upload your documents to unlock Practical Driving Courses (PDC). You can still enroll in Theoretical courses (TDC) while waiting.
-            </flux:callout.text>
-        @endif
-
-        <x-slot name="actions">
-            <flux:button size="sm" href="{{ route('document.upload') }}" wire:navigate>
-                Upload Documents
-            </flux:button>
-        </x-slot>
-    </flux:callout>
+    <livewire:student.document-callout />
     {{-- Top Stats / Status Grid --}}
     <div class="grid auto-rows-min gap-6 md:grid-cols-3">
 
@@ -365,6 +333,6 @@ new class extends Component {
         class="relative h-full flex-1 overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-8 shadow-sm">
         <x-courses :is-complete="$this->isComplete" :is-enroll-blocked="$this->isEnrollmentBlocked" :enroll-block-reason="$this->enrollmentBlockReason" :has-completed-tdc="$this->hasCompletedTdc" />
 
-        <livewire:student-roadmap />
+        <livewire:student.student-roadmap />
     </div>
 </div>

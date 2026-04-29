@@ -131,6 +131,15 @@ new class extends Component {
 
         return $preview;
     }
+    #[Computed]
+    public function pendingDocuments()
+    {
+        return Document::with('user')
+            ->where('status', 'pending')
+            ->latest()
+            ->take(5)
+            ->get();
+    }
 
 
 };
@@ -257,6 +266,7 @@ new class extends Component {
         <div class="space-y-6">
             {{-- DOCUMENT VERIFICATION QUEUE --}}
             <div
+                wire:poll.15s
                 class="p-5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm">
                 <div class="flex items-center justify-between mb-4">
                     <flux:heading size="lg" weight="bold">Document Queue</flux:heading>
@@ -264,33 +274,24 @@ new class extends Component {
                     </flux:badge>
                 </div>
                 <div class="space-y-3">
-                    {{-- Doc 1 --}}
-                    <div
-                        class="flex items-start gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
-                        <div class="p-2 bg-white dark:bg-slate-900 rounded shadow-sm">
-                            <flux:icon icon="document-text" class="size-4 text-blue-600" />
+                    @forelse ($this->pendingDocuments as $doc)
+                        <div
+                            class="flex items-start gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                            <div class="p-2 bg-white dark:bg-slate-900 rounded shadow-sm">
+                                <flux:icon icon="document-text" class="size-4 text-blue-600" />
+                            </div>
+                            <div class="flex-1">
+                                <flux:heading size="xs" weight="semibold">{{ Str::headline($doc->type) }}</flux:heading>
+                                <flux:text size="xs" class="text-slate-500">{{ $doc->user->name }}</flux:text>
+                            </div>
+                            <flux:button size="xs" variant="ghost" :href="route('admin.pending-documents', ['search' => $doc->user->name])" wire:navigate>View</flux:button>
                         </div>
-                        <div class="flex-1">
-                            <flux:heading size="xs" weight="semibold">Medical Cert.</flux:heading>
-                            <flux:text size="xs" class="text-slate-500">Juan Dela Cruz</flux:text>
-                        </div>
-                        <flux:button size="xs" variant="ghost">View</flux:button>
-                    </div>
-                    {{-- Doc 2 --}}
-                    <div
-                        class="flex items-start gap-3 p-3 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
-                        <div class="p-2 bg-white dark:bg-slate-900 rounded shadow-sm">
-                            <flux:icon icon="identification" class="size-4 text-purple-600" />
-                        </div>
-                        <div class="flex-1">
-                            <flux:heading size="xs" weight="semibold">Valid ID</flux:heading>
-                            <flux:text size="xs" class="text-slate-500">Maria Santos</flux:text>
-                        </div>
-                        <flux:button size="xs" variant="ghost">View</flux:button>
-                    </div>
+                    @empty
+                        <flux:text size="xs" class="text-slate-500 text-center py-4">No documents in queue.</flux:text>
+                    @endforelse
                 </div>
                 <div class="mt-4">
-                    <flux:button size="sm" variant="ghost" icon="arrow-right" class="w-full" href="">
+                    <flux:button size="sm" variant="ghost" icon="arrow-right" class="w-full" :href="route('admin.pending-documents')" wire:navigate>
                         All Docs</flux:button>
                 </div>
             </div>

@@ -338,29 +338,7 @@ new class extends Component
                 </div>
             </div>
 
-            {{-- Vehicle Availability --}}
-            <div class="p-5 rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm">
-                <div class="flex items-center justify-between mb-4">
-                    <flux:heading size="lg" weight="bold">Available Vehicles</flux:heading>
-                    <flux:badge size="sm" color="amber">{{ $this->availableVehicles()->count() }}</flux:badge>
-                </div>
-                <div class="space-y-3">
-                    @forelse ($this->availableVehicles() as $vehicle)
-                        <div class="flex items-center gap-3">
-                            <div class="p-2 bg-zinc-100 text-zinc-500 rounded-lg dark:bg-zinc-800 dark:text-zinc-400">
-                                <flux:icon icon="truck" class="size-5" />
-                            </div>
-                            <div class="flex-1">
-                                <flux:text size="sm" weight="medium">{{ $vehicle->model }}</flux:text>
-                                <flux:text size="xs" class="text-slate-500 uppercase">{{ $vehicle->plate_number }}</flux:text>
-                            </div>
-                            <flux:badge size="sm" color="emerald" variant="subtle">Optimal</flux:badge>
-                        </div>
-                    @empty
-                        <flux:text size="sm" class="text-slate-500">No vehicles currently available.</flux:text>
-                    @endforelse
-                </div>
-            </div>
+            <livewire:vehicles />
 
         </div>
 

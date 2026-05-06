@@ -319,6 +319,91 @@
             </div>
         </div>
 
+        {{-- Session Change Log --}}
+        @php
+            $logs = collect();
+            foreach ($enrollment->bookingSessions as $session) {
+                if (is_array($session->change_log)) {
+                    foreach ($session->change_log as $log) {
+                        $logs->push([
+                            'session_id' => $session->id,
+                            'session_type' => $session->type,
+                            'start_time' => $session->start_time,
+                            'action' => $log['action'] ?? 'changed',
+                            'reason' => $log['reason'] ?? 'No reason provided',
+                            'cancelled_at' => isset($log['cancelled_at']) ? \Carbon\Carbon::parse($log['cancelled_at']) : null,
+                        ]);
+                    }
+                }
+            }
+            $sortedLogs = $logs->sortByDesc('cancelled_at');
+        @endphp
+
+        <div class="p-5 sm:p-6 rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm relative overflow-hidden flex flex-col gap-5"
+            x-data="{ page: 1, perPage: 3, total: {{ $sortedLogs->count() }} }">
+            <div class="flex items-center justify-between">
+                <flux:heading size="md" class="font-bold flex items-center gap-2">
+                    <span class="w-1.5 h-6 bg-red-500 rounded-full"></span>
+                    Session Change Log
+                </flux:heading>
+                <flux:badge size="xs" variant="subtle" color="zinc">
+                    {{ $sortedLogs->count() }} Entries
+                </flux:badge>
+            </div>
+
+            @if ($sortedLogs->isNotEmpty())
+                <div class="space-y-3 max-h-[380px] overflow-y-auto pr-1">
+                    @foreach ($sortedLogs as $log)
+                        <div class="p-4 bg-slate-50 dark:bg-slate-800/30 rounded-xl border border-slate-100 dark:border-slate-800/80 flex flex-col gap-2 transition-all hover:bg-slate-100/50 dark:hover:bg-slate-800/50"
+                            x-show="{{ $loop->index }} >= (page - 1) * perPage && {{ $loop->index }} < page * perPage"
+                            wire:key="log-{{ $log['session_id'] }}-{{ $loop->index }}">
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-1.5">
+                                    <flux:badge size="xs" color="red" class="uppercase font-bold">
+                                        {{ $log['action'] }}
+                                    </flux:badge>
+                                    <flux:text size="xs" weight="semibold" class="text-slate-500 dark:text-slate-400">
+                                        Session #{{ $log['session_id'] }} ({{ ucfirst($log['session_type']) }})
+                                    </flux:text>
+                                </div>
+                                @if ($log['cancelled_at'])
+                                    <flux:text size="xs" class="text-slate-400 font-mono">
+                                        {{ $log['cancelled_at']->format('M d, H:i A') }}
+                                    </flux:text>
+                                @endif
+                            </div>
+
+                            <flux:text size="sm" class="text-slate-700 dark:text-slate-300 italic">
+                                "{{ $log['reason'] }}"
+                            </flux:text>
+                            
+                            <flux:text size="xs" class="text-slate-400">
+                                Scheduled: {{ $log['start_time']->format('M d, Y h:i A') }}
+                            </flux:text>
+                        </div>
+                    @endforeach
+                </div>
+
+                {{-- Pagination Controls --}}
+                <div x-show="total > perPage" class="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800 mt-2">
+                    <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                        Pg <span x-text="page"></span> / <span x-text="Math.ceil(total / perPage)"></span>
+                    </div>
+                    <div class="flex gap-2">
+                        <flux:button size="xs" icon="chevron-left" variant="subtle" ::disabled="page === 1" @click="page--" />
+                        <flux:button size="xs" icon="chevron-right" variant="subtle" ::disabled="page >= Math.ceil(total / perPage)" @click="page++" />
+                    </div>
+                </div>
+            @else
+                <div class="flex flex-col items-center justify-center py-6 text-center">
+                    <div class="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-full mb-3 text-slate-400">
+                        <flux:icon icon="clock" class="size-6" />
+                    </div>
+                    <flux:text size="sm" class="text-slate-500">No change log entries found for this enrollment.</flux:text>
+                </div>
+            @endif
+        </div>
+
         {{-- Audit/Timestamps --}}
         <div class="flex flex-col items-center justify-center gap-1 opacity-60 mt-4">
             <flux:text size="xs" class="text-slate-400 font-mono text-center">

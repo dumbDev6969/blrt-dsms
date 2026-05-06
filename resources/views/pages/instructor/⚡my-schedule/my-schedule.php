@@ -17,6 +17,8 @@ new class extends Component {
     public $search = '';
     public $status = 'all';
     public $activeSessionExists = '';
+    public $cancelSessionId = null;
+    public $cancelReason = '';
 
     public function updatingSearch()
     {
@@ -26,6 +28,47 @@ new class extends Component {
     public function updatingStatus()
     {
         $this->resetPage();
+    }
+
+    public function openCancelModal($sessionId)
+    {
+        $this->cancelSessionId = $sessionId;
+        $this->cancelReason = '';
+        \Flux\Flux::modal('cancel-session')->show();
+    }
+
+    public function cancelSession()
+    {
+        if (Auth::user()->instructorProfile->isPending()) {
+            return;
+        }
+
+        $this->validate([
+            'cancelReason' => 'required|string|min:10',
+        ]);
+
+        $session = BookingSession::where('instructor_id', Auth::user()->instructorProfile->id)
+            ->where('status', 'scheduled')
+            ->findOrFail($this->cancelSessionId);
+
+        $logs = $session->change_log ?? [];
+        $logs[] = [
+            'action' => 'cancelled',
+            'reason' => $this->cancelReason,
+            'cancelled_by_user_id' => Auth::id(),
+            'cancelled_at' => now()->toIso8601String(),
+        ];
+
+        $session->update([
+            'status' => 'cancelled',
+            'change_log' => $logs,
+        ]);
+
+        \Flux\Flux::modal('cancel-session')->close();
+        session()->flash('success', 'Session cancelled successfully.');
+
+        $this->cancelSessionId = null;
+        $this->cancelReason = '';
     }
 
     #[Computed]

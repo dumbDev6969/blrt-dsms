@@ -121,9 +121,6 @@ new class extends Component {
                 {{ now()->format('l, F j, Y') }} • <flux:text color="{{ $accepting_sessions ? 'emerald' : 'rose' }}" weight="medium">{{ $accepting_sessions ? 'Accepting Sessions' : 'Not Accepting' }}</flux:text>
             </flux:text>
         </div>
-        <div class="flex gap-3">
-            <flux:button variant="filled" icon="plus">Log Session</flux:button>
-        </div>
     </div>
 
     {{-- SECTION 1: KEY METRICS (Derived from INSTRUCTOR_METRIC table) --}}

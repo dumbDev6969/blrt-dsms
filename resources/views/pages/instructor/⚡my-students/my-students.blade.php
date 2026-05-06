@@ -163,29 +163,12 @@
                             
                             {{-- TDC Grading Action --}}
                             @if ($enrollment->course->type === 'theoretical' && in_array($enrollment->status, ['active', 'completed']))
-                                @if ($enrollment->progress_percent >= 80)
-                                    <flux:modal.trigger name="score-{{ $enrollment->id }}">
-                                        <flux:button variant="ghost" size="sm" icon="academic-cap" class="w-full sm:flex-1 justify-center" wire:click="loadExistingGrade({{ $enrollment->id }})">
-                                            {{ $enrollment->status === 'completed' ? 'Update grade' : 'Grade student' }}
-                                        </flux:button>
-                                    </flux:modal.trigger>
-                                @else
-                                    <flux:tooltip content="Requires above 80% progress (currently {{ $enrollment->progress_percent ?? 0 }}%)" class="w-full sm:flex-1">
-                                        <div class="w-full cursor-not-allowed">
-                                            <flux:button variant="ghost" size="sm" icon="academic-cap" class="w-full justify-center pointer-events-none" disabled>
-                                                {{ $enrollment->status === 'completed' ? 'Update grade' : 'Grade student' }}
-                                            </flux:button>
-                                        </div>
-                                    </flux:tooltip>
-                                @endif
+                                <div class="w-full sm:flex-1">
+                                    <livewire:instructor.update-grade-button :enrollment="$enrollment" wire:key="grade-btn-{{ $enrollment->id }}" />
+                                </div>
                             @endif
                         </x-slot>
                     </x-enrollment-card>
-
-                    {{-- Grading Modal for TDC --}}
-                    @if ($enrollment->course->type === 'theoretical' && in_array($enrollment->status, ['active', 'completed']))
-                        <x-instructor.grading-modal :enrollment="$enrollment" />
-                    @endif
                 @empty
                     <div class="col-span-full">
                         <x-empty-state 

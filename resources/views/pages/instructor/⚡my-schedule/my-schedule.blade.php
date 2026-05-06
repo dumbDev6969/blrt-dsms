@@ -230,18 +230,25 @@
 
                         {{-- Card Footer: Actions --}}
                         <div
-                            class="px-4 sm:px-5 py-3 bg-slate-50/80 dark:bg-slate-800/20 border-t border-slate-100 dark:border-slate-800 flex gap-2">
-                            <flux:button variant="ghost" size="sm" class="flex-1"
+                            class="px-4 sm:px-5 py-3 bg-slate-50/80 dark:bg-slate-800/20 border-t border-slate-100 dark:border-slate-800 flex flex-wrap gap-2">
+                            <flux:button variant="ghost" size="sm" class="flex-1 min-w-[80px]"
                                 :href="route('instructor.student.show', $booking->enrollment)" wire:navigate
                                 :disabled="Auth::user()->instructorProfile->isPending()">
                                 View Student
                             </flux:button>
                             @if ($booking->status === 'scheduled' && $booking->type === 'pdc')
-                                <flux:button variant="primary" size="sm" class="flex-1"
+                                <flux:button variant="primary" size="sm" class="flex-1 min-w-[80px]"
                                     :disabled="Auth::user()->instructorProfile->isPending()"
                                     :href="route('instructor.assessment', ['enrollment' => $booking->enrollment_id, 'bookingSession' => $booking->id])"
                                     wire:navigate>
                                     Manage Assessment
+                                </flux:button>
+                            @endif
+                            @if ($booking->status === 'scheduled')
+                                <flux:button variant="danger" size="sm" class="flex-1 min-w-[80px]"
+                                    wire:click="openCancelModal({{ $booking->id }})"
+                                    :disabled="Auth::user()->instructorProfile->isPending()">
+                                    Cancel
                                 </flux:button>
                             @endif
                         </div>
@@ -269,4 +276,29 @@
             @endif
         </div>
     </div>
+
+    {{-- Cancel Session Modal --}}
+    <flux:modal name="cancel-session" class="sm:max-w-md">
+        <form wire:submit="cancelSession" class="space-y-6">
+            <div>
+                <flux:heading size="lg" weight="bold">Cancel Session</flux:heading>
+                <flux:text size="sm" class="text-slate-500 dark:text-slate-400 mt-1">
+                    This action cannot be undone. Please specify the reason for cancelling this session.
+                </flux:text>
+            </div>
+
+            <flux:textarea wire:model="cancelReason" 
+                label="Reason for Cancellation" 
+                placeholder="Please enter a detailed reason (minimum 10 characters)..." 
+                rows="3" 
+                required />
+
+            <div class="flex gap-2 justify-end pt-4 border-t border-slate-100 dark:border-slate-800">
+                <flux:modal.close>
+                    <flux:button variant="ghost">Go Back</flux:button>
+                </flux:modal.close>
+                <flux:button type="submit" variant="danger">Confirm Cancellation</flux:button>
+            </div>
+        </form>
+    </flux:modal>
 </div>

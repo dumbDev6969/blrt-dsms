@@ -21,9 +21,6 @@ new class extends Component {
     public $selectedEnrollmentId = null;
     public $activeSessionExists = false;
 
-    public $grades = [];
-    public $results = [];
-    public $remarks = [];
 
     public $pdcEnrollmentId = null;
     public $selectedVehicleId = '';
@@ -261,48 +258,5 @@ new class extends Component {
         ]), navigate: true);
     }
 
-    public function loadExistingGrade($enrollmentId)
-    {
-        $this->selectedEnrollmentId = $enrollmentId;
 
-        $enrollment = Enrollment::find($enrollmentId);
-        if ($enrollment) {
-            $this->grades[$enrollmentId] = $enrollment->final_grade;
-            $this->results[$enrollmentId] = $enrollment->final_result;
-            $this->remarks[$enrollmentId] = $enrollment->remarks;
-        }
-    }
-
-    public function submitGrade($enrollmentId)
-    {
-        // the instructor should be verified
-        if (Auth::user()->instructorProfile->isPending()) {
-            return;
-        }
-
-        // Ensure the student has reached the minimum progress threshold
-        $enrollment = Enrollment::where('id', $enrollmentId)
-            ->where('instructor_id', Auth::user()->instructorProfile->id)
-            ->firstOrFail();
-
-        if ($enrollment->progress_percent < 80) {
-            session()->flash('error', 'Cannot grade student — progress must be at least 80%.');
-            return;
-        }
-
-        $this->validate([
-            "grades.$enrollmentId" => 'nullable|numeric|min:0|max:100',
-            "results.$enrollmentId" => 'required|in:pass,fail',
-            "remarks.$enrollmentId" => 'nullable|string',
-        ]);
-
-        app(\App\Services\InstructorGradingService::class)->submitGrade($enrollmentId, [
-            'grade' => $this->grades[$enrollmentId],
-            'result' => $this->results[$enrollmentId],
-            'remarks' => $this->remarks[$enrollmentId],
-        ]);
-
-        session()->flash('success', 'Student grade submitted successfully.');
-        Flux::modal("score-{$enrollmentId}")->close();
-    }
 };

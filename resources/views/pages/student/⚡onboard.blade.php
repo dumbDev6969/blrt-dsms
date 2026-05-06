@@ -59,6 +59,10 @@ new class extends Component {
         }
         // Calculate age
         $age = Carbon::parse($value)->age;
+        if ($age < 17) {
+            $this->addError('birth_date', 'You must be at least 17 years old to register.');
+            return;
+        }
         $this->is_minor = $age < 18;
 
         // Reset guardian fields if no longer a minor
@@ -93,6 +97,14 @@ new class extends Component {
     {
         // Get the validated data
         $this->validate();
+
+        if ($this->birth_date) {
+            $age = Carbon::parse($this->birth_date)->age;
+            if ($age < 17) {
+                $this->addError('birth_date', 'You must be at least 17 years old to register.');
+                return;
+            }
+        }
 
         // Create the student profile
         StudentProfile::create([

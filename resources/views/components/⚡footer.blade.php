@@ -1,10 +1,23 @@
 <?php
 
 use Livewire\Component;
+use Livewire\Attributes\Validate;
 
 new class extends Component {
-    //
-}; 
+    #[Validate('required|email|max:255')]
+    public string $email = '';
+
+    public function subscribe(): void
+    {
+        $this->validate();
+
+        // TODO: wire up to your mailing list / notification system
+        // e.g. MailingList::subscribe($this->email);
+
+        $this->email = '';
+        session()->flash('footer_subscribed', true);
+    }
+};
 ?>
 
 <div>

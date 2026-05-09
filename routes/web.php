@@ -3,6 +3,10 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
+// PWA offline fallback — must remain outside all middleware groups to prevent
+// redirect loops for both authenticated and unauthenticated users when offline.
+Route::view('/offline', 'offline')->name('offline');
+
 Route::middleware(['guest'])->group(function () {
     Route::view('/', 'welcome')->name('home');
     Route::view('/services', 'services')->name('guest.services');

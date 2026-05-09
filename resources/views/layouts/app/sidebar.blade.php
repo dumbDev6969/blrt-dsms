@@ -172,6 +172,9 @@
 
         {{ $slot }}
 
+        {{-- PWA install-to-homescreen prompt --}}
+        <x-pwa-install-prompt />
+
         @fluxScripts
     </body>
 </html>

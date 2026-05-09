@@ -51,15 +51,6 @@ new class extends Component {
             @if ($enrollment->course->type === 'theoretical' && in_array($enrollment->status, ['active', 'completed']))
                 <livewire:instructor.update-grade-button :enrollment="$enrollment" wire:key="grade-btn-{{ $enrollment->id }}" />
             @endif
-
-            <flux:button variant="primary" icon="pencil-square" :disabled="Auth::user()->instructorProfile->isPending()">Update Progress</flux:button>
-            <flux:dropdown>
-                <flux:button variant="ghost" icon="ellipsis-horizontal" :disabled="Auth::user()->instructorProfile->isPending()" />
-                <flux:menu>
-                    <flux:menu.item icon="calendar-days">Schedule Session</flux:menu.item>
-                    <flux:menu.item icon="chat-bubble-left-right">Message Student</flux:menu.item>
-                </flux:menu>
-            </flux:dropdown>
         </div>
     </div>
 

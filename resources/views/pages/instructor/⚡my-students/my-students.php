@@ -127,7 +127,7 @@ new class extends Component {
         }
 
         // Fetch active enrollments for this instructor/course that don't already have an active session
-        $enrollments = Enrollment::where('instructor_id', $instructorId)
+        $allEnrollments = Enrollment::where('instructor_id', $instructorId)
             ->where('status', 'active')
             ->where('course_id', $courseId)
             ->whereDoesntHave('bookingSessions', function ($query) {
@@ -136,19 +136,21 @@ new class extends Component {
             })
             ->get();
 
-        if ($enrollments->isEmpty()) {
+        if ($allEnrollments->isEmpty()) {
             session()->flash('warning', 'No active students found without an existing session.');
             return;
         }
 
-        // Check if there are any students who haven't fully paid yet
-        if ($this->unpaidStudents->isNotEmpty()) {
-            session()->flash('warning', 'Cannot start TDC sessions — ' . $this->unpaidStudents->count() . ' student(s) have an outstanding balance.');
+        $paidEnrollments = $allEnrollments->filter(fn($enrollment) => $enrollment->balance <= 0);
+        $unpaidCount = $allEnrollments->count() - $paidEnrollments->count();
+
+        if ($paidEnrollments->isEmpty()) {
+            session()->flash('warning', 'Cannot start TDC sessions — ' . $unpaidCount . ' student(s) have an outstanding balance.');
             return;
         }
 
-        DB::transaction(function () use ($enrollments, $instructorId, $now) {
-            foreach ($enrollments as $enrollment) {
+        DB::transaction(function () use ($paidEnrollments, $instructorId, $now) {
+            foreach ($paidEnrollments as $enrollment) {
                 BookingSession::create([
                     'enrollment_id' => $enrollment->id,
                     'instructor_id' => $instructorId,
@@ -159,7 +161,12 @@ new class extends Component {
             }
         });
 
-        session()->flash('success', "TDC Session started for {$enrollments->count()} student(s).");
+        $message = "TDC Session started for {$paidEnrollments->count()} student(s).";
+        if ($unpaidCount > 0) {
+            $message .= " ({$unpaidCount} student(s) were skipped due to outstanding balance.)";
+        }
+
+        session()->flash('success', $message);
         return $this->redirect(route('instructor.my-schedule'), navigate: true);
     }
 

@@ -187,9 +187,5 @@ new class extends Component {
             </form>
         </div>
 
-        <p class="mt-6 text-center text-xs text-zinc-400">
-            Your data is processed securely. Need help? <a href="#" class="text-accent hover:underline">Contact
-                Support</a>
-        </p>
     </div>
 </div>

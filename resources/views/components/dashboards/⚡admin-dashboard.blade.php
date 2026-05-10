@@ -148,32 +148,17 @@ new class extends Component {
 <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl font-sans text-slate-900 dark:text-slate-100">
 
     {{-- HEADER: Admin Overview --}}
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+  
         <div>
             <flux:heading size="xl" class="text-2xl font-bold tracking-tight">Admin Dashboard</flux:heading>
             <flux:text>
                 {{ now()->format('l, F j, Y') }} • System Overview
             </flux:text>
         </div>
-        <div class="flex gap-3">
-            <flux:button variant="ghost" icon="arrow-down-tray">Export Report</flux:button>
-            <flux:button variant="filled" icon="cog-6-tooth">System Settings</flux:button>
-        </div>
-    </div>
+   
 
     {{-- CRITICAL ALERTS SECTION --}}
     <div class="space-y-3">
-        {{-- Pending Enrollment Forms Alert --}}
-        <flux:callout icon="exclamation-triangle" variant="warning" class="w-full">
-            <div class="flex justify-between items-center w-full">
-                <div>
-                    <flux:callout.heading>5 Enrollment Forms Pending Review</flux:callout.heading>
-                    <flux:callout.text>Students are waiting for approval to start their courses.</flux:callout.text>
-                </div>
-                <flux:button size="sm" variant="primary">Review Now</flux:button>
-            </div>
-        </flux:callout>
-
         {{-- Document Verification Alert --}}
         @if ($this->pendingDocsCount > 0)
             <flux:callout icon="document-text" variant="info" class="w-full">

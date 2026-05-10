@@ -322,8 +322,7 @@ new class extends Component {
                             <flux:checkbox value="Sunday" label="Sunday" />
                         </flux:checkbox.group>
 
-                        <flux:input wire:model="instructor_pref" label="Preferred Instructor (Optional)"
-                            icon="user-circle" placeholder="Enter name if you have a preference" />
+                      
                     </div>
                 </flux:fieldset>
 

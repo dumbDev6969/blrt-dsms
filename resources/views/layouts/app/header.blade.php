@@ -139,6 +139,9 @@
     {{-- PWA install-to-homescreen prompt --}}
     <x-pwa-install-prompt />
 
+    
+  
+    <livewire:chatbot />
     @fluxScripts
     
     <flux:footer>

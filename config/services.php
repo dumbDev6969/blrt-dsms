@@ -34,5 +34,10 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
-
+    'dialogflow' => [
+    'project_id'       => env('DIALOGFLOW_PROJECT_ID'),
+    
+   
+    'credentials_json' => storage_path(env('DIALOGFLOW_CREDENTIALS', 'app/google-auth.json')),
+],
 ];

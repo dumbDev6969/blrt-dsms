@@ -164,7 +164,8 @@ class RolesAndPermissionsSeeder extends Seeder
             ['email' => 'admin@blrt.com'],
             [
                 'name' => 'System Admin',
-                'password' => 'password', // Will be hashed via User model casts if properly set, or might need Hash::make
+                'password' => 'password',
+                'email_verified_at' => now(),
             ]
         );
         $admin->assignRole('Admin');
@@ -175,6 +176,7 @@ class RolesAndPermissionsSeeder extends Seeder
             [
                 'name' => 'John Instructor',
                 'password' => 'password',
+                'email_verified_at' => now(),
             ]
         );
         $instructor->assignRole('Instructor');
@@ -185,6 +187,7 @@ class RolesAndPermissionsSeeder extends Seeder
             [
                 'name' => 'Jane Student',
                 'password' => 'password',
+                'email_verified_at' => now(),
             ]
         );
         $student->assignRole('Student');
@@ -195,6 +198,7 @@ class RolesAndPermissionsSeeder extends Seeder
             [
                 'name' => 'Operations Staff',
                 'password' => 'password',
+                'email_verified_at' => now(),
             ]
         );
         $staff->assignRole('Staff');

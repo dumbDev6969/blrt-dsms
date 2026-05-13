@@ -11,7 +11,7 @@ new class extends Component {
     public function instructorsPerformances()
     {
         return InstructorProfile::with('user')
-            ->where('status', 'approved')
+            ->where('status', 'verified')
             ->where('is_active', true)
             ->get()
             ->map(function ($instructor) {
@@ -83,8 +83,8 @@ new class extends Component {
             <x-empty-state 
                 variant="card" 
                 icon="users"
-                heading="No Approved Instructors"
-                message="There are currently no instructors with an 'Approved' status in the system."
+                heading="No Verified Instructors"
+                message="There are currently no instructors with a 'Verified' status in the system."
                 action-url="{{ route('admin.pending-registrations') }}"
                 action-label="Manage Registrations"
             />

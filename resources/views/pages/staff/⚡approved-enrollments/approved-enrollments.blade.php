@@ -188,12 +188,8 @@
                                 <td class="px-6 py-4">
                                     <div class="flex flex-col">
                                         <flux:text size="sm">
-                                            {{ $enrollment->start_date ? $enrollment->start_date->format('M d, Y') : 'Not Set' }}
+                                            {{ $enrollment->start_date ? $enrollment->start_date->format('M d') : 'Not Set' }}
                                         </flux:text>
-                                        @if ($enrollment->start_date)
-                                            <flux:text size="xs" class="text-zinc-500">
-                                                {{ $enrollment->start_date->diffForHumans() }}</flux:text>
-                                        @endif
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-right">
@@ -205,7 +201,7 @@
                                                 href="{{ route('staff.approved-enrollment.show', $enrollment->id) }}"
                                                 wire:navigate>View Details</flux:menu.item>
                                             <flux:menu.separator />
-                                            <flux:menu.item icon="pencil-square">Edit Details</flux:menu.item>
+                                            <flux:menu.item icon="pencil-square" wire:click="openEditModal({{ $enrollment->id }})">Edit Details</flux:menu.item>
                                         </flux:menu>
                                     </flux:dropdown>
                                 </td>
@@ -232,4 +228,30 @@
             @endif
         </div>
     </div>
+    {{-- Edit Enrollment Modal --}}
+    <flux:modal name="edit-enrollment-modal" class="md:w-96">
+        <form wire:submit.prevent="saveEnrollment" class="space-y-6">
+            <div>
+                <flux:heading size="lg">Edit Enrollment</flux:heading>
+                <flux:text size="sm" class="mt-1">Update the instructor assignment and start date for this enrollment.</flux:text>
+            </div>
+
+            <flux:select wire:model="editInstructorId" label="Assigned Instructor" placeholder="Select an instructor...">
+                @foreach ($this->instructors as $instructor)
+                    <flux:select.option value="{{ $instructor->id }}">
+                        {{ $instructor->user->name }}
+                    </flux:select.option>
+                @endforeach
+            </flux:select>
+
+            <flux:input wire:model="editStartDate" type="date" label="Start Date" />
+
+            <div class="flex justify-end gap-2">
+                <flux:modal.close>
+                    <flux:button variant="ghost">Cancel</flux:button>
+                </flux:modal.close>
+                <flux:button variant="primary" type="submit">Save Changes</flux:button>
+            </div>
+        </form>
+    </flux:modal>
 </div>

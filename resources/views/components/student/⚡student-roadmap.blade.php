@@ -105,19 +105,21 @@ new class extends Component
             </div>
 
             @php
-                $isDone = $pdcCompleted && strtolower($pdcCompleted->final_result) === 'passed';
+                $tdcPassed = $tdcCompleted && strtolower($tdcCompleted->final_result) === 'passed';
+                $pdcPassed = $pdcCompleted && strtolower($pdcCompleted->final_result) === 'passed';
+                $isDone = $tdcPassed && $pdcPassed;
                 $doneOpacity = $isDone ? 'opacity-100' : 'opacity-60';
             @endphp
             {{-- Step 3: Done --}}
             <div class="relative group {{ $doneOpacity }}">
                 <div
-                    class="flex flex-col items-center text-center p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 z-10 relative">
+                    class="flex flex-col items-center text-center p-4 rounded-xl z-10 relative {{ $isDone ? 'bg-green-50 dark:bg-green-900/20 border-2 border-green-400 dark:border-green-600 shadow-md' : 'bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700' }}">
                     <div
-                        class="flex items-center justify-center size-10 rounded-full {{ $isDone ? 'bg-green-50 text-green-600' : 'bg-slate-100 dark:bg-slate-700 text-slate-400' }} mb-3">
+                        class="flex items-center justify-center size-10 rounded-full {{ $isDone ? 'bg-green-100 text-green-600 dark:bg-green-800/40 dark:text-green-400' : 'bg-slate-100 dark:bg-slate-700 text-slate-400' }} mb-3">
                         <flux:icon icon="{{ $isDone ? 'check-badge' : 'star' }}" class="size-5" />
                     </div>
-                    <flux:heading size="sm" class="font-semibold text-slate-700 dark:text-slate-300">3. {{ $isDone ? 'Ready for License' : 'Final License' }}</flux:heading>
-                    <flux:text size="xs" class="text-slate-500 mt-1">{{ $isDone ? 'Process at LTO' : 'Complete all courses' }}</flux:text>
+                    <flux:heading size="sm" class="font-semibold {{ $isDone ? 'text-green-700 dark:text-green-300' : 'text-slate-700 dark:text-slate-300' }}">3. {{ $isDone ? 'Ready for License' : 'Final License' }}</flux:heading>
+                    <flux:text size="xs" class="{{ $isDone ? 'text-green-600 dark:text-green-400' : 'text-slate-500' }} mt-1">{{ $isDone ? 'Process at LTO' : 'Complete all courses' }}</flux:text>
                     
                     @if ($isDone)
                         <flux:badge color="green" size="sm" class="mt-2 animate-pulse">

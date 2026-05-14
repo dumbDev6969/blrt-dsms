@@ -70,14 +70,14 @@ new class extends Component {
                 $requiredTypes[] = 'birth_cert';
             }
 
-            if (strtolower($profile->civil_status) === 'married' && strtolower($profile->sex) === 'female') {
+            if (strtolower($profile->sex) === 'female' || strtolower($profile->civil_status) === 'married') {
                 $requiredTypes[] = 'marriage_contract';
             }
         } else {
             $requiredTypes[] = 'birth_cert'; // Default
         }
 
-        $allAllowedTypes = array_unique(array_merge($requiredTypes, ['tin_id', 'tdc_certificate', 'marriage_contract']));
+        $allAllowedTypes = array_unique(array_merge($requiredTypes, ['tin_id', 'tdc_certificate']));
         $uploadedTypes = Document::where('user_id', Auth::user()->id)->pluck('type')->toArray();
         $availableTypes = array_diff($allAllowedTypes, $uploadedTypes);
 

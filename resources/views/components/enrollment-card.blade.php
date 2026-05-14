@@ -60,8 +60,7 @@
                     {{ $enrollment->progress_percent }}%
                 </flux:text>
             </div>
-            <div
-                class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 sm:h-2 overflow-hidden">
+            <div class="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 sm:h-2 overflow-hidden">
                 <div class="{{ $enrollment->progress_percent == 100 ? 'bg-emerald-500' : 'bg-blue-500' }} h-full rounded-full transition-all duration-500"
                     style="width: {{ $enrollment->progress_percent }}%"></div>
             </div>
@@ -118,13 +117,14 @@
 
         {{-- Instructor Details (Optional for Admin Pages) --}}
         @if ($showInstructor && $enrollment->instructorProfile)
-            <div class="mt-2 p-2 rounded-lg bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100/50 dark:border-blue-800/30">
+            <div
+                class="mt-2 p-2 rounded-lg bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100/50 dark:border-blue-800/30">
                 <div class="flex items-center gap-2">
                     <flux:icon icon="user-circle" class="size-4 text-blue-600 dark:text-blue-400" />
                     <div class="flex flex-col">
                         <flux:text size="xs" class="text-slate-500">Assigned Instructor</flux:text>
                         <flux:text size="sm" weight="semibold" class="text-blue-700 dark:text-blue-300">
-                             {{ $enrollment->instructorProfile->user->name ?? 'None' }}
+                            {{ $enrollment->instructorProfile->user->name ?? 'None' }}
                         </flux:text>
                     </div>
                 </div>
@@ -135,17 +135,14 @@
         <div
             class="grid grid-cols-2 gap-2 sm:gap-4 mt-auto pt-3 sm:pt-4 border-t border-slate-100 dark:border-slate-800/50">
             <div class="flex flex-col">
-                <flux:text size="xs"
-                    class="text-slate-400 uppercase tracking-wider font-semibold mb-0.5 sm:mb-1">
+                <flux:text size="xs" class="text-slate-400 uppercase tracking-wider font-semibold mb-0.5 sm:mb-1">
                     Target Date</flux:text>
-                <flux:text size="xs" sm:size="sm" weight="medium"
-                    class="text-slate-700 dark:text-slate-300">
+                <flux:text size="xs" sm:size="sm" weight="medium" class="text-slate-700 dark:text-slate-300">
                     {{ $enrollment->target_completion_date ? $enrollment->target_completion_date->format('M d, y') : 'Not Set' }}
                 </flux:text>
             </div>
             <div class="flex flex-col items-end">
-                <flux:text size="xs"
-                    class="text-slate-400 uppercase tracking-wider font-semibold mb-0.5 sm:mb-1">
+                <flux:text size="xs" class="text-slate-400 uppercase tracking-wider font-semibold mb-0.5 sm:mb-1">
                     Final Grade</flux:text>
                 <flux:text size="xs" sm:size="sm" weight="bold"
                     class="{{ $enrollment->final_grade ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400' }}">
@@ -157,8 +154,7 @@
     </div>
 
     {{-- Card Footer: Finances & Actions --}}
-    <div
-        class="border-t border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/20">
+    <div class="border-t border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/20">
 
         {{-- Financial Context --}}
         <div

@@ -1,7 +1,7 @@
 <div class="flex h-full w-full flex-1 flex-col gap-4 sm:gap-6 rounded-xl font-sans text-slate-900 dark:text-slate-100">
 
     <x-callout />
-    
+
     {{-- Persistent warning for unpaid students --}}
     @if ($this->unpaidStudents->isNotEmpty())
         <flux:callout variant="warning" icon="exclamation-triangle" class="shadow-sm">
@@ -9,7 +9,8 @@
                 {{ $this->unpaidStudents->count() }} student(s) have not fully paid
             </flux:callout.heading>
             <flux:callout.text>
-                Sessions cannot be started until all active students are fully paid. Please coordinate with the staff for payment follow-up.
+                Sessions cannot be started until all active students are fully paid. Please coordinate with the staff
+                for payment follow-up.
             </flux:callout.text>
         </flux:callout>
     @endif
@@ -92,26 +93,31 @@
     {{-- MAIN CONTENT AREA --}}
     <div class="flex flex-col gap-4 sm:gap-5">
         {{-- Filters & Search --}}
-        <div class="flex flex-col gap-3 p-3 bg-zinc-100 dark:bg-zinc-800/50 rounded-2xl w-full border border-zinc-200 dark:border-zinc-700/50">
+        <div
+            class="flex flex-col gap-3 p-3 bg-zinc-100 dark:bg-zinc-800/50 rounded-2xl w-full border border-zinc-200 dark:border-zinc-700/50">
             {{-- Search and Status Tabs row --}}
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                <div class="flex flex-wrap gap-1 bg-white/50 dark:bg-zinc-900/50 p-1 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-700/50 w-full lg:w-auto">
+                <div
+                    class="flex flex-wrap gap-1 bg-white/50 dark:bg-zinc-900/50 p-1 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-700/50 w-full lg:w-auto">
                     @foreach (['all', 'active', 'pending', 'completed', 'dropped'] as $tab)
                         <button wire:click="$set('status', '{{ $tab }}')"
                             class="flex-1 sm:flex-none px-3 sm:px-4 py-2 text-xs sm:text-sm font-semibold rounded-lg transition-all capitalize {{ $status === $tab ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm' : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-white' }}">
-                            {{ $tab }} <span class="hidden sm:inline opacity-70 ml-1">({{ $this->enrollmentCounts[$tab] ?? $this->enrollmentCounts['total'] }})</span>
+                            {{ $tab }} <span
+                                class="hidden sm:inline opacity-70 ml-1">({{ $this->enrollmentCounts[$tab] ?? $this->enrollmentCounts['total'] }})</span>
                         </button>
                     @endforeach
                 </div>
-                
+
                 <div class="w-full lg:w-72">
                     <x-live-search placeholder="Search name or student code..." />
                 </div>
             </div>
 
             {{-- Module Sub-filter --}}
-            <div class="flex flex-col sm:flex-row sm:items-center gap-3 pt-3 border-t border-zinc-200 dark:border-zinc-700/50">
-                <flux:text size="sm" weight="semibold" class="text-zinc-500 uppercase tracking-wider shrink-0">Module Type:</flux:text>
+            <div
+                class="flex flex-col sm:flex-row sm:items-center gap-3 pt-3 border-t border-zinc-200 dark:border-zinc-700/50">
+                <flux:text size="sm" weight="semibold" class="text-zinc-500 uppercase tracking-wider shrink-0">
+                    Module Type:</flux:text>
                 <div class="flex flex-wrap gap-1.5">
                     @foreach (['all' => 'All Modules', 'tdc' => 'Theory (TDC)', 'pdc' => 'Practical (PDC)'] as $val => $label)
                         <button wire:click="$set('module', '{{ $val }}')"
@@ -134,13 +140,13 @@
                     </flux:text>
                 </div>
                 <flux:button variant="primary" size="sm" icon="play" wire:click="beginTDC"
-                    wire:loading.attr="disabled" wire:target="beginTDC" 
+                    wire:loading.attr="disabled" wire:target="beginTDC"
                     :disabled="$activeSessionExists || Auth::user()->instructorProfile->isPending()">
                     Begin TDC sessions
                 </flux:button>
             </div>
             {{-- Enrollment Cards Grid --}}
-            <div class="p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 bg-slate-50/30 dark:bg-slate-900/50"
+            <div class="p-4 sm:p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6 bg-slate-50/30 dark:bg-slate-900/50"
                 wire:transition>
                 @forelse ($this->enrollments as $enrollment)
                     <x-enrollment-card :enrollment="$enrollment">
@@ -150,33 +156,28 @@
                                 :disabled="Auth::user()->instructorProfile->isPending()">
                                 View enrollment
                             </flux:button>
-                            @if($enrollment->course->type === 'practical' && $enrollment->status === 'active')
-                            <flux:button variant="subtle" size="sm" class="w-full sm:flex-1 justify-center"
-                                icon="play"
-                                wire:click="openPDCModal({{ $enrollment->id }})"
-                                wire:loading.attr="disabled"
-                                wire:target="openPDCModal({{ $enrollment->id }})"
-                                :disabled="$enrollment->pdc_hours_required <= 0 || $enrollment->pdc_status === 'completed' || Auth::user()->instructorProfile->isPending()">
-                                Start PDC session
-                            </flux:button>
+                            @if ($enrollment->course->type === 'practical' && $enrollment->status === 'active')
+                                <flux:button variant="subtle" size="sm" class="w-full sm:flex-1 justify-center"
+                                    icon="play" wire:click="openPDCModal({{ $enrollment->id }})"
+                                    wire:loading.attr="disabled" wire:target="openPDCModal({{ $enrollment->id }})"
+                                    :disabled="$enrollment->pdc_hours_required <= 0 || $enrollment->pdc_status === 'completed' || Auth::user()->instructorProfile->isPending()">
+                                    Start PDC session
+                                </flux:button>
                             @endif
-                            
+
                             {{-- TDC Grading Action --}}
                             @if ($enrollment->course->type === 'theoretical' && in_array($enrollment->status, ['active', 'completed']))
                                 <div class="w-full sm:flex-1">
-                                    <livewire:instructor.update-grade-button :enrollment="$enrollment" wire:key="grade-btn-{{ $enrollment->id }}" />
+                                    <livewire:instructor.update-grade-button :enrollment="$enrollment"
+                                        wire:key="grade-btn-{{ $enrollment->id }}" />
                                 </div>
                             @endif
                         </x-slot>
                     </x-enrollment-card>
                 @empty
                     <div class="col-span-full">
-                        <x-empty-state 
-                            variant="card" 
-                            icon="user-group"
-                            heading="No students found"
-                            message="Try adjusting your search filters or check back later for new enrollments."
-                        />
+                        <x-empty-state variant="card" icon="user-group" heading="No students found"
+                            message="Try adjusting your search filters or check back later for new enrollments." />
                     </div>
                 @endforelse
             </div>
@@ -195,11 +196,12 @@
         <form wire:submit.prevent="confirmBeginPDC" class="space-y-6">
             <div>
                 <flux:heading size="lg">Start Practical Session</flux:heading>
-                <flux:text size="sm" class="mt-1">Please select the vehicle you will be using for this session.</flux:text>
+                <flux:text size="sm" class="mt-1">Please select the vehicle you will be using for this session.
+                </flux:text>
             </div>
 
             <flux:select wire:model="selectedVehicleId" label="Vehicle" placeholder="Choose a vehicle...">
-                @foreach($this->availableVehicles as $vehicle)
+                @foreach ($this->availableVehicles as $vehicle)
                     <flux:select.option value="{{ $vehicle->id }}">
                         {{ $vehicle->plate_number }} - {{ $vehicle->model }} ({{ ucfirst($vehicle->transmission) }})
                     </flux:select.option>

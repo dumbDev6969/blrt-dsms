@@ -29,18 +29,14 @@ new class extends Component {
     <x-callout />
     
     {{-- Header --}}
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-            <div class="flex items-center gap-2 mb-2">
-                <flux:button variant="ghost" size="sm" icon="arrow-left" :href="route('dashboard')" wire:navigate>Back to Dashboard</flux:button>
-            </div>
-            <flux:heading size="xl" class="text-3xl font-black tracking-tight">Instructor Performance Analytics</flux:heading>
-            <flux:text class="mt-1">Comprehensive directory of all approved instructors and their course evaluations.</flux:text>
+    <div>
+        <div class="flex items-center gap-2 mb-2">
+            <flux:button variant="ghost" size="sm" icon="arrow-left" :href="route('dashboard')" wire:navigate>Back to Dashboard</flux:button>
         </div>
-        <div class="flex gap-3">
-            <flux:button variant="ghost" icon="arrow-down-tray">Export All Data</flux:button>
-        </div>
+        <flux:heading size="xl" class="text-3xl font-black tracking-tight">Instructor Performance Analytics</flux:heading>
+        <flux:text class="mt-1">Comprehensive directory of all approved instructors and their course evaluations.</flux:text>
     </div>
+   
 
     {{-- Performance Directory --}}
     <div class="flex flex-col gap-10">

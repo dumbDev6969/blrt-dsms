@@ -90,9 +90,19 @@ new class extends Component {
             })
             ->count();
 
+        $totalTdc = Enrollment::whereHas('course', function ($query) {
+            $query->where('type', 'theoretical');
+        })->count();
+
+        $totalPdc = Enrollment::whereHas('course', function ($query) {
+            $query->whereIn('type', ['practical', 'comprehensive']);
+        })->count();
+
         return [
             'tdc' => $tdc,
             'pdc' => $pdc,
+            'total_tdc' => $totalTdc,
+            'total_pdc' => $totalPdc,
         ];
     }
 
@@ -100,7 +110,7 @@ new class extends Component {
     public function instructorsPerformances()
     {
         $service = app(InstructorPerformanceService::class);
-        $query = InstructorProfile::with('user')->where('status', 'approved')->where('is_active', true);
+        $query = InstructorProfile::with('user')->where('status', 'verified')->where('is_active', true);
 
         if (!empty($this->searchInstructor)) {
             return $query->whereHas('user', function($q) {
@@ -202,12 +212,12 @@ new class extends Component {
         </x-kpi-cards>
         {{-- KPI: Passed Students --}}
         <x-kpi-cards label="Passed Students"
-            value="{{ $this->passedStudentsCount['tdc'] + $this->passedStudentsCount['pdc'] }}" trend="Total"
+            value="{{ $this->passedStudentsCount['tdc'] + $this->passedStudentsCount['pdc'] }} / {{ $this->passedStudentsCount['total_tdc'] + $this->passedStudentsCount['total_pdc'] }}" trend="Total"
             trend-color="emerald" icon="check-badge" color="emerald">
             <div class="flex gap-2 mt-2">
-                <flux:text color="emerald" size="xs">TDC: {{ $this->passedStudentsCount['tdc'] }}</flux:text>
+                <flux:text color="emerald" size="xs">TDC: {{ $this->passedStudentsCount['tdc'] }} / {{ $this->passedStudentsCount['total_tdc'] }}</flux:text>
                 <flux:text size="xs" class="text-slate-300">|</flux:text>
-                <flux:text color="emerald" size="xs">PDC: {{ $this->passedStudentsCount['pdc'] }}</flux:text>
+                <flux:text color="emerald" size="xs">PDC: {{ $this->passedStudentsCount['pdc'] }} / {{ $this->passedStudentsCount['total_pdc'] }}</flux:text>
             </div>
         </x-kpi-cards>
     </div>

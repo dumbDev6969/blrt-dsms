@@ -316,6 +316,10 @@ new class extends Component
                 'score' => $isFinal ? ($this->is_passed ? 100 : 0) : null,
             ]);
 
+            if ($this->bookingSession->vehicle_id) {
+                \App\Models\Vehicle::where('id', $this->bookingSession->vehicle_id)->update(['status' => 'available']);
+            }
+
             $newPdcHours = min($this->enrollment->pdc_hours_required, ($this->enrollment->pdc_hours_completed ?? 0) + $durationHours);
             $pdcStatus = ($isFinal || $newPdcHours >= $this->enrollment->pdc_hours_required) ? 'completed' : 'in_progress';
             

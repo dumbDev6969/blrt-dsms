@@ -185,7 +185,7 @@ new class extends Component {
         $this->pdcEnrollmentId = $enrollmentId;
         $this->selectedVehicleId = '';
         
-        $this->dispatch('modal-opened', name: 'start-pdc-modal');
+        Flux::modal('start-pdc-modal')->show();
     }
 
     public function confirmBeginPDC()

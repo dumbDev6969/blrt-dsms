@@ -52,7 +52,7 @@ The application enforces several runtime safeguards in `app/Providers/AppService
 
 1. **Clone the repository and install dependencies**
    ```bash
-   git clone <repository-url> blrt-dsms
+   git clone https://github.com/dumbDev6969/blrt-dsms.git blrt-dsms
    cd blrt-dsms
    composer install
    npm install

@@ -2,7 +2,7 @@
 
 BLRT-DSMS is a role-based operations platform for managing the full lifecycle of a driving school — from student and instructor onboarding, through document verification and enrollment approval, to scheduled driving sessions, formal skills assessment, and grading. The system's "intelligence" comes from two places: an automated instructor-matching engine that assigns the best-fit instructor to an approved enrollment based on skill set, vehicle/transmission compatibility, weekly availability, and current workload, and a Google Dialogflow-powered chatbot that gives prospective and enrolled users conversational access to information about the school. The application is built entirely on the TALL stack, using Livewire 4's single-file component syntax for every interactive page — there is no separate REST/JSON API layer; all client-server interaction happens over Livewire's wire protocol.
 
-![High-level dashboard showing the main navigation and role-based portal landing page](./images/dashboard-overview.png)
+![Performance analytics dashboard showing school-wide metrics and enrollment data](docs/images/system_ui/school_admin/performance_analytics.png)
 
 ## Tech Stack
 
@@ -26,31 +26,31 @@ Every feature below was verified directly against the routes, Livewire component
 - **Role-Based Multi-Portal Access** — Four distinct roles (`Admin`, `Instructor`, `Student`, `Staff`) are seeded via Spatie Permission, each gated to its own set of routes through `can:` middleware (e.g. `can:user.view`, `can:enrollment.view_any`, `can:student.view_any`, `can:instructor.view_own`).
 - **Guided Profile Onboarding** — New Students and Instructors are redirected to a mandatory profile-completion wizard (`student/onboard`, `instructor/onboard`) by the custom `EnsureProfileIsComplete` middleware before they can reach any other authenticated page.
 
-  ![Student onboarding wizard showing the profile-completion form fields](./images/student-onboarding-wizard.png)
+  ![Online enrollment form for new student registration](docs/images/system_ui/school_admin/online_enrollment.png)
 - **Multi-Step Enrollment Form Pipeline** — Students submit an `EnrollmentForm` (draft → submitted → approved/rejected) capturing package type (TDC/PDC/Refresher), vehicle category, transmission preference, and JSON-stored personal info and schedule preferences. Staff review and approve/reject forms with a recorded rejection reason and reviewer audit trail.
 
-  ![Enrollment form with package type, vehicle category, and transmission preference fields](./images/enrollment-form-pipeline.png)
+  ![Enrollment details view showing package type, vehicle category, and approval status](docs/images/system_ui/admin/enrollment_details.png)
 - **Automated Instructor Matching Engine** (`EnrollmentService::findBestInstructor`) — On enrollment approval, the system filters active/verified instructors by required skill (theoretical vs. practical), transmission type, vehicle category, and weekly schedule overlap with the student's preferred days, then ranks remaining candidates by current active-enrollment workload to balance instructor load automatically. Students with no available match are placed on a `waiting_list`.
 
-  ![Instructor matching result showing the selected instructor, match criteria, and workload balance](./images/instructor-matching-result.png)
+  ![Instructor-student coordination panel showing matched assignments](docs/images/system_ui/staff/instructor_student_coordination.png)
 - **Document Upload & Verification Pipeline** — Students upload required documents (birth certificate, medical certificate, ADL form, valid ID, TDC certificate, TIN ID, passport, etc.) which enter a `pending → verified/rejected` review queue for Admin/staff, with private file storage served through an authorized streaming route (`document/serve/{document}`).
 
-  ![Document verification queue showing pending uploads with status badges](./images/document-verification-queue.png)
+  ![Document review management queue with pending, verified, and rejected status badges](docs/images/system_ui/admin/document_review_management.png)
 - **Instructor Availability Engine** (`InstructroAvailabilityService`) — Computes a rolling 30-day availability calendar per instructor by cross-referencing their stored weekly schedule against existing booking sessions.
 - **Booking Session & Assessment Tracking** — Tracks individual lecture/driving/assessment sessions, including score, pass/fail outcome, student ratings, per-skill JSON progress tracking, and a full change-log audit trail.
 - **Formal Driving Assessment Forms** — A structured, section-by-section practical assessment (pre-drive checklist, immediate-fail criteria, driving skills rating, traffic rule observance, learner-type classification) modeled directly on the physical LTO assessment form, complete with instructor and admin sign-off fields.
 
-  ![Practical driving assessment form with pre-drive checklist and skills rating sections](./images/driving-assessment-form.png)
+  ![Instructor performance evaluation and grading form](docs/images/system_ui/instructor/performance_eval_grading.png)
 - **Instructor Grading & Metrics** (`InstructorGradingService`, `InstructorMetricService`) — Finalizes course grades transactionally, auto-creates the corresponding theoretical assessment record, closes out related booking sessions, and rolls results into monthly per-instructor performance metrics (pass rate, average rating, sessions completed).
 - **Live Analytics** (`SystemMetric::syncToday`) — Daily aggregate snapshot of revenue, new student signups, active enrollments, completed courses, and total bookings.
 
-  ![Admin analytics dashboard displaying daily revenue, signups, and enrollment metrics](./images/live-analytics-dashboard.png)
+  ![Enrollment oversight dashboard displaying enrollment counts, statuses, and trends](docs/images/system_ui/admin/enrollment_oversight.png)
 - **AI Chatbot Assistant** — A Livewire-powered chat widget backed by Google Dialogflow's `SessionsClient`, with per-session conversation history stored server-side and graceful fallback messaging if the Dialogflow API call fails.
 
-  ![Dialogflow chatbot widget open in the bottom-right corner with a sample conversation](./images/chatbot-widget-conversation.png)
+  ![Dialogflow-powered chatbot widget open with a sample conversation](docs/images/system_ui/student/chatbot.png)
 - **Vehicle Fleet Management** — Tracks vehicle type, transmission, maintenance history (JSON), and next scheduled maintenance date, with live status (`available`, `maintenance`, `in-use`).
 
-  ![Vehicle fleet table listing plates, transmission types, and current status badges](./images/vehicle-fleet-management.png)
+  ![Vehicle management table listing plates, transmission types, and maintenance status](docs/images/system_ui/admin/vehicle_management.png)
 - **LTO-Accredited Clinic Directory** — Maintains accredited third-party clinic records (for medical certificates, etc.) with accreditation expiry tracking.
 - **Two-Factor Authentication & Email Verification** — Full Fortify-driven 2FA (with recovery codes) and mandatory email verification gating access to the dashboard.
 - **PWA Support** — Includes a service worker, web manifest, and a dedicated offline fallback route (`/offline`) that is intentionally excluded from all auth middleware to avoid redirect loops when the user is offline.
@@ -128,7 +128,7 @@ The application enforces several runtime safeguards in `app/Providers/AppService
 
 8. Visit `http://blrt-dsms-main.test` (via Herd) and log in with one of the seeded demo accounts above.
 
-![Login page with email and password fields for the seeded demo accounts](./images/login-page.png)
+![Login page with email and password fields](docs/images/system_ui/login.png)
 
 ## Directory Structure
 
